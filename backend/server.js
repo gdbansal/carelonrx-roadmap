@@ -254,13 +254,22 @@ function authMiddleware(req, res, next) {
 }
 
 app.post('/api/signup', (req, res) => {
-    const { name, username, email, password } = req.body;
+    const { name, username, email, role, password } = req.body;
     
     // Validate required fields
-    if (!name || !username || !email || !password) {
+    if (!name || !username || !email || !role || !password) {
         return res.status(400).json({
             success: false,
             message: 'All fields are required'
+        });
+    }
+    
+    // Validate role - prevent admin role from being selected
+    const allowedRoles = ['user', 'manager', 'product_owner', 'stakeholder'];
+    if (!allowedRoles.includes(role)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid role selected. Admin role cannot be assigned during signup.'
         });
     }
     
@@ -289,13 +298,13 @@ app.post('/api/signup', (req, res) => {
         password, // In production, this should be hashed
         name,
         email,
-        role: 'user', // New users are regular users by default
+        role: role, // Use the selected role
         createdAt: new Date().toISOString()
     };
     
     users.push(newUser);
     
-    console.log('New user created:', username);
+    console.log('New user created:', username, 'with role:', role);
     
     res.json({
         success: true,
