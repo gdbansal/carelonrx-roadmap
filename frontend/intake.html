@@ -46,6 +46,13 @@
                     <p class="text-gray-600">Submit a new product initiative or update an existing one</p>
                 </div>
 
+                <div id="readOnlyBanner" class="hidden mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="lock" class="w-5 h-5 text-yellow-600"></i>
+                        <p class="text-yellow-800 font-semibold">Read-Only Mode: You do not have permission to edit this initiative.</p>
+                    </div>
+                </div>
+
                 <form id="intakeForm" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
@@ -327,6 +334,32 @@
                 
                 if (data.success) {
                     const initiative = data.initiative;
+                    
+                    // Check if user has permission to edit
+                    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                    const canEdit = initiative.canEdit !== undefined ? initiative.canEdit : 
+                                   (currentUser.role === 'admin' || initiative.createdBy === currentUser.username);
+                    
+                    if (!canEdit) {
+                        // Show read-only banner
+                        document.getElementById('readOnlyBanner').classList.remove('hidden');
+                        // Disable all form inputs
+                        document.querySelectorAll('input, select, textarea, button[type="submit"]').forEach(el => {
+                            el.disabled = true;
+                            el.classList.add('bg-gray-100', 'cursor-not-allowed');
+                        });
+                        // Keep only the back button enabled
+                        const backButton = document.querySelector('button[onclick*="dashboard"]');
+                        if (backButton) {
+                            backButton.disabled = false;
+                            backButton.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                        }
+                        // Hide submit button
+                        const submitButton = document.querySelector('button[type="submit"]');
+                        if (submitButton) submitButton.style.display = 'none';
+                        
+                        lucide.createIcons();
+                    }
                     
                     // Populate form fields
                     document.getElementById('initiativeName').value = initiative.name || '';
