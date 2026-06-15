@@ -17,9 +17,9 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 let users = [
-    { id: '1', username: 'admin', password: 'admin123', name: 'Administrator', role: 'admin' },
-    { id: '2', username: 'user1', password: 'user123', name: 'John Doe', role: 'user' },
-    { id: '3', username: 'user2', password: 'user123', name: 'Jane Smith', role: 'user' }
+    { id: '1', username: 'admin', password: 'admin123', name: 'Administrator', email: 'admin@carelonrx.com', role: 'admin' },
+    { id: '2', username: 'user1', password: 'user123', name: 'John Doe', email: 'john.doe@carelonrx.com', role: 'user' },
+    { id: '3', username: 'user2', password: 'user123', name: 'Jane Smith', email: 'jane.smith@carelonrx.com', role: 'user' }
 ];
 
 let initiatives = [
@@ -252,6 +252,62 @@ function authMiddleware(req, res, next) {
     req.user = user;
     next();
 }
+
+app.post('/api/signup', (req, res) => {
+    const { name, username, email, password } = req.body;
+    
+    // Validate required fields
+    if (!name || !username || !email || !password) {
+        return res.status(400).json({
+            success: false,
+            message: 'All fields are required'
+        });
+    }
+    
+    // Check if username already exists
+    const existingUser = users.find(u => u.username === username);
+    if (existingUser) {
+        return res.status(400).json({
+            success: false,
+            message: 'Username already exists. Please choose a different username.'
+        });
+    }
+    
+    // Check if email already exists
+    const existingEmail = users.find(u => u.email === email);
+    if (existingEmail) {
+        return res.status(400).json({
+            success: false,
+            message: 'Email already registered. Please use a different email.'
+        });
+    }
+    
+    // Create new user
+    const newUser = {
+        id: uuidv4(),
+        username,
+        password, // In production, this should be hashed
+        name,
+        email,
+        role: 'user', // New users are regular users by default
+        createdAt: new Date().toISOString()
+    };
+    
+    users.push(newUser);
+    
+    console.log('New user created:', username);
+    
+    res.json({
+        success: true,
+        message: 'Account created successfully',
+        user: {
+            id: newUser.id,
+            username: newUser.username,
+            name: newUser.name,
+            role: newUser.role
+        }
+    });
+});
 
 app.post('/api/login', (req, res) => {
     console.log('Login request received:', req.body);
