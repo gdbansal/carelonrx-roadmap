@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarelonRx Roadmap - Initiative Intake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center">
+                        <i data-lucide="calendar" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">CarelonRx Roadmap</h1>
+                        <p class="text-xs text-gray-600">Product Initiative Management</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.location.href='dashboard.html'" 
+                        class="text-gray-700 hover:text-gray-900 flex items-center space-x-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back to Dashboard</span>
+                    </button>
+                    <div class="flex items-center space-x-2 text-gray-700">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                        <span id="userName" class="font-semibold"></span>
+                    </div>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-800">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Initiative Intake Form</h2>
+                    <p class="text-gray-600">Submit a new product initiative or update an existing one</p>
+                </div>
+
+                <form id="intakeForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            <label for="initiativeName" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Initiative Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="initiativeName" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter initiative name">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Description
+                            </label>
+                            <textarea id="description" rows="3"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Describe the initiative"></textarea>
+                        </div>
+
+                        <div>
+                            <label for="program" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Program <span class="text-red-500">*</span>
+                            </label>
+                            <select id="program" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Program</option>
+                                <option value="AHD">AHD</option>
+                                <option value="Bioplus">Bioplus</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="year" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Year <span class="text-red-500">*</span>
+                            </label>
+                            <select id="year" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Year</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="quarter" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Expected Quarter to Release <span class="text-red-500">*</span>
+                            </label>
+                            <select id="quarter" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Quarter</option>
+                                <option value="Q1">Q1 (Jan-Mar)</option>
+                                <option value="Q2">Q2 (Apr-Jun)</option>
+                                <option value="Q3">Q3 (Jul-Sep)</option>
+                                <option value="Q4">Q4 (Oct-Dec)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="startDate" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Start Date (if known)
+                            </label>
+                            <input type="date" id="startDate"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label for="deliveryDate" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Delivery Date (if known)
+                            </label>
+                            <input type="date" id="deliveryDate"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div>
+                            <label for="budgetApproved" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Budget Approved <span class="text-red-500">*</span>
+                            </label>
+                            <select id="budgetApproved" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Status</option>
+                                <option value="true">Yes - Approved</option>
+                                <option value="false">No - Pending</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="priority" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Priority Alignment <span class="text-red-500">*</span>
+                            </label>
+                            <select id="priority" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Priority</option>
+                                <option value="Critical">Critical</option>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="wsjf" class="block text-sm font-semibold text-gray-700 mb-2">
+                                WSJF Score <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" id="wsjf" required step="0.01" min="0" max="999.99"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter WSJF score (e.g., 12.50)">
+                            <p class="text-xs text-gray-500 mt-1">Weighted Shortest Job First score (up to 2 decimal places)</p>
+                        </div>
+
+                        <div>
+                            <label for="owner" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Business Owner
+                            </label>
+                            <input type="text" id="owner"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter business owner name">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Dependent Systems
+                            </label>
+                            <div class="space-y-2">
+                                <div id="dependentSystemsList" class="space-y-2">
+                                </div>
+                                <button type="button" onclick="addDependentSystem()"
+                                    class="text-blue-600 hover:text-blue-800 flex items-center space-x-2 text-sm">
+                                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                    <span>Add Dependent System</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="businessValue" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Business Value / Impact
+                            </label>
+                            <textarea id="businessValue" rows="3"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Describe the business value and expected impact"></textarea>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="risks" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Risks & Dependencies
+                            </label>
+                            <textarea id="risks" rows="3"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="List any risks or dependencies"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end space-x-4 pt-6 border-t">
+                        <button type="button" onclick="window.location.href='dashboard.html'"
+                            class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                            <i data-lucide="save" class="w-5 h-5"></i>
+                            <span>Save Initiative</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div id="successMessage" class="mt-4 p-4 bg-green-100 text-green-700 rounded-lg hidden">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        <span>Initiative saved successfully!</span>
+                    </div>
+                </div>
+
+                <div id="errorMessage" class="mt-4 p-4 bg-red-100 text-red-700 rounded-lg hidden">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                        <span id="errorText"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions/Events Section -->
+        <div id="changeLogSection" class="hidden bg-white rounded-lg shadow-lg p-6 mt-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                <i data-lucide="activity" class="w-5 h-5"></i>
+                <span>Actions & Events</span>
+            </h3>
+            <div id="changeLogContainer" class="space-y-3">
+                <!-- Change log entries will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.username) {
+            window.location.href = 'login.html';
+        }
+        document.getElementById('userName').textContent = user.name || user.username;
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        const dependentSystems = [
+            'Intel Engine',
+            'CPDL',
+            'Digital Integrated',
+            'Digital Standalone',
+            'PST',
+            'SOA',
+            'CCT',
+            'Enterprise Rx',
+            'Payment Hub',
+            'Self Service Portal'
+        ];
+
+        let systemCounter = 0;
+
+        function addDependentSystem() {
+            const container = document.getElementById('dependentSystemsList');
+            const id = `system-${systemCounter++}`;
+            
+            const systemDiv = document.createElement('div');
+            systemDiv.id = id;
+            systemDiv.className = 'flex items-start space-x-2 bg-gray-50 p-3 rounded-lg';
+            systemDiv.innerHTML = `
+                <div class="flex-1 grid grid-cols-3 gap-3">
+                    <select class="dependent-system px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">Select System</option>
+                        ${dependentSystems.map(sys => `<option value="${sys}">${sys}</option>`).join('')}
+                    </select>
+                    <input type="text" placeholder="PM/SPOC Name" 
+                        class="system-pm-spoc px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <input type="url" placeholder="JIRA URL (e.g., https://jira.company.com/browse/PROJ-123)" 
+                        class="system-jira-url px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <button type="button" onclick="removeSystem('${id}')" 
+                    class="text-red-600 hover:text-red-800 mt-1">
+                    <i data-lucide="x-circle" class="w-5 h-5"></i>
+                </button>
+            `;
+            
+            container.appendChild(systemDiv);
+            lucide.createIcons();
+        }
+
+        function removeSystem(id) {
+            document.getElementById(id).remove();
+        }
+
+        addDependentSystem();
+
+        // Check if we're editing an existing initiative
+        const urlParams = new URLSearchParams(window.location.search);
+        const initiativeId = urlParams.get('id');
+        let isEditMode = false;
+
+        if (initiativeId) {
+            isEditMode = true;
+            loadInitiativeData(initiativeId);
+        }
+
+        async function loadInitiativeData(id) {
+            try {
+                const response = await fetch(`http://localhost:5000/api/initiatives/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const initiative = data.initiative;
+                    
+                    // Populate form fields
+                    document.getElementById('initiativeName').value = initiative.name || '';
+                    document.getElementById('description').value = initiative.description || '';
+                    document.getElementById('program').value = initiative.program || '';
+                    document.getElementById('year').value = initiative.year || '';
+                    document.getElementById('quarter').value = initiative.quarter || '';
+                    document.getElementById('startDate').value = initiative.startDate || '';
+                    document.getElementById('deliveryDate').value = initiative.deliveryDate || '';
+                    document.getElementById('budgetApproved').value = initiative.budgetApproved ? 'true' : 'false';
+                    document.getElementById('priority').value = initiative.priority || '';
+                    document.getElementById('wsjf').value = initiative.wsjf || '';
+                    document.getElementById('owner').value = initiative.owner || '';
+                    document.getElementById('businessValue').value = initiative.businessValue || '';
+                    document.getElementById('risks').value = initiative.risks || '';
+                    
+                    // Clear default dependent system
+                    document.getElementById('dependentSystemsList').innerHTML = '';
+                    
+                    // Populate dependent systems
+                    if (initiative.dependentSystems && initiative.dependentSystems.length > 0) {
+                        initiative.dependentSystems.forEach(sys => {
+                            addDependentSystem();
+                            const lastSystem = document.getElementById('dependentSystemsList').lastElementChild;
+                            lastSystem.querySelector('.dependent-system').value = sys.system || '';
+                            lastSystem.querySelector('.system-pm-spoc').value = sys.pmSpoc || '';
+                            lastSystem.querySelector('.system-jira-url').value = sys.jiraUrl || sys.details || '';
+                        });
+                    } else {
+                        addDependentSystem();
+                    }
+                    
+                    // Update form title
+                    document.querySelector('h2').textContent = 'Edit Initiative';
+                    document.querySelector('h2').nextElementSibling.textContent = 'Update the initiative details';
+                    
+                    // Display change log if available
+                    if (initiative.changeLog && initiative.changeLog.length > 0) {
+                        renderChangeLog(initiative.changeLog);
+                    }
+                } else {
+                    showError('Failed to load initiative data');
+                }
+            } catch (error) {
+                console.error('Error loading initiative:', error);
+                showError('Unable to load initiative data');
+            }
+        }
+
+        function renderChangeLog(changeLog) {
+            const container = document.getElementById('changeLogContainer');
+            const section = document.getElementById('changeLogSection');
+            
+            if (!changeLog || changeLog.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+            
+            section.classList.remove('hidden');
+            
+            container.innerHTML = changeLog.slice().reverse().map(entry => {
+                const date = new Date(entry.timestamp);
+                const formattedDate = date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const actionIcon = entry.action === 'created' ? 'plus-circle' : 'edit';
+                const actionColor = entry.action === 'created' ? 'text-green-600' : 'text-blue-600';
+                
+                // Generate field changes HTML
+                let fieldChangesHTML = '';
+                if (entry.fieldChanges && entry.fieldChanges.length > 0) {
+                    fieldChangesHTML = `
+                        <div class="mt-3 space-y-2">
+                            ${entry.fieldChanges.map(change => {
+                                const fieldName = formatFieldName(change.field);
+                                const oldVal = formatFieldValue(change.field, change.oldValue);
+                                const newVal = formatFieldValue(change.field, change.newValue);
+                                
+                                return `
+                                    <div class="bg-white p-2 rounded border border-gray-200">
+                                        <p class="text-xs font-semibold text-gray-700 mb-1">${fieldName}</p>
+                                        <div class="grid grid-cols-2 gap-2 text-xs">
+                                            <div>
+                                                <span class="text-gray-500">Old:</span>
+                                                <span class="text-red-600 line-through ml-1">${oldVal}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-500">New:</span>
+                                                <span class="text-green-600 font-medium ml-1">${newVal}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="${actionColor} mt-1">
+                            <i data-lucide="${actionIcon}" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <p class="font-semibold text-gray-800">${entry.user}</p>
+                                <span class="text-xs text-gray-500">${formattedDate}</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1">${entry.changes}</p>
+                            <span class="inline-block mt-1 px-2 py-1 text-xs rounded-full ${
+                                entry.action === 'created' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                            }">
+                                ${entry.action.charAt(0).toUpperCase() + entry.action.slice(1)}
+                            </span>
+                            ${fieldChangesHTML}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        function formatFieldName(field) {
+            const fieldNames = {
+                'name': 'Initiative Name',
+                'description': 'Description',
+                'program': 'Program',
+                'year': 'Year',
+                'quarter': 'Quarter',
+                'startDate': 'Start Date',
+                'deliveryDate': 'Delivery Date',
+                'budgetApproved': 'Budget Approved',
+                'priority': 'Priority',
+                'wsjf': 'WSJF Score',
+                'owner': 'Business Owner',
+                'businessValue': 'Business Value',
+                'risks': 'Risks & Dependencies',
+                'dependentSystems': 'Dependent Systems'
+            };
+            return fieldNames[field] || field;
+        }
+
+        function formatFieldValue(field, value) {
+            if (value === null || value === undefined || value === '') {
+                return '(empty)';
+            }
+            
+            if (field === 'budgetApproved') {
+                return value ? 'Yes' : 'No';
+            }
+            
+            if (field === 'startDate' || field === 'deliveryDate') {
+                return new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            }
+            
+            if (field === 'dependentSystems') {
+                if (Array.isArray(value) && value.length > 0) {
+                    return value.map(sys => sys.system).join(', ');
+                }
+                return '(none)';
+            }
+            
+            return String(value);
+        }
+
+        // Real-time WSJF validation
+        let allInitiatives = [];
+        
+        async function loadAllInitiatives() {
+            try {
+                const response = await fetch('http://localhost:5000/api/initiatives', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    allInitiatives = data.initiatives;
+                }
+            } catch (error) {
+                console.error('Error loading initiatives:', error);
+            }
+        }
+        
+        loadAllInitiatives();
+        
+        document.getElementById('wsjf').addEventListener('blur', function() {
+            const wsjfValue = parseFloat(this.value);
+            if (!wsjfValue) return;
+            
+            const duplicate = allInitiatives.find(i => {
+                // Exclude current initiative if editing
+                if (initiativeId && i.id === initiativeId) return false;
+                return parseFloat(i.wsjf) === wsjfValue;
+            });
+            
+            if (duplicate) {
+                this.setCustomValidity(`WSJF value ${wsjfValue.toFixed(2)} is already used by "${duplicate.name}"`);
+                this.reportValidity();
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+        
+        document.getElementById('wsjf').addEventListener('input', function() {
+            this.setCustomValidity('');
+        });
+
+        document.getElementById('intakeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const dependentSystemsData = [];
+            document.querySelectorAll('#dependentSystemsList > div').forEach(div => {
+                const system = div.querySelector('.dependent-system').value;
+                const pmSpoc = div.querySelector('.system-pm-spoc').value;
+                const jiraUrl = div.querySelector('.system-jira-url').value;
+                if (system) {
+                    dependentSystemsData.push({ system, pmSpoc, jiraUrl });
+                }
+            });
+
+            const formData = {
+                name: document.getElementById('initiativeName').value,
+                description: document.getElementById('description').value,
+                program: document.getElementById('program').value,
+                year: document.getElementById('year').value,
+                quarter: document.getElementById('quarter').value,
+                startDate: document.getElementById('startDate').value || null,
+                deliveryDate: document.getElementById('deliveryDate').value || null,
+                budgetApproved: document.getElementById('budgetApproved').value === 'true',
+                priority: document.getElementById('priority').value,
+                wsjf: parseFloat(document.getElementById('wsjf').value),
+                owner: document.getElementById('owner').value,
+                dependentSystems: dependentSystemsData,
+                businessValue: document.getElementById('businessValue').value,
+                risks: document.getElementById('risks').value
+            };
+
+            try {
+                const url = isEditMode 
+                    ? `http://localhost:5000/api/initiatives/${initiativeId}`
+                    : 'http://localhost:5000/api/initiatives';
+                const method = isEditMode ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess();
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    showError(data.message || 'Failed to save initiative');
+                }
+            } catch (error) {
+                showError('Unable to connect to server. Please ensure the backend is running.');
+            }
+        });
+
+        function showSuccess() {
+            document.getElementById('successMessage').classList.remove('hidden');
+            lucide.createIcons();
+            setTimeout(() => {
+                document.getElementById('successMessage').classList.add('hidden');
+            }, 5000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

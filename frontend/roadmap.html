@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarelonRx Roadmap - Visual Timeline</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: 200px repeat(12, 1fr);
+            gap: 1px;
+            background-color: #e5e7eb;
+        }
+        .roadmap-cell {
+            background-color: white;
+            padding: 0;
+            min-height: 60px;
+            position: relative;
+        }
+        .roadmap-header {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            text-align: center;
+            padding: 12px 8px;
+        }
+        .roadmap-project {
+            background-color: #f9fafb;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+        }
+        .timeline-row {
+            grid-column: 2 / 14;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1px;
+            position: relative;
+            min-height: 60px;
+        }
+        .timeline-row .roadmap-cell {
+            background-color: white;
+            min-height: 60px;
+        }
+        .initiative-bar {
+            position: absolute;
+            top: 8px;
+            height: 44px;
+            border-radius: 6px;
+            padding: 0 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            white-space: nowrap;
+            overflow: hidden;
+            z-index: 10;
+            pointer-events: auto;
+        }
+        .initiative-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 20;
+        }
+        .priority-critical { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); }
+        .priority-high { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .priority-medium { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .priority-low { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
+        .quarter-marker {
+            position: relative;
+        }
+        .quarter-marker::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #3b82f6;
+        }
+        .initiative-tooltip {
+            position: absolute;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 300px;
+            max-width: 400px;
+            display: none;
+            pointer-events: none;
+        }
+        .initiative-bar:hover + .initiative-tooltip,
+        .initiative-tooltip:hover {
+            display: block;
+            pointer-events: auto;
+        }
+        .tooltip-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        .tooltip-section {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .tooltip-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .system-link {
+            display: block;
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 4px 0;
+            transition: color 0.2s;
+        }
+        .system-link:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+        .system-name {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center">
+                        <i data-lucide="calendar" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">CarelonRx Roadmap</h1>
+                        <p class="text-xs text-gray-600">Visual Timeline View</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.location.href='dashboard.html'" 
+                        class="text-gray-700 hover:text-gray-900 flex items-center space-x-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back to Dashboard</span>
+                    </button>
+                    <button onclick="window.location.href='intake.html'" 
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>New Initiative</span>
+                    </button>
+                    <button id="adminLink" onclick="window.location.href='admin.html'" 
+                        class="hidden bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center space-x-2">
+                        <i data-lucide="shield" class="w-4 h-4"></i>
+                        <span>Admin</span>
+                    </button>
+                    <div class="flex items-center space-x-2 text-gray-700">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                        <span id="userName" class="font-semibold"></span>
+                    </div>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-800">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Product Roadmap Timeline</h2>
+                <div class="flex items-center space-x-4">
+                    <select id="yearFilter" class="border rounded-lg px-4 py-2">
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026" selected>2026</option>
+                        <option value="2027">2027</option>
+                    </select>
+                    <button onclick="exportRoadmap()" class="text-blue-600 hover:text-blue-800 flex items-center space-x-2">
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                        <span>Export PDF</span>
+                    </button>
+                    <button onclick="exportToExcel()" class="text-green-600 hover:text-green-800 flex items-center space-x-2">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                        <span>Export Excel</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 rounded priority-critical"></div>
+                    <span class="text-sm text-gray-600">Critical</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 rounded priority-high"></div>
+                    <span class="text-sm text-gray-600">High</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 rounded priority-medium"></div>
+                    <span class="text-sm text-gray-600">Medium</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 rounded priority-low"></div>
+                    <span class="text-sm text-gray-600">Low</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 overflow-x-auto">
+            <div id="roadmapGrid" class="roadmap-grid" style="min-width: 1400px;">
+            </div>
+        </div>
+
+        <div id="noData" class="bg-white rounded-lg shadow-lg p-12 text-center hidden">
+            <i data-lucide="calendar-x" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+            <p class="text-gray-600 text-lg">No initiatives found for the selected year</p>
+            <button onclick="window.location.href='intake.html'" 
+                class="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+                Create First Initiative
+            </button>
+        </div>
+    </div>
+
+    <div id="initiativeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b flex items-center justify-between">
+                <h2 id="modalTitle" class="text-2xl font-bold text-gray-800"></h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="modalContent" class="p-6">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.username) {
+            window.location.href = 'login.html';
+        }
+        document.getElementById('userName').textContent = user.name || user.username;
+        
+        if (user.role === 'admin') {
+            document.getElementById('adminLink').classList.remove('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        let allInitiatives = [];
+
+        async function loadRoadmap() {
+            try {
+                const response = await fetch('http://localhost:5000/api/initiatives', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    allInitiatives = data.initiatives;
+                    renderRoadmap();
+                }
+            } catch (error) {
+                console.error('Error loading roadmap:', error);
+                alert('Unable to connect to server. Please ensure the backend is running.');
+            }
+        }
+
+        function renderRoadmap() {
+            const selectedYear = document.getElementById('yearFilter').value;
+            const initiatives = allInitiatives.filter(i => i.year === selectedYear);
+            
+            if (initiatives.length === 0) {
+                document.getElementById('roadmapGrid').parentElement.classList.add('hidden');
+                document.getElementById('noData').classList.remove('hidden');
+                lucide.createIcons();
+                return;
+            }
+
+            document.getElementById('roadmapGrid').parentElement.classList.remove('hidden');
+            document.getElementById('noData').classList.add('hidden');
+
+            const grid = document.getElementById('roadmapGrid');
+            grid.innerHTML = '';
+
+            grid.innerHTML += '<div class="roadmap-header">Initiative</div>';
+            months.forEach((month, idx) => {
+                const isQuarterEnd = (idx + 1) % 3 === 0;
+                grid.innerHTML += `<div class="roadmap-header ${isQuarterEnd ? 'quarter-marker' : ''}">${month}</div>`;
+            });
+
+            initiatives.sort((a, b) => {
+                const priorityOrder = { 'Critical': 0, 'High': 1, 'Medium': 2, 'Low': 3 };
+                return priorityOrder[a.priority] - priorityOrder[b.priority];
+            });
+
+            initiatives.forEach(initiative => {
+                grid.innerHTML += `<div class="roadmap-project">${initiative.name}</div>`;
+                
+                // Create a single container that spans all 12 months
+                const rowId = `row-${initiative.id}`;
+                const timelineRow = document.createElement('div');
+                timelineRow.className = 'timeline-row';
+                timelineRow.setAttribute('data-row', rowId);
+                
+                // Add month cells with background
+                for (let i = 0; i < 12; i++) {
+                    const isQuarterEnd = (i + 1) % 3 === 0;
+                    const cell = document.createElement('div');
+                    cell.className = `roadmap-cell ${isQuarterEnd ? 'quarter-marker' : ''}`;
+                    timelineRow.appendChild(cell);
+                }
+                
+                grid.appendChild(timelineRow);
+                
+                // Add the timeline bar
+                const { startPosition, width } = calculateContinuousPosition(initiative);
+                if (startPosition !== null && width > 0) {
+                    const bar = document.createElement('div');
+                    bar.className = `initiative-bar priority-${initiative.priority.toLowerCase()}`;
+                    bar.style.left = `${startPosition}%`;
+                    bar.style.width = `${width}%`;
+                    bar.textContent = initiative.name;
+                    bar.onclick = () => showInitiativeDetails(initiative.id);
+                    
+                    // Create tooltip with impacted systems
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'initiative-tooltip';
+                    tooltip.style.left = `${startPosition}%`;
+                    tooltip.style.top = '60px';
+                    
+                    let tooltipHTML = `<div class="tooltip-title">${initiative.name}</div>`;
+                    
+                    if (initiative.dependentSystems && initiative.dependentSystems.length > 0) {
+                        const groupedSystems = groupDependentSystems(initiative.dependentSystems);
+                        tooltipHTML += `
+                            <div class="tooltip-section">
+                                <div class="tooltip-label">Impacted Systems</div>
+                                ${groupedSystems.map(group => {
+                                    let systemHTML = `<div class="system-name" style="font-weight: 600; padding: 4px 0;">${group.system}</div>`;
+                                    if (group.entries.length > 0) {
+                                        systemHTML += group.entries.map((entry, idx) => {
+                                            if (entry.jiraUrl) {
+                                                return `<a href="${entry.jiraUrl}" target="_blank" class="system-link" onclick="event.stopPropagation()" style="padding-left: 12px; font-size: 11px;">
+                                                    ${entry.pmSpoc ? `PM: ${entry.pmSpoc} - ` : ''}JIRA ${idx + 1}
+                                                    <i data-lucide="external-link" class="w-3 h-3" style="display: inline; margin-left: 4px;"></i>
+                                                </a>`;
+                                            }
+                                            return '';
+                                        }).join('');
+                                    }
+                                    return systemHTML;
+                                }).join('')}
+                            </div>
+                        `;
+                    }
+                    
+                    tooltip.innerHTML = tooltipHTML;
+                    
+                    timelineRow.appendChild(bar);
+                    timelineRow.appendChild(tooltip);
+                    
+                    // Re-render icons for the tooltip
+                    setTimeout(() => lucide.createIcons(), 0);
+                }
+            });
+
+            lucide.createIcons();
+        }
+
+        function calculateContinuousPosition(initiative) {
+            const year = parseInt(initiative.year);
+            const daysInMonths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            
+            if ((year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0)) {
+                daysInMonths[1] = 29;
+            }
+            
+            const totalDaysInYear = daysInMonths.reduce((a, b) => a + b, 0);
+            let startDay = 0;
+            let endDay = totalDaysInYear - 1;
+            
+            if (initiative.startDate) {
+                const startDate = new Date(initiative.startDate);
+                if (startDate.getFullYear() === year) {
+                    const month = startDate.getMonth();
+                    const day = startDate.getDate();
+                    startDay = daysInMonths.slice(0, month).reduce((a, b) => a + b, 0) + day - 1;
+                }
+            } else {
+                const quarterMap = { 'Q1': 0, 'Q2': 3, 'Q3': 6, 'Q4': 9 };
+                const startMonth = quarterMap[initiative.quarter] || 0;
+                startDay = daysInMonths.slice(0, startMonth).reduce((a, b) => a + b, 0);
+            }
+            
+            if (initiative.deliveryDate) {
+                const endDate = new Date(initiative.deliveryDate);
+                if (endDate.getFullYear() === year) {
+                    const month = endDate.getMonth();
+                    const day = endDate.getDate();
+                    endDay = daysInMonths.slice(0, month).reduce((a, b) => a + b, 0) + day;
+                }
+            } else if (initiative.startDate) {
+                const startDate = new Date(initiative.startDate);
+                const defaultEnd = new Date(startDate);
+                defaultEnd.setMonth(defaultEnd.getMonth() + 3);
+                if (defaultEnd.getFullYear() === year) {
+                    const month = defaultEnd.getMonth();
+                    const day = Math.min(defaultEnd.getDate(), daysInMonths[month]);
+                    endDay = daysInMonths.slice(0, month).reduce((a, b) => a + b, 0) + day;
+                }
+            } else {
+                const quarterMap = { 'Q1': 0, 'Q2': 3, 'Q3': 6, 'Q4': 9 };
+                const startMonth = quarterMap[initiative.quarter] || 0;
+                const endMonth = Math.min(startMonth + 2, 11);
+                endDay = daysInMonths.slice(0, endMonth + 1).reduce((a, b) => a + b, 0);
+            }
+            
+            const startPosition = (startDay / totalDaysInYear) * 100;
+            const endPosition = (endDay / totalDaysInYear) * 100;
+            const width = endPosition - startPosition;
+            
+            console.log(`${initiative.name}: Start day ${startDay}, End day ${endDay}, Position ${startPosition.toFixed(2)}%, Width ${width.toFixed(2)}%`);
+            
+            return { startPosition, width };
+        }
+
+        function calculateTimelinePosition(initiative) {
+            const quarterMap = { 'Q1': 0, 'Q2': 3, 'Q3': 6, 'Q4': 9 };
+            let startMonth = quarterMap[initiative.quarter] || 0;
+            let endMonth = startMonth + 2;
+            
+            // Priority 1: Use startDate if provided
+            if (initiative.startDate) {
+                const startDateObj = new Date(initiative.startDate);
+                if (startDateObj.getFullYear() === parseInt(initiative.year)) {
+                    startMonth = startDateObj.getMonth(); // getMonth() returns 0-11
+                }
+            }
+            
+            // Priority 2: Use deliveryDate if provided to calculate end month
+            if (initiative.deliveryDate) {
+                const deliveryDateObj = new Date(initiative.deliveryDate);
+                if (deliveryDateObj.getFullYear() === parseInt(initiative.year)) {
+                    endMonth = deliveryDateObj.getMonth(); // getMonth() returns 0-11
+                }
+            } else if (initiative.startDate) {
+                // If we have start date but no delivery date, show 3 months from start
+                endMonth = Math.min(startMonth + 2, 11);
+            } else {
+                // Use quarter end month (Q1=Feb, Q2=May, Q3=Aug, Q4=Nov)
+                endMonth = startMonth + 2;
+            }
+            
+            // Calculate duration (ensure at least 1 month and doesn't exceed year)
+            let duration = endMonth - startMonth + 1;
+            duration = Math.max(1, Math.min(duration, 12 - startMonth));
+            
+            console.log(`Initiative: ${initiative.name}, Start: ${startMonth}, End: ${endMonth}, Duration: ${duration}`);
+            
+            return { startMonth, duration };
+        }
+
+        function groupDependentSystems(dependentSystems) {
+            const grouped = {};
+            
+            dependentSystems.forEach(sys => {
+                if (!grouped[sys.system]) {
+                    grouped[sys.system] = {
+                        system: sys.system,
+                        entries: []
+                    };
+                }
+                grouped[sys.system].entries.push({
+                    pmSpoc: sys.pmSpoc,
+                    jiraUrl: sys.jiraUrl
+                });
+            });
+            
+            const result = Object.values(grouped);
+            console.log('Grouped systems:', result);
+            return result;
+        }
+
+        function showInitiativeDetails(id) {
+            const initiative = allInitiatives.find(i => i.id === id);
+            if (!initiative) return;
+
+            document.getElementById('modalTitle').textContent = initiative.name;
+            document.getElementById('modalContent').innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Year</p>
+                            <p class="font-semibold">${initiative.year}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Quarter</p>
+                            <p class="font-semibold">${initiative.quarter}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Priority</p>
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full ${getPriorityClass(initiative.priority)}">
+                                ${initiative.priority}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Budget Status</p>
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full ${initiative.budgetApproved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                ${initiative.budgetApproved ? 'Approved' : 'Pending'}
+                            </span>
+                        </div>
+                        ${initiative.startDate ? `
+                        <div>
+                            <p class="text-sm text-gray-500">Start Date</p>
+                            <p class="font-semibold">${new Date(initiative.startDate).toLocaleDateString()}</p>
+                        </div>
+                        ` : ''}
+                        ${initiative.deliveryDate ? `
+                        <div>
+                            <p class="text-sm text-gray-500">Delivery Date</p>
+                            <p class="font-semibold">${new Date(initiative.deliveryDate).toLocaleDateString()}</p>
+                        </div>
+                        ` : ''}
+                        ${initiative.owner ? `
+                        <div>
+                            <p class="text-sm text-gray-500">Owner</p>
+                            <p class="font-semibold">${initiative.owner}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    ${initiative.description ? `
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">Description</p>
+                        <p class="text-gray-700">${initiative.description}</p>
+                    </div>
+                    ` : ''}
+                    ${initiative.dependentSystems && initiative.dependentSystems.length > 0 ? `
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">Dependent Systems</p>
+                        <div class="space-y-2">
+                            ${groupDependentSystems(initiative.dependentSystems).map(group => `
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <p class="font-semibold text-sm">${group.system}</p>
+                                    ${group.entries.length > 0 ? `
+                                        <div class="mt-2 space-y-1">
+                                            ${group.entries.map((entry, idx) => `
+                                                <div class="flex items-center space-x-2 text-xs">
+                                                    ${entry.pmSpoc ? `<span class="text-gray-600">PM: ${entry.pmSpoc}</span>` : ''}
+                                                    ${entry.jiraUrl ? `
+                                                        <a href="${entry.jiraUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 underline flex items-center space-x-1">
+                                                            <i data-lucide="external-link" class="w-3 h-3"></i>
+                                                            <span>JIRA ${idx + 1}</span>
+                                                        </a>
+                                                    ` : ''}
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    ${initiative.businessValue ? `
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">Business Value</p>
+                        <p class="text-gray-700">${initiative.businessValue}</p>
+                    </div>
+                    ` : ''}
+                    ${initiative.risks ? `
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">Risks & Dependencies</p>
+                        <p class="text-gray-700">${initiative.risks}</p>
+                    </div>
+                    ` : ''}
+                    <div class="pt-4 flex space-x-2">
+                        <button onclick="window.location.href='intake.html?id=${initiative.id}'" 
+                            class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            Edit Initiative
+                        </button>
+                        <button onclick="closeModal()" 
+                            class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('initiativeModal').classList.remove('hidden');
+            document.getElementById('initiativeModal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('initiativeModal').classList.add('hidden');
+            document.getElementById('initiativeModal').classList.remove('flex');
+        }
+
+        function getPriorityClass(priority) {
+            const classes = {
+                'Critical': 'bg-red-100 text-red-800',
+                'High': 'bg-orange-100 text-orange-800',
+                'Medium': 'bg-blue-100 text-blue-800',
+                'Low': 'bg-gray-100 text-gray-800'
+            };
+            return classes[priority] || 'bg-gray-100 text-gray-800';
+        }
+
+        async function exportRoadmap() {
+            try {
+                const exportButton = event.target.closest('button');
+                const originalHTML = exportButton.innerHTML;
+                exportButton.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i><span>Exporting...</span>';
+                exportButton.disabled = true;
+                lucide.createIcons();
+                
+                // Wait a bit for any animations to complete
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Capture the entire roadmap container including header and grid
+                const container = document.querySelector('.container.mx-auto.px-6.py-8');
+                
+                const canvas = await html2canvas(container, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#f9fafb',
+                    windowWidth: container.scrollWidth,
+                    windowHeight: container.scrollHeight
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a3'
+                });
+                
+                const pdfWidth = 420;
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                
+                const year = document.getElementById('yearFilter').value;
+                pdf.save('CarelonRx_Roadmap_' + year + '.pdf');
+                
+                exportButton.innerHTML = originalHTML;
+                exportButton.disabled = false;
+                lucide.createIcons();
+                
+            } catch (error) {
+                console.error('Error exporting roadmap:', error);
+                alert('Failed to export roadmap. Please try again.');
+                
+                const exportButton = event.target.closest('button');
+                exportButton.innerHTML = '<i data-lucide="download" class="w-5 h-5"></i><span>Export</span>';
+                exportButton.disabled = false;
+                lucide.createIcons();
+            }
+        }
+
+        function exportToExcel() {
+            try {
+                const year = document.getElementById('yearFilter').value;
+                const initiatives = allInitiatives.filter(i => i.year === year);
+                
+                if (initiatives.length === 0) {
+                    alert('No initiatives found for the selected year.');
+                    return;
+                }
+                
+                // Prepare data for Excel
+                const excelData = [];
+                
+                initiatives.forEach(initiative => {
+                    if (initiative.dependentSystems && initiative.dependentSystems.length > 0) {
+                        // Create a row for each dependent system
+                        initiative.dependentSystems.forEach(system => {
+                            excelData.push({
+                                'Initiative Name': initiative.name || '',
+                                'Program': initiative.program || '',
+                                'Year': initiative.year || '',
+                                'Quarter': initiative.quarter || '',
+                                'Priority': initiative.priority || '',
+                                'Business Owner': initiative.owner || '',
+                                'Start Date': initiative.startDate ? new Date(initiative.startDate).toLocaleDateString() : '',
+                                'Delivery Date': initiative.deliveryDate ? new Date(initiative.deliveryDate).toLocaleDateString() : '',
+                                'Dependent System': system.system || '',
+                                'PM/SPOC': system.pmSpoc || '',
+                                'JIRA URL': system.jiraUrl || ''
+                            });
+                        });
+                    } else {
+                        // Initiative without dependent systems
+                        excelData.push({
+                            'Initiative Name': initiative.name || '',
+                            'Program': initiative.program || '',
+                            'Year': initiative.year || '',
+                            'Quarter': initiative.quarter || '',
+                            'Priority': initiative.priority || '',
+                            'Business Owner': initiative.owner || '',
+                            'Start Date': initiative.startDate ? new Date(initiative.startDate).toLocaleDateString() : '',
+                            'Delivery Date': initiative.deliveryDate ? new Date(initiative.deliveryDate).toLocaleDateString() : '',
+                            'Dependent System': '',
+                            'PM/SPOC': '',
+                            'JIRA URL': ''
+                        });
+                    }
+                });
+                
+                // Create worksheet
+                const ws = XLSX.utils.json_to_sheet(excelData);
+                
+                // Set column widths
+                ws['!cols'] = [
+                    { wch: 30 }, // Initiative Name
+                    { wch: 12 }, // Program
+                    { wch: 8 },  // Year
+                    { wch: 10 }, // Quarter
+                    { wch: 12 }, // Priority
+                    { wch: 20 }, // Business Owner
+                    { wch: 15 }, // Start Date
+                    { wch: 15 }, // Delivery Date
+                    { wch: 20 }, // Dependent System
+                    { wch: 20 }, // PM/SPOC
+                    { wch: 40 }  // JIRA URL
+                ];
+                
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Roadmap ' + year);
+                
+                // Generate filename
+                const filename = 'CarelonRx_Roadmap_' + year + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                
+                // Download
+                XLSX.writeFile(wb, filename);
+                
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+                alert('Failed to export to Excel. Please try again.');
+            }
+        }
+
+        document.getElementById('yearFilter').addEventListener('change', renderRoadmap);
+
+        loadRoadmap();
+    </script>
+</body>
+</html>
