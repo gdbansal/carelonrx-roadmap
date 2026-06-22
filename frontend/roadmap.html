@@ -600,8 +600,14 @@
                     ` : ''}
                     ${initiative.risks ? `
                     <div>
-                        <p class="text-sm text-gray-500 mb-2">Risks & Dependencies</p>
+                        <p class="text-sm text-gray-500 mb-2">Risks</p>
                         <p class="text-gray-700">${initiative.risks}</p>
+                    </div>
+                    ` : ''}
+                    ${initiative.dependencies ? `
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">Dependencies</p>
+                        <p class="text-gray-700">${initiative.dependencies}</p>
                     </div>
                     ` : ''}
                     <div class="pt-4 flex space-x-2">
@@ -718,6 +724,8 @@
                                 'Business Owner': initiative.owner || '',
                                 'Start Date': initiative.startDate ? new Date(initiative.startDate).toLocaleDateString() : '',
                                 'Delivery Date': initiative.deliveryDate ? new Date(initiative.deliveryDate).toLocaleDateString() : '',
+                                'Risks': initiative.risks || '',
+                                'Dependencies': initiative.dependencies || '',
                                 'Dependent System': system.system || '',
                                 'PM/SPOC': system.pmSpoc || '',
                                 'JIRA URL': system.jiraUrl || ''
@@ -734,6 +742,8 @@
                             'Business Owner': initiative.owner || '',
                             'Start Date': initiative.startDate ? new Date(initiative.startDate).toLocaleDateString() : '',
                             'Delivery Date': initiative.deliveryDate ? new Date(initiative.deliveryDate).toLocaleDateString() : '',
+                            'Risks': initiative.risks || '',
+                            'Dependencies': initiative.dependencies || '',
                             'Dependent System': '',
                             'PM/SPOC': '',
                             'JIRA URL': ''
@@ -754,6 +764,8 @@
                     { wch: 20 }, // Business Owner
                     { wch: 15 }, // Start Date
                     { wch: 15 }, // Delivery Date
+                    { wch: 30 }, // Risks
+                    { wch: 30 }, // Dependencies
                     { wch: 20 }, // Dependent System
                     { wch: 20 }, // PM/SPOC
                     { wch: 40 }  // JIRA URL
