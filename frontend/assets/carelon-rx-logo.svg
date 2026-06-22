@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 150">
+  <!-- CarelonRx Logo -->
+  <defs>
+    <style>
+      .purple { fill: #5B1E99; }
+      .cyan { fill: #00A3E0; }
+    </style>
+  </defs>
+  
+  <!-- Icon/Symbol -->
+  <g transform="translate(0, 10)">
+    <!-- Top left circle -->
+    <path class="purple" d="M 20 20 A 15 15 0 1 1 20 50 A 15 15 0 1 1 20 20 M 20 25 A 10 10 0 1 0 20 45 A 10 10 0 1 0 20 25"/>
+    <!-- Top right circle -->
+    <path class="cyan" d="M 70 20 A 15 15 0 1 1 70 50 A 15 15 0 1 1 70 20 M 70 25 A 10 10 0 1 0 70 45 A 10 10 0 1 0 70 25"/>
+    <!-- Bottom left circle -->
+    <path class="cyan" d="M 20 70 A 15 15 0 1 1 20 100 A 15 15 0 1 1 20 70 M 20 75 A 10 10 0 1 0 20 95 A 10 10 0 1 0 20 75"/>
+    <!-- Bottom right circle -->
+    <path class="purple" d="M 70 70 A 15 15 0 1 1 70 100 A 15 15 0 1 1 70 70 M 70 75 A 10 10 0 1 0 70 95 A 10 10 0 1 0 70 75"/>
+    <!-- Connecting elements -->
+    <path class="cyan" d="M 35 35 Q 45 35 45 45 Q 45 55 35 55"/>
+    <path class="purple" d="M 55 35 Q 45 35 45 45 Q 45 55 55 55"/>
+    <path class="purple" d="M 35 65 Q 45 65 45 75 Q 45 85 35 85"/>
+    <path class="cyan" d="M 55 65 Q 45 65 45 75 Q 45 85 55 85"/>
+  </g>
+  
+  <!-- Text: carelon -->
+  <text x="140" y="75" font-family="Arial, sans-serif" font-size="60" font-weight="700" class="purple">carelon</text>
+  
+  <!-- SM superscript -->
+  <text x="570" y="50" font-family="Arial, sans-serif" font-size="16" font-weight="400" class="purple">SM</text>
+  
+  <!-- Text: Rx -->
+  <text x="525" y="135" font-family="Arial, sans-serif" font-size="45" font-weight="700" class="purple">Rx</text>
+</svg>
