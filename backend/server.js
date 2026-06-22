@@ -797,6 +797,91 @@ app.delete('/api/users/:id', authMiddleware, (req, res) => {
     });
 });
 
+// Profile Management Endpoints
+app.get('/api/profile', authMiddleware, (req, res) => {
+    const user = users.find(u => u.id === req.user.id);
+    
+    if (user) {
+        res.json({
+            success: true,
+            user: {
+                id: user.id,
+                username: user.username,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                profileImage: user.profileImage
+            }
+        });
+    } else {
+        res.status(404).json({
+            success: false,
+            message: 'User not found'
+        });
+    }
+});
+
+app.put('/api/profile', authMiddleware, (req, res) => {
+    const userIndex = users.findIndex(u => u.id === req.user.id);
+    
+    if (userIndex === -1) {
+        return res.status(404).json({
+            success: false,
+            message: 'User not found'
+        });
+    }
+    
+    const { name, email, password, profileImage } = req.body;
+    
+    // Validate email domain if email is being updated
+    if (email && email !== users[userIndex].email) {
+        const allowedDomains = ['elevancehealth.com', 'carelon.com'];
+        const emailDomain = email.split('@')[1]?.toLowerCase();
+        
+        if (!emailDomain || !allowedDomains.includes(emailDomain)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email must be from @elevancehealth.com or @carelon.com domain'
+            });
+        }
+        
+        // Check if email already exists
+        if (users.find(u => u.email === email && u.id !== req.user.id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email already registered'
+            });
+        }
+        
+        users[userIndex].email = email;
+    }
+    
+    if (name) {
+        users[userIndex].name = name;
+    }
+    
+    if (password) {
+        users[userIndex].password = password;
+    }
+    
+    if (profileImage) {
+        users[userIndex].profileImage = profileImage;
+    }
+    
+    res.json({
+        success: true,
+        message: 'Profile updated successfully',
+        user: {
+            id: users[userIndex].id,
+            username: users[userIndex].username,
+            name: users[userIndex].name,
+            email: users[userIndex].email,
+            role: users[userIndex].role,
+            profileImage: users[userIndex].profileImage
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`\n🚀 CarelonRx Roadmap API Server`);
     console.log(`📡 Server running on http://localhost:${PORT}`);
