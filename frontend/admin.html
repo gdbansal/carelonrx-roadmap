@@ -124,9 +124,12 @@
                     <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
                         Password <span class="text-red-500">*</span>
                     </label>
-                    <input type="password" id="password" required
+                    <input type="password" id="password" required minlength="8"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter password">
+                    <div class="text-xs text-gray-600 mt-1">
+                        <p>Must contain: 8+ chars, uppercase, lowercase, number, special char (!@#$%^&*)</p>
+                    </div>
                 </div>
 
                 <div>
@@ -196,6 +199,32 @@
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = 'index.html';
+        }
+
+        function validatePasswordComplexity(password) {
+            const minLength = 8;
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSpecialChar = /[!@#$%^&*]/.test(password);
+
+            if (password.length < minLength) {
+                return { isValid: false, message: 'Password must be at least 8 characters long' };
+            }
+            if (!hasUpperCase) {
+                return { isValid: false, message: 'Password must contain at least one uppercase letter (A-Z)' };
+            }
+            if (!hasLowerCase) {
+                return { isValid: false, message: 'Password must contain at least one lowercase letter (a-z)' };
+            }
+            if (!hasNumber) {
+                return { isValid: false, message: 'Password must contain at least one number (0-9)' };
+            }
+            if (!hasSpecialChar) {
+                return { isValid: false, message: 'Password must contain at least one special character (!@#$%^&*)' };
+            }
+
+            return { isValid: true, message: '' };
         }
 
         async function loadUsers() {
@@ -376,6 +405,12 @@
 
             const password = document.getElementById('password').value;
             if (password) {
+                // Validate password complexity
+                const passwordValidation = validatePasswordComplexity(password);
+                if (!passwordValidation.isValid) {
+                    showError(passwordValidation.message);
+                    return;
+                }
                 userData.password = password;
             }
 
