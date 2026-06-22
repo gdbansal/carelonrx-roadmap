@@ -264,6 +264,17 @@ app.post('/api/signup', (req, res) => {
         });
     }
     
+    // Validate email domain
+    const allowedDomains = ['elevancehealth.com', 'carelon.com'];
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+    
+    if (!emailDomain || !allowedDomains.includes(emailDomain)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Email must be from @elevancehealth.com or @carelon.com domain'
+        });
+    }
+    
     // Validate role - prevent admin role from being selected
     const allowedRoles = ['product_owner', 'product_manager', 'business_owner', 'stakeholder', 'rte', 'scrum_master'];
     if (!allowedRoles.includes(role)) {
