@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarelonRx Roadmap - User Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+        }
+        .section { page-break-inside: avoid; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation (no-print) -->
+    <nav class="bg-white shadow-lg no-print">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="h-10 w-auto">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-800">User Guide</h1>
+                        <p class="text-xs text-gray-600">Product Initiative Management</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Download PDF
+                    </button>
+                    <button onclick="window.location.href='dashboard.html'" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
+                        Back to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="container mx-auto px-6 py-8 max-w-4xl">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            
+            <!-- Title Page -->
+            <div class="text-center mb-12 section">
+                <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="w-64 mx-auto mb-6">
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">User Guide</h1>
+                <p class="text-xl text-gray-600 mb-2">Product Initiative Management System</p>
+                <p class="text-sm text-gray-500">Version 1.0 | June 2026</p>
+            </div>
+
+            <hr class="my-8">
+
+            <!-- Table of Contents -->
+            <div class="mb-12 section">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Table of Contents</h2>
+                <ol class="list-decimal list-inside space-y-2 text-blue-600">
+                    <li><a href="#introduction" class="hover:underline">Introduction</a></li>
+                    <li><a href="#getting-started" class="hover:underline">Getting Started</a></li>
+                    <li><a href="#user-roles" class="hover:underline">User Roles</a></li>
+                    <li><a href="#login-signup" class="hover:underline">Login & Signup</a></li>
+                    <li><a href="#dashboard" class="hover:underline">Dashboard</a></li>
+                    <li><a href="#creating-initiatives" class="hover:underline">Creating Initiatives</a></li>
+                    <li><a href="#managing-initiatives" class="hover:underline">Managing Initiatives</a></li>
+                    <li><a href="#roadmap-view" class="hover:underline">Roadmap View</a></li>
+                    <li><a href="#admin-panel" class="hover:underline">Admin Panel</a></li>
+                    <li><a href="#troubleshooting" class="hover:underline">Troubleshooting</a></li>
+                </ol>
+            </div>
+
+            <!-- Introduction -->
+            <div id="introduction" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">1. Introduction</h2>
+                <p class="text-gray-700 mb-4"><strong>CarelonRx Roadmap</strong> is a Product Initiative Management system designed to help teams plan, track, and visualize product initiatives across quarters and years.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Key Features</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                    <li>Initiative intake and tracking</li>
+                    <li>WSJF (Weighted Shortest Job First) prioritization</li>
+                    <li>Visual roadmap timeline</li>
+                    <li>Role-based access control</li>
+                    <li>User management (Admin)</li>
+                    <li>Budget approval tracking</li>
+                    <li>Dependent systems management</li>
+                </ul>
+            </div>
+
+            <!-- Getting Started -->
+            <div id="getting-started" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">2. Getting Started</h2>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">System Requirements</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-4">
+                    <li>Modern web browser (Chrome, Firefox, Edge, Safari)</li>
+                    <li>Internet connection</li>
+                    <li>Valid CarelonRx or Elevance Health email address</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Accessing the Application</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                    <li>Navigate to: <code class="bg-gray-100 px-2 py-1 rounded">https://carelonrx-roadmap1.onrender.com</code></li>
+                    <li>You'll see the login page with the CarelonRx logo</li>
+                </ol>
+            </div>
+
+            <!-- User Roles -->
+            <div id="user-roles" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">3. User Roles</h2>
+                <p class="text-gray-700 mb-4">The system supports multiple roles with different permissions:</p>
+                
+                <table class="w-full border-collapse border border-gray-300 mb-4">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="border border-gray-300 px-4 py-2 text-left">Role</th>
+                            <th class="border border-gray-300 px-4 py-2 text-left">Permissions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2 font-semibold">Admin</td>
+                            <td class="border border-gray-300 px-4 py-2">Full access - manage users, all initiatives</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2 font-semibold">Product Owner</td>
+                            <td class="border border-gray-300 px-4 py-2">Create and edit own initiatives</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2 font-semibold">Product Manager</td>
+                            <td class="border border-gray-300 px-4 py-2">Create and edit own initiatives</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2 font-semibold">Business Owner</td>
+                            <td class="border border-gray-300 px-4 py-2">Create and edit own initiatives</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2 font-semibold">Stakeholder</td>
+                            <td class="border border-gray-300 px-4 py-2">Create and edit own initiatives</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2 font-semibold">RTE</td>
+                            <td class="border border-gray-300 px-4 py-2">Create and edit own initiatives</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2 font-semibold">Scrum Master</td>
+                            <td class="border border-gray-300 px-4 py-2">Create and edit own initiatives</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Login & Signup -->
+            <div id="login-signup" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">4. Login & Signup</h2>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Creating a New Account</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-6">
+                    <li>Click <strong>"Create Account"</strong> on the login page</li>
+                    <li>Fill in the required information:
+                        <ul class="list-disc list-inside ml-6 mt-2">
+                            <li><strong>Full Name</strong>: Your complete name</li>
+                            <li><strong>Username</strong>: Unique username (no spaces)</li>
+                            <li><strong>Email</strong>: Must be @elevancehealth.com or @carelon.com</li>
+                            <li><strong>Role</strong>: Select your role from the dropdown</li>
+                            <li><strong>Password</strong>: Minimum 6 characters</li>
+                            <li><strong>Confirm Password</strong>: Re-enter your password</li>
+                        </ul>
+                    </li>
+                    <li>Click <strong>"Create Account"</strong></li>
+                    <li>You'll be redirected to the login page</li>
+                </ol>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Logging In</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                    <li>Enter your <strong>Username</strong></li>
+                    <li>Enter your <strong>Password</strong></li>
+                    <li>Click <strong>"Sign In"</strong></li>
+                    <li>You'll be redirected to the Dashboard</li>
+                </ol>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="dashboard" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">5. Dashboard</h2>
+                <p class="text-gray-700 mb-4">The Dashboard is your main hub for viewing and managing initiatives.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Dashboard Features</h3>
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                    <p class="font-semibold text-blue-800 mb-2">Top Navigation:</p>
+                    <ul class="list-disc list-inside text-gray-700 ml-4">
+                        <li><strong>New Initiative</strong>: Create a new initiative</li>
+                        <li><strong>View Roadmap</strong>: See visual timeline</li>
+                        <li><strong>Admin</strong> (Admin only): Access user management</li>
+                        <li><strong>User Menu</strong>: View your name and logout</li>
+                    </ul>
+                </div>
+
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+                    <p class="font-semibold text-green-800 mb-2">Initiative Table Columns:</p>
+                    <ul class="list-disc list-inside text-gray-700 ml-4">
+                        <li>Initiative Name</li>
+                        <li>Program</li>
+                        <li>Year/Quarter</li>
+                        <li>Priority (Critical, High, Medium, Low)</li>
+                        <li>WSJF Score</li>
+                        <li>Budget Status</li>
+                        <li>Owner</li>
+                        <li>Actions (View, Edit, Delete)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Creating Initiatives -->
+            <div id="creating-initiatives" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">6. Creating Initiatives</h2>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Step-by-Step Guide</h3>
+                <ol class="list-decimal list-inside space-y-3 text-gray-700 ml-4 mb-6">
+                    <li>Click <strong>"New Initiative"</strong> button</li>
+                    <li>Fill in the <strong>Basic Information</strong>:
+                        <ul class="list-disc list-inside ml-6 mt-2">
+                            <li>Initiative Name (required)</li>
+                            <li>Description (required)</li>
+                            <li>Program (required)</li>
+                            <li>Year (required): 2025-2030</li>
+                            <li>Quarter (required): Q1-Q4</li>
+                            <li>Start Date (required)</li>
+                            <li>Delivery Date (required)</li>
+                        </ul>
+                    </li>
+                    <li>Set <strong>Priority</strong>: Critical, High, Medium, or Low</li>
+                    <li>Enter <strong>WSJF Components</strong> (Fibonacci numbers: 1, 2, 3, 5, 8, 13, 21):
+                        <ul class="list-disc list-inside ml-6 mt-2">
+                            <li>User-Business Value</li>
+                            <li>Time Criticality</li>
+                            <li>RR/OE (Risk Reduction/Opportunity Enablement)</li>
+                            <li>Job Size</li>
+                            <li>WSJF Score: Automatically calculated</li>
+                        </ul>
+                    </li>
+                    <li>Add <strong>Business Owner</strong> (required)</li>
+                    <li>Enter <strong>Business Value</strong> and <strong>Risks</strong></li>
+                    <li>Add <strong>Dependent Systems</strong> (optional)</li>
+                    <li>Set <strong>Budget Approval</strong> status</li>
+                    <li>Click <strong>"Submit Initiative"</strong></li>
+                </ol>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                    <p class="font-semibold text-yellow-800 mb-2">WSJF Calculation Formula:</p>
+                    <p class="text-gray-700 font-mono">WSJF = (User-Business Value + Time Criticality + RR/OE) / Job Size</p>
+                    <p class="text-gray-700 mt-2"><strong>Example:</strong></p>
+                    <ul class="list-disc list-inside text-gray-700 ml-4">
+                        <li>User-Business Value: 13</li>
+                        <li>Time Criticality: 8</li>
+                        <li>RR/OE: 5</li>
+                        <li>Job Size: 3</li>
+                        <li><strong>WSJF = (13 + 8 + 5) / 3 = 8.67</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Managing Initiatives -->
+            <div id="managing-initiatives" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">7. Managing Initiatives</h2>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Viewing Initiatives</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-6">
+                    <li>Click the <strong>eye icon</strong> to view details</li>
+                    <li>See all initiative information in read-only mode</li>
+                    <li>View change log and history</li>
+                </ol>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Editing Initiatives</h3>
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                    <p class="font-semibold text-blue-800 mb-2">Permissions:</p>
+                    <p class="text-gray-700">You can edit initiatives if you are the creator OR you are an Admin</p>
+                </div>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-6">
+                    <li>Click the <strong>edit icon</strong> on the dashboard</li>
+                    <li>Modify any fields</li>
+                    <li>Click <strong>"Update Initiative"</strong></li>
+                    <li>Changes are logged with your username and timestamp</li>
+                </ol>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Deleting Initiatives</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                    <li>Click the <strong>trash icon</strong></li>
+                    <li>Confirm deletion</li>
+                    <li>Initiative is permanently removed</li>
+                </ol>
+            </div>
+
+            <!-- Roadmap View -->
+            <div id="roadmap-view" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">8. Roadmap View</h2>
+                <p class="text-gray-700 mb-4">The Roadmap provides a visual timeline of all initiatives.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Features</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-4">
+                    <li><strong>12-Month View</strong>: See initiatives across the year</li>
+                    <li><strong>Color-Coded Bars</strong>: Each initiative has a unique color</li>
+                    <li><strong>Timeline Bars</strong>: Show start and end dates</li>
+                    <li><strong>Hover Details</strong>: See initiative info on hover</li>
+                    <li><strong>Export Options</strong>: Download as PDF or Export to Excel</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Using the Roadmap</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                    <li>Click <strong>"View Roadmap"</strong> from dashboard</li>
+                    <li>Initiatives are displayed as horizontal bars</li>
+                    <li>Bars span from start date to delivery date</li>
+                    <li>Scroll to see all initiatives</li>
+                    <li>Use export buttons to save</li>
+                </ol>
+            </div>
+
+            <!-- Admin Panel -->
+            <div id="admin-panel" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">9. Admin Panel</h2>
+                <p class="text-red-600 font-semibold mb-4">Access: Admin role only</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">User Management</h3>
+                
+                <div class="mb-6">
+                    <p class="font-semibold text-gray-800 mb-2">Add New User:</p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Click <strong>"Add New User"</strong></li>
+                        <li>Fill in: Full Name, Username, Email, Password, Role</li>
+                        <li>Email must be @elevancehealth.com or @carelon.com</li>
+                        <li>Click <strong>"Save User"</strong></li>
+                    </ol>
+                </div>
+
+                <div class="mb-6">
+                    <p class="font-semibold text-gray-800 mb-2">Edit User:</p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Click the <strong>edit icon</strong> next to a user</li>
+                        <li>Modify fields (leave password blank to keep current)</li>
+                        <li>Click <strong>"Save User"</strong></li>
+                    </ol>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-800 mb-2">Delete User:</p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Click the <strong>trash icon</strong></li>
+                        <li>Confirm deletion</li>
+                        <li>User is removed (cannot delete yourself)</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Troubleshooting -->
+            <div id="troubleshooting" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">10. Troubleshooting</h2>
+                
+                <div class="space-y-6">
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4">
+                        <p class="font-semibold text-red-800 mb-2">Cannot Login</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Check username and password</li>
+                            <li>Ensure account was created successfully</li>
+                            <li>Contact admin if account is locked</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-orange-50 border-l-4 border-orange-500 p-4">
+                        <p class="font-semibold text-orange-800 mb-2">Email Validation Error</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Use only @elevancehealth.com or @carelon.com emails</li>
+                            <li>Check for typos in email address</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                        <p class="font-semibold text-yellow-800 mb-2">Cannot Edit Initiative</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>You can only edit initiatives you created</li>
+                            <li>Admins can edit all initiatives</li>
+                            <li>Check if you're logged in with correct account</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                        <p class="font-semibold text-blue-800 mb-2">WSJF Not Calculating</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Ensure all four fields are filled</li>
+                            <li>Use only Fibonacci numbers (1, 2, 3, 5, 8, 13, 21)</li>
+                            <li>Job Size cannot be 0</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Getting Help</h3>
+                    <div class="bg-gray-100 p-4 rounded">
+                        <p class="text-gray-700"><strong>Contact Support:</strong></p>
+                        <p class="text-gray-700">Email: support@carelonrx.com</p>
+                        <p class="text-gray-700">Internal Teams: CarelonRx Roadmap Support</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <hr class="my-8">
+            <div class="text-center text-gray-600 text-sm">
+                <p><strong>Version 1.0</strong> | Last Updated: June 2026</p>
+                <p class="mt-2">Application URL: <code class="bg-gray-100 px-2 py-1 rounded">https://carelonrx-roadmap1.onrender.com</code></p>
+                <p class="mt-4">© 2026 CarelonRx. All rights reserved.</p>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
