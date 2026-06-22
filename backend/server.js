@@ -580,13 +580,18 @@ app.get('/api/users', authMiddleware, (req, res) => {
         });
     }
     
+    console.log('Fetching all users. Total users:', users.length);
+    console.log('Users:', users.map(u => ({ username: u.username, name: u.name, role: u.role })));
+    
     res.json({
         success: true,
         users: users.map(u => ({
             id: u.id,
             username: u.username,
             name: u.name,
-            role: u.role
+            email: u.email,
+            role: u.role,
+            createdAt: u.createdAt
         }))
     });
 });
