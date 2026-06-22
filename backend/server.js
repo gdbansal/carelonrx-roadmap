@@ -265,7 +265,7 @@ app.post('/api/signup', (req, res) => {
     }
     
     // Validate role - prevent admin role from being selected
-    const allowedRoles = ['product_owner', 'product_manager', 'rte', 'scrum_master'];
+    const allowedRoles = ['product_owner', 'product_manager', 'business_owner', 'stakeholder', 'rte', 'scrum_master'];
     if (!allowedRoles.includes(role)) {
         return res.status(400).json({
             success: false,
