@@ -6,11 +6,12 @@
 3. [User Roles](#user-roles)
 4. [Login & Signup](#login--signup)
 5. [Dashboard](#dashboard)
-6. [Creating Initiatives](#creating-initiatives)
-7. [Managing Initiatives](#managing-initiatives)
-8. [Roadmap View](#roadmap-view)
-9. [Admin Panel](#admin-panel)
-10. [Troubleshooting](#troubleshooting)
+6. [User Profile](#user-profile)
+7. [Creating Initiatives](#creating-initiatives)
+8. [Managing Initiatives](#managing-initiatives)
+9. [Roadmap View](#roadmap-view)
+10. [Admin Panel](#admin-panel)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -23,6 +24,7 @@
 - ✅ WSJF (Weighted Shortest Job First) prioritization
 - ✅ Visual roadmap timeline
 - ✅ Role-based access control
+- ✅ User profile management with image upload
 - ✅ User management (Admin)
 - ✅ Budget approval tracking
 - ✅ Dependent systems management
@@ -116,6 +118,117 @@ The Dashboard is your main hub for viewing and managing initiatives.
 - Use the search box to find specific initiatives
 - Click column headers to sort
 - View initiatives you have permission to edit
+
+---
+
+## User Profile
+
+The User Profile feature allows you to manage your personal information and upload a profile picture.
+
+### Accessing Your Profile
+
+1. Click on your **profile image/name** in the top-right corner of any page
+2. A dropdown menu will appear
+3. Click **"My Profile"**
+4. You'll be taken to your profile page
+
+### Profile Dropdown Menu
+
+Located in the top-right corner of the navigation bar:
+- **Profile Image**: Shows your uploaded photo or colored initials
+- **Your Name**: Displays your full name
+- **Dropdown Options**:
+  - **My Profile**: Navigate to profile page
+  - **Logout**: Sign out of the application
+
+### Profile Page Features
+
+**Profile Header**:
+- Large profile image (circular display)
+- Camera icon to upload/change image
+- Your name, role, and email displayed
+
+**Editable Information**:
+- ✅ **Full Name**: Update your display name
+- ✅ **Email**: Change your email address (must be @elevancehealth.com or @carelon.com)
+- ✅ **Password**: Change your password (optional)
+
+**Read-Only Information**:
+- ❌ **Username**: Cannot be changed
+- ❌ **Role**: Contact admin to change your role
+
+### Uploading a Profile Image
+
+1. Go to your **Profile page**
+2. Click the **camera icon** on your profile image
+3. Select an image file from your computer
+   - Supported formats: JPG, PNG, GIF, etc.
+   - Maximum size: 2MB
+4. Image will preview immediately
+5. Click **"Save Changes"** to save
+6. Your image will appear in:
+   - Navigation bar (all pages)
+   - Profile page
+   - User listings (if admin)
+
+### Updating Your Profile
+
+1. Navigate to **My Profile**
+2. Update any of the following:
+   - **Full Name**: Enter your new name
+   - **Email**: Enter new email (domain validation applies)
+   - **New Password**: Enter new password (minimum 6 characters)
+   - **Confirm Password**: Re-enter new password
+3. Click **"Save Changes"**
+4. Success message will appear
+5. Changes take effect immediately
+
+### Profile Image Display
+
+**With Image**:
+- Your uploaded photo appears in a circle
+- Shown in navigation and profile page
+
+**Without Image**:
+- Colored circle with your initials
+- First letter of each name (max 2 letters)
+- Example: "John Doe" → "JD"
+- Gradient background (blue to purple)
+
+### Password Change
+
+To change your password:
+1. Go to **My Profile**
+2. Scroll to **"Change Password"** section
+3. Enter **New Password** (minimum 6 characters)
+4. Enter **Confirm New Password**
+5. Click **"Save Changes"**
+6. Leave blank to keep current password
+
+### Profile Validation Rules
+
+**Email**:
+- ✅ Must be @elevancehealth.com or @carelon.com
+- ✅ Must be unique (not already registered)
+- ❌ Cannot use personal email domains
+
+**Password**:
+- ✅ Minimum 6 characters
+- ✅ Must match confirmation
+- ✅ Optional when updating profile
+
+**Image**:
+- ✅ Maximum file size: 2MB
+- ✅ Common formats supported (JPG, PNG, GIF)
+- ✅ Automatically resized for display
+
+### Tips
+
+- **Update your name** to help colleagues identify you
+- **Upload a professional photo** for better recognition
+- **Keep your email current** for notifications
+- **Change password regularly** for security
+- **Your image appears everywhere** you're mentioned in the app
 
 ---
 
