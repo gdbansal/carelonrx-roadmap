@@ -632,12 +632,23 @@ app.post('/api/users', authMiddleware, (req, res) => {
         });
     }
     
-    const { username, password, name, role } = req.body;
+    const { username, password, name, email, role } = req.body;
     
-    if (!username || !password || !name || !role) {
+    if (!username || !password || !name || !email || !role) {
         return res.status(400).json({
             success: false,
             message: 'All fields are required'
+        });
+    }
+    
+    // Validate email domain
+    const allowedDomains = ['elevancehealth.com', 'carelon.com'];
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+    
+    if (!emailDomain || !allowedDomains.includes(emailDomain)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Email must be from @elevancehealth.com or @carelon.com domain'
         });
     }
     
@@ -648,12 +659,21 @@ app.post('/api/users', authMiddleware, (req, res) => {
         });
     }
     
+    if (users.find(u => u.email === email)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Email already registered'
+        });
+    }
+    
     const newUser = {
         id: uuidv4(),
         username,
         password,
         name,
-        role
+        email,
+        role,
+        createdAt: new Date().toISOString()
     };
     
     users.push(newUser);
@@ -665,6 +685,7 @@ app.post('/api/users', authMiddleware, (req, res) => {
             id: newUser.id,
             username: newUser.username,
             name: newUser.name,
+            email: newUser.email,
             role: newUser.role
         }
     });
@@ -687,7 +708,7 @@ app.put('/api/users/:id', authMiddleware, (req, res) => {
         });
     }
     
-    const { username, password, name, role } = req.body;
+    const { username, password, name, email, role } = req.body;
     
     if (username && username !== users[userIndex].username) {
         if (users.find(u => u.username === username && u.id !== req.params.id)) {
@@ -697,6 +718,27 @@ app.put('/api/users/:id', authMiddleware, (req, res) => {
             });
         }
         users[userIndex].username = username;
+    }
+    
+    if (email && email !== users[userIndex].email) {
+        // Validate email domain
+        const allowedDomains = ['elevancehealth.com', 'carelon.com'];
+        const emailDomain = email.split('@')[1]?.toLowerCase();
+        
+        if (!emailDomain || !allowedDomains.includes(emailDomain)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email must be from @elevancehealth.com or @carelon.com domain'
+            });
+        }
+        
+        if (users.find(u => u.email === email && u.id !== req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email already registered'
+            });
+        }
+        users[userIndex].email = email;
     }
     
     if (password) {
