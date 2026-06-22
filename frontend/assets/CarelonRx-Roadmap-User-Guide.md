@@ -303,7 +303,6 @@ The Roadmap provides a visual timeline of all initiatives.
 ### Getting Help
 
 **Contact Support**:
-- Email: support@carelonrx.com
 - Internal Teams: CarelonRx Roadmap Support
 
 ---
