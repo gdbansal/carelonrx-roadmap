@@ -710,26 +710,27 @@
                 const exportButtons = document.querySelectorAll('button[onclick*="export"]');
                 exportButtons.forEach(btn => btn.style.visibility = 'hidden');
                 
-                // Wait a bit for UI to update
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
-                // Capture the entire roadmap container including header and grid
-                const container = document.querySelector('.container.mx-auto.px-6.py-8');
+                // Store original styles
                 const roadmapGrid = document.getElementById('roadmapGrid');
+                const originalGridWidth = roadmapGrid.style.minWidth;
+                const originalBodyWidth = document.body.style.width;
                 
-                // Get the actual width needed to show all content
-                const actualWidth = Math.max(
-                    container.scrollWidth,
-                    roadmapGrid ? roadmapGrid.scrollWidth : 0,
-                    1400 // minimum width
-                );
+                // Force wider layout to ensure all months are visible
+                roadmapGrid.style.minWidth = '1600px';
+                document.body.style.width = '1800px';
+                
+                // Wait for layout to update
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // Capture the entire roadmap container
+                const container = document.querySelector('.container.mx-auto.px-6.py-8');
                 
                 const canvas = await html2canvas(container, {
                     scale: 2,
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#f9fafb',
-                    windowWidth: actualWidth,
+                    windowWidth: 1800,
                     windowHeight: container.scrollHeight,
                     allowTaint: true,
                     foreignObjectRendering: false,
@@ -737,12 +738,14 @@
                     scrollY: -window.scrollY,
                     scrollX: -window.scrollX,
                     height: container.scrollHeight,
-                    width: actualWidth,
+                    width: 1800,
                     x: 0,
                     y: 0
                 });
                 
-                // Show export buttons again
+                // Restore original styles
+                roadmapGrid.style.minWidth = originalGridWidth;
+                document.body.style.width = originalBodyWidth;
                 exportButtons.forEach(btn => btn.style.visibility = 'visible');
                 
                 const imgData = canvas.toDataURL('image/png');
@@ -801,7 +804,10 @@
                 console.error('Error exporting roadmap:', error);
                 alert('Failed to export roadmap. Please try again.');
                 
-                // Restore button visibility in case of error
+                // Restore original styles and button visibility in case of error
+                const roadmapGrid = document.getElementById('roadmapGrid');
+                roadmapGrid.style.minWidth = '';
+                document.body.style.width = '';
                 const exportButtons = document.querySelectorAll('button[onclick*="export"]');
                 exportButtons.forEach(btn => btn.style.visibility = 'visible');
                 lucide.createIcons();
