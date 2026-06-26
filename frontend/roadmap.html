@@ -76,7 +76,17 @@
         .priority-high { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
         .priority-medium { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
         .priority-low { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
-        .priority-on-hold { background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); }
+        .priority-on-hold { 
+            background: repeating-linear-gradient(
+                45deg,
+                #eab308,
+                #eab308 10px,
+                #fbbf24 10px,
+                #fbbf24 20px
+            );
+            border: 2px dashed #ca8a04;
+            opacity: 0.85;
+        }
         .quarter-marker {
             position: relative;
         }
