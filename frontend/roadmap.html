@@ -727,7 +727,10 @@
                     logging: false,
                     backgroundColor: '#f9fafb',
                     windowWidth: container.scrollWidth,
-                    windowHeight: container.scrollHeight
+                    windowHeight: container.scrollHeight,
+                    allowTaint: true,
+                    foreignObjectRendering: false,
+                    imageTimeout: 0
                 });
                 
                 // Show export buttons again
