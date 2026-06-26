@@ -715,13 +715,21 @@
                 
                 // Capture the entire roadmap container including header and grid
                 const container = document.querySelector('.container.mx-auto.px-6.py-8');
+                const roadmapGrid = document.getElementById('roadmapGrid');
+                
+                // Get the actual width needed to show all content
+                const actualWidth = Math.max(
+                    container.scrollWidth,
+                    roadmapGrid ? roadmapGrid.scrollWidth : 0,
+                    1400 // minimum width
+                );
                 
                 const canvas = await html2canvas(container, {
                     scale: 2,
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#f9fafb',
-                    windowWidth: container.scrollWidth,
+                    windowWidth: actualWidth,
                     windowHeight: container.scrollHeight,
                     allowTaint: true,
                     foreignObjectRendering: false,
@@ -729,7 +737,9 @@
                     scrollY: -window.scrollY,
                     scrollX: -window.scrollX,
                     height: container.scrollHeight,
-                    width: container.scrollWidth
+                    width: actualWidth,
+                    x: 0,
+                    y: 0
                 });
                 
                 // Show export buttons again
