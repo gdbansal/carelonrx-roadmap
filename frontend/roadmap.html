@@ -711,14 +711,12 @@
 
         async function exportRoadmap() {
             try {
-                const exportButton = event.target.closest('button');
-                const originalHTML = exportButton.innerHTML;
-                exportButton.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i><span>Exporting...</span>';
-                exportButton.disabled = true;
-                lucide.createIcons();
+                // Hide export buttons during capture
+                const exportButtons = document.querySelectorAll('button[onclick*="export"]');
+                exportButtons.forEach(btn => btn.style.visibility = 'hidden');
                 
-                // Wait a bit for any animations to complete
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Wait a bit for UI to update
+                await new Promise(resolve => setTimeout(resolve, 100));
                 
                 // Capture the entire roadmap container including header and grid
                 const container = document.querySelector('.container.mx-auto.px-6.py-8');
@@ -731,6 +729,9 @@
                     windowWidth: container.scrollWidth,
                     windowHeight: container.scrollHeight
                 });
+                
+                // Show export buttons again
+                exportButtons.forEach(btn => btn.style.visibility = 'visible');
                 
                 const imgData = canvas.toDataURL('image/png');
                 
@@ -749,17 +750,15 @@
                 const year = document.getElementById('yearFilter').value;
                 pdf.save('CarelonRx_Roadmap_' + year + '.pdf');
                 
-                exportButton.innerHTML = originalHTML;
-                exportButton.disabled = false;
                 lucide.createIcons();
                 
             } catch (error) {
                 console.error('Error exporting roadmap:', error);
                 alert('Failed to export roadmap. Please try again.');
                 
-                const exportButton = event.target.closest('button');
-                exportButton.innerHTML = '<i data-lucide="download" class="w-5 h-5"></i><span>Export</span>';
-                exportButton.disabled = false;
+                // Restore button visibility in case of error
+                const exportButtons = document.querySelectorAll('button[onclick*="export"]');
+                exportButtons.forEach(btn => btn.style.visibility = 'visible');
                 lucide.createIcons();
             }
         }
