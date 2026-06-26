@@ -291,7 +291,7 @@
                         bVal = b.budgetApproved ? 1 : 0;
                         break;
                     case 'priority':
-                        const priorityOrder = {'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1};
+                        const priorityOrder = {'Critical': 5, 'High': 4, 'Medium': 3, 'Low': 2, 'On Hold': 1};
                         aVal = priorityOrder[a.priority] || 0;
                         bVal = priorityOrder[b.priority] || 0;
                         break;
@@ -384,7 +384,8 @@
                 'Critical': 'bg-red-100 text-red-800',
                 'High': 'bg-orange-100 text-orange-800',
                 'Medium': 'bg-blue-100 text-blue-800',
-                'Low': 'bg-gray-100 text-gray-800'
+                'Low': 'bg-gray-100 text-gray-800',
+                'On Hold': 'bg-yellow-100 text-yellow-800'
             };
             return classes[priority] || 'bg-gray-100 text-gray-800';
         }
