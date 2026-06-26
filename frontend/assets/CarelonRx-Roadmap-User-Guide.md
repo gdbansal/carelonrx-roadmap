@@ -91,10 +91,14 @@ The Dashboard is your main hub for viewing and managing initiatives.
 ### Dashboard Features
 
 **Top Navigation:**
-- **New Initiative**: Create a new initiative
-- **View Roadmap**: See visual timeline
-- **Admin** (Admin only): Access user management
-- **User Menu**: View your name and logout
+- **Dashboard**: Return to main dashboard (indigo button)
+- **User Guide**: Access this help documentation (gray button)
+- **View Roadmap**: See visual timeline (green button)
+- **New Initiative**: Create a new initiative (blue button)
+- **Admin** (Admin only): Access user management (purple button)
+- **Profile Dropdown**: 
+  - Shows your profile image or initials
+  - Click to access "My Profile" or "Logout"
 
 **Initiative Table:**
 - **Search**: Filter initiatives by name
@@ -102,8 +106,8 @@ The Dashboard is your main hub for viewing and managing initiatives.
   - Initiative Name
   - Program
   - Year/Quarter
-  - Priority (Critical, High, Medium, Low)
-  - WSJF Score
+  - Priority (Critical, High, Medium, Low, On Hold)
+  - WSJF Score (sorted highest first by default)
   - Budget Status
   - Owner
   - Actions (View, Edit, Delete)
@@ -251,6 +255,7 @@ To change your password:
    - High
    - Medium
    - Low
+   - On Hold (for paused/deferred initiatives)
 
 4. Enter **WSJF Components** (Fibonacci numbers: 1, 2, 3, 5, 8, 13, 21):
    - **User-Business Value**: Business impact
@@ -264,7 +269,7 @@ To change your password:
 6. Enter **Business Value** and **Risks**
 
 7. Add **Dependent Systems** (optional):
-   - System Name
+   - System Name (Available systems: Bioplus Intel Engine, Bioplus V, Intel Engine, CPDL, CPFR, CFX, Digital Integrated, Digital Standalone, IDL, PST, SOA, CCT, Enterprise Rx, Payment Hub, Self Service Portal)
    - PM SPOC (Point of Contact)
    - JIRA URL
 
@@ -322,21 +327,70 @@ The Roadmap provides a visual timeline of all initiatives.
 
 ### Features
 
-- **12-Month View**: See initiatives across the year
-- **Color-Coded Bars**: Each initiative has a unique color
+- **12-Month View**: See initiatives across the year (Jan-Dec)
+- **Priority-Based Colors**: 
+  - Critical: Red gradient
+  - High: Orange gradient
+  - Medium: Blue gradient
+  - Low: Gray gradient
+  - On Hold: Yellow gradient with dashed border and "(On Hold)" suffix
 - **Timeline Bars**: Show start and end dates
-- **Hover Details**: See initiative info on hover
+- **Quarter Markers**: Visual indicators for Q1, Q2, Q3, Q4
+- **Hover Details**: See initiative info and dependent systems on hover
+- **Year Filter**: Select year to view (2024-2027)
 - **Export Options**:
-  - Download as PDF
-  - Export to Excel
+  - Download as PDF (includes all 12 months)
+  - Export to Excel (detailed data export)
+- **Default Sorting**: Initiatives sorted by WSJF (highest first)
 
 ### Using the Roadmap
 
 1. Click **"View Roadmap"** from dashboard
-2. Initiatives are displayed as horizontal bars
-3. Bars span from start date to delivery date
-4. Scroll to see all initiatives
-5. Use export buttons to save
+2. Select year from dropdown (default: current year)
+3. Initiatives are displayed as horizontal bars
+4. Bars span from start date to delivery date
+5. **On Hold initiatives** appear with:
+   - Yellow striped pattern with dashed border
+   - "(On Hold)" text after initiative name
+   - Slightly transparent appearance
+6. Hover over bars to see:
+   - Initiative details
+   - Dependent systems
+   - PM SPOC information
+   - JIRA links (clickable)
+7. Click on any bar to view full initiative details
+8. Use export buttons to save roadmap
+
+### PDF Export
+
+**Features**:
+- High-resolution export (A3 landscape format)
+- All 12 months visible (Jan through Dec)
+- Priority legend included
+- Year indicator shown
+- Multi-page support for long roadmaps
+- Professional quality for presentations
+
+**How to Export**:
+1. Select the year you want to export
+2. Click **"Export PDF"** button
+3. Wait for processing (export buttons hidden during capture)
+4. PDF downloads automatically
+5. File name format: `CarelonRx_Roadmap_YYYY.pdf`
+
+### Excel Export
+
+**Features**:
+- Complete initiative data
+- All fields included
+- Formatted for analysis
+- Dependent systems listed
+
+**How to Export**:
+1. Select the year you want to export
+2. Click **"Export Excel"** button
+3. Excel file downloads automatically
+4. File name format: `CarelonRx_Roadmap_YYYY.xlsx`
 
 ---
 
@@ -451,12 +505,17 @@ The Roadmap provides a visual timeline of all initiatives.
 - **Tab**: Navigate form fields
 
 ### Status Indicators
+
+**Budget Status**:
 - 🟢 **Budget Approved**: Green badge
-- 🔴 **Budget Pending**: Red badge
-- 🔵 **Critical Priority**: Highest importance
-- 🟡 **High Priority**: Important
-- 🟠 **Medium Priority**: Standard
-- ⚪ **Low Priority**: Lower importance
+- � **Budget Pending**: Yellow badge
+
+**Priority Colors**:
+- � **Critical**: Red badge/gradient - Highest importance
+- � **High**: Orange badge/gradient - Important
+- � **Medium**: Blue badge/gradient - Standard
+- ⚫ **Low**: Gray badge/gradient - Lower importance
+- 🟡 **On Hold**: Yellow badge/gradient with dashed border - Paused/Deferred
 
 ### Field Requirements
 - ⭐ **Red asterisk (*)**: Required field
