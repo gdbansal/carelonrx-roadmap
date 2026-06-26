@@ -403,7 +403,10 @@
                     bar.className = `initiative-bar priority-${initiative.priority.toLowerCase().replace(/\s+/g, '-')}`;
                     bar.style.left = `${startPosition}%`;
                     bar.style.width = `${width}%`;
-                    bar.textContent = initiative.name;
+                    // Show "(On Hold)" suffix for On Hold priority initiatives
+                    bar.textContent = initiative.priority === 'On Hold' 
+                        ? `${initiative.name} (On Hold)` 
+                        : initiative.name;
                     bar.onclick = () => showInitiativeDetails(initiative.id);
                     
                     // Create tooltip with impacted systems
