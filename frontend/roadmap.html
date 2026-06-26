@@ -738,17 +738,37 @@
                 const imgData = canvas.toDataURL('image/png');
                 
                 const { jsPDF } = window.jspdf;
+                
+                // A3 landscape dimensions
+                const pageWidth = 420; // mm
+                const pageHeight = 297; // mm
+                
+                // Calculate scaling to fit content while maintaining aspect ratio
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const imgRatio = imgWidth / imgHeight;
+                const pageRatio = pageWidth / pageHeight;
+                
+                let pdfWidth, pdfHeight;
+                
+                // Fit to width or height depending on aspect ratio
+                if (imgRatio > pageRatio) {
+                    // Image is wider - fit to width
+                    pdfWidth = pageWidth;
+                    pdfHeight = pageWidth / imgRatio;
+                } else {
+                    // Image is taller - fit to height
+                    pdfHeight = pageHeight;
+                    pdfWidth = pageHeight * imgRatio;
+                }
+                
                 const pdf = new jsPDF({
                     orientation: 'landscape',
                     unit: 'mm',
                     format: 'a3'
                 });
                 
-                const pdfWidth = 420;
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                
                 // Handle multi-page PDF if content is too tall
-                const pageHeight = 297; // A3 height in mm
                 let heightLeft = pdfHeight;
                 let position = 0;
                 
