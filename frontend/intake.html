@@ -29,13 +29,30 @@
                         <i data-lucide="arrow-left" class="w-4 h-4"></i>
                         <span>Back to Dashboard</span>
                     </button>
-                    <div class="flex items-center space-x-2 text-gray-700">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                        <span id="userName" class="font-semibold"></span>
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                            <div id="userProfileImage" class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                                <span id="userInitials">U</span>
+                                <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
+                            </div>
+                            <span id="userName" class="font-semibold text-gray-700"></span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <a href="profile.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <hr class="my-2">
+                            <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                <span>Logout</span>
+                            </button>
+                        </div>
                     </div>
-                    <button onclick="logout()" class="text-red-600 hover:text-red-800">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -370,7 +387,42 @@
         if (!user.username) {
             window.location.href = 'login.html';
         }
-        document.getElementById('userName').textContent = user.name || user.username;
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
+            lucide.createIcons();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const button = event.target.closest('button[onclick="toggleProfileDropdown()"]');
+            
+            if (!button && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        function loadUserProfile() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            // Set user name
+            document.getElementById('userName').textContent = user.name || user.username;
+            
+            // Set initials
+            const initials = (user.name || user.username || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            document.getElementById('userInitials').textContent = initials;
+            
+            // Load profile image if exists
+            if (user.profileImage) {
+                document.getElementById('userImage').src = user.profileImage;
+                document.getElementById('userImage').classList.remove('hidden');
+                document.getElementById('userInitials').classList.add('hidden');
+            }
+        }
+
+        loadUserProfile();
 
         // Calculate WSJF automatically
         function calculateWSJF() {
