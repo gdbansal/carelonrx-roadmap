@@ -253,8 +253,6 @@
                     currentInitiatives = data.initiatives;
                     updateStats(currentInitiatives);
                     // Sort by WSJF descending by default
-                    sortColumn = 'wsjf';
-                    sortDirection = 'desc';
                     sortTable('wsjf');
                 }
             } catch (error) {
@@ -267,7 +265,8 @@
                 sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
             } else {
                 sortColumn = column;
-                sortDirection = 'asc';
+                // Default to descending for WSJF, ascending for others
+                sortDirection = column === 'wsjf' ? 'desc' : 'asc';
             }
 
             const sorted = [...currentInitiatives].sort((a, b) => {

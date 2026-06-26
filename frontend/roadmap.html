@@ -319,9 +319,11 @@
                 grid.innerHTML += `<div class="roadmap-header ${isQuarterEnd ? 'quarter-marker' : ''}">${month}</div>`;
             });
 
+            // Sort by WSJF descending (highest first)
             initiatives.sort((a, b) => {
-                const priorityOrder = { 'Critical': 0, 'High': 1, 'Medium': 2, 'Low': 3 };
-                return priorityOrder[a.priority] - priorityOrder[b.priority];
+                const aWSJF = parseFloat(a.wsjf) || 0;
+                const bWSJF = parseFloat(b.wsjf) || 0;
+                return bWSJF - aWSJF;
             });
 
             initiatives.forEach(initiative => {
