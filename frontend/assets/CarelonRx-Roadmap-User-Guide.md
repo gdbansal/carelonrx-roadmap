@@ -11,7 +11,8 @@
 8. [Managing Initiatives](#managing-initiatives)
 9. [Roadmap View](#roadmap-view)
 10. [Admin Panel](#admin-panel)
-11. [Troubleshooting](#troubleshooting)
+11. [Data Persistence](#data-persistence)
+12. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -28,6 +29,9 @@
 - ✅ User management (Admin)
 - ✅ Budget approval tracking
 - ✅ Dependent systems management
+- ✅ Persistent data storage with MongoDB
+- ✅ Complete change history and audit trails
+- ✅ PDF and Excel export capabilities
 
 ---
 
@@ -426,6 +430,49 @@ The Roadmap provides a visual timeline of all initiatives.
 
 ---
 
+## Data Persistence
+
+### Database Storage
+
+The CarelonRx Roadmap application uses **MongoDB Atlas** for persistent data storage, ensuring all your data is safely stored and never lost.
+
+**Key Benefits**:
+- ✅ **Permanent Storage**: All initiatives, users, and changes are saved permanently
+- ✅ **Survives Restarts**: Data persists even when the server restarts
+- ✅ **Automatic Backups**: MongoDB Atlas provides automatic backups
+- ✅ **Scalable**: Can handle growing data needs
+- ✅ **Secure**: Industry-standard database security
+
+**What Gets Stored**:
+- User accounts and profiles
+- All initiatives and their details
+- Dependent systems information
+- Change logs and audit trails
+- Profile images
+- WSJF scores and calculations
+
+**Data Safety**:
+- All data is encrypted in transit and at rest
+- Regular automated backups
+- 99.9% uptime guarantee from MongoDB Atlas
+- Redundant storage across multiple servers
+
+### Change Tracking
+
+Every initiative update is tracked with:
+- **Who**: Username of person making changes
+- **When**: Exact timestamp of changes
+- **What**: Detailed field-level changes
+- **History**: Complete audit trail
+
+**Viewing Change History**:
+1. Open any initiative
+2. Scroll to "Change Log" section
+3. See all updates with timestamps
+4. Review who made each change
+
+---
+
 ## Troubleshooting
 
 ### Common Issues
@@ -458,6 +505,26 @@ The Roadmap provides a visual timeline of all initiatives.
 - ✅ Each initiative must have a unique WSJF score
 - ✅ Adjust WSJF component values slightly
 - ✅ The system prevents duplicate WSJF values
+
+**Error During Login**
+- ✅ Check if backend service is running
+- ✅ Verify database connection is established
+- ✅ Clear browser cache and cookies
+- ✅ Try a different browser
+- ✅ Contact admin if issue persists
+
+**Data Not Saving**
+- ✅ Check internet connection
+- ✅ Ensure you're logged in
+- ✅ Verify all required fields are filled
+- ✅ Check for error messages
+- ✅ Try refreshing the page
+
+**Profile Image Not Uploading**
+- ✅ Check file size (max 2MB)
+- ✅ Use supported formats (JPG, PNG, GIF)
+- ✅ Ensure stable internet connection
+- ✅ Try a smaller image file
 
 ### Browser Support
 
