@@ -864,6 +864,135 @@ app.put('/api/profile', authMiddleware, async (req, res) => {
     }
 });
 
+// ========== MIGRATION ENDPOINTS ==========
+
+// Migrate passwords endpoint
+app.post('/api/migrate-passwords', async (req, res) => {
+    try {
+        const bcrypt = require('bcryptjs');
+        
+        // Find all users
+        const users = await User.find({});
+        let migratedCount = 0;
+        const results = [];
+
+        for (const user of users) {
+            // Check if password is already hashed (bcrypt hashes start with $2a$ or $2b$)
+            if (user.password && !user.password.startsWith('$2')) {
+                const plainPassword = user.password;
+                
+                // Hash the plain text password
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(plainPassword, salt);
+                
+                // Update the user with hashed password
+                await User.updateOne(
+                    { _id: user._id },
+                    { $set: { password: hashedPassword } }
+                );
+                
+                results.push(`✅ Hashed password for: ${user.username}`);
+                migratedCount++;
+            } else {
+                results.push(`⏭️ Skipped (already hashed): ${user.username}`);
+            }
+        }
+
+        // Verify admin user
+        const adminUser = await User.findOne({ username: 'admin' });
+        let adminVerified = false;
+        if (adminUser) {
+            adminVerified = await bcrypt.compare('admin123', adminUser.password);
+        }
+
+        res.json({
+            success: true,
+            message: 'Password migration completed',
+            totalUsers: users.length,
+            migratedCount,
+            alreadyHashed: users.length - migratedCount,
+            adminVerified,
+            details: results
+        });
+    } catch (error) {
+        console.error('Migration error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Migration failed',
+            error: error.message
+        });
+    }
+});
+
+// Update user role endpoint
+app.post('/api/update-user-role', async (req, res) => {
+    try {
+        const { username, role } = req.body;
+        
+        if (!username || !role) {
+            return res.status(400).json({
+                success: false,
+                message: 'Username and role are required'
+            });
+        }
+
+        // List all users
+        const allUsers = await User.find({}, 'username name email role');
+        
+        // Find the user
+        let user = await User.findOne({ username });
+        
+        if (!user) {
+            // Try by email
+            user = await User.findOne({ email: new RegExp(username, 'i') });
+        }
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: `User '${username}' not found`,
+                availableUsers: allUsers.map(u => ({
+                    username: u.username,
+                    name: u.name,
+                    email: u.email,
+                    role: u.role
+                }))
+            });
+        }
+
+        const oldRole = user.role;
+        
+        // Update role
+        await User.collection.updateOne(
+            { _id: user._id },
+            { $set: { role } }
+        );
+        
+        // Verify update
+        const updatedUser = await User.findById(user._id);
+
+        res.json({
+            success: true,
+            message: `Role updated successfully`,
+            user: {
+                username: updatedUser.username,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                oldRole,
+                newRole: updatedUser.role
+            },
+            note: 'User must logout and login again to see changes'
+        });
+    } catch (error) {
+        console.error('Role update error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Role update failed',
+            error: error.message
+        });
+    }
+});
+
 // ========== HEALTH CHECK ==========
 
 app.get('/api/health', (req, res) => {
