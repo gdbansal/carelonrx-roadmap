@@ -1,0 +1,203 @@
+/* 
+ * CarelonRx Brand Theme
+ * Based on official Carelon Brand Guidelines
+ * Primary Color: Carelon Purple #5009B5 (Pantone 2091 C)
+ */
+
+:root {
+    /* Primary Brand Colors */
+    --carelon-purple: #5009B5;
+    --carelon-purple-hover: #4007a0;
+    --carelon-purple-light: #6b1fd4;
+    --carelon-purple-dark: #3a0680;
+    
+    /* White */
+    --carelon-white: #ffffff;
+    
+    /* Neutral Colors */
+    --carelon-gray-50: #f9fafb;
+    --carelon-gray-100: #f3f4f6;
+    --carelon-gray-200: #e5e7eb;
+    --carelon-gray-300: #d1d5db;
+    --carelon-gray-400: #9ca3af;
+    --carelon-gray-500: #6b7280;
+    --carelon-gray-600: #4b5563;
+    --carelon-gray-700: #374151;
+    --carelon-gray-800: #1f2937;
+    --carelon-gray-900: #111827;
+}
+
+/* Primary Button - Carelon Purple */
+.btn-carelon-primary {
+    background-color: var(--carelon-purple);
+    color: var(--carelon-white);
+    transition: background-color 0.2s ease;
+}
+
+.btn-carelon-primary:hover {
+    background-color: var(--carelon-purple-hover);
+}
+
+.btn-carelon-primary:active {
+    background-color: var(--carelon-purple-dark);
+}
+
+/* Secondary Button - Gray */
+.btn-carelon-secondary {
+    background-color: var(--carelon-gray-600);
+    color: var(--carelon-white);
+    transition: background-color 0.2s ease;
+}
+
+.btn-carelon-secondary:hover {
+    background-color: var(--carelon-gray-700);
+}
+
+/* Background Colors */
+.bg-carelon-purple {
+    background: linear-gradient(135deg, var(--carelon-purple) 0%, var(--carelon-purple-light) 100%);
+}
+
+.bg-carelon-purple-solid {
+    background-color: var(--carelon-purple);
+}
+
+/* Text Colors */
+.text-carelon-purple {
+    color: var(--carelon-purple);
+}
+
+/* Border Colors */
+.border-carelon-purple {
+    border-color: var(--carelon-purple);
+}
+
+/* Badge - Carelon Purple */
+.badge-carelon-purple {
+    background-color: #f3e8ff;
+    color: var(--carelon-purple);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Link Colors */
+a.carelon-link {
+    color: var(--carelon-purple);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a.carelon-link:hover {
+    color: var(--carelon-purple-hover);
+    text-decoration: underline;
+}
+
+/* Focus States */
+.carelon-focus:focus {
+    outline: 2px solid var(--carelon-purple);
+    outline-offset: 2px;
+}
+
+/* Profile Image Default */
+.profile-image-default {
+    background: linear-gradient(135deg, var(--carelon-purple) 0%, var(--carelon-purple-light) 100%);
+}
+
+/* Priority Colors (keeping existing for data visualization) */
+.priority-critical {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+}
+
+.priority-high {
+    background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+}
+
+.priority-medium {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+}
+
+.priority-low {
+    background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+}
+
+.priority-onhold {
+    background: linear-gradient(135deg, var(--carelon-purple) 0%, var(--carelon-purple-light) 100%);
+    border: 2px dashed var(--carelon-purple-dark);
+}
+
+/* Status Badge Colors */
+.status-approved {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+/* WSJF Score Badge */
+.wsjf-badge {
+    background-color: #f3e8ff;
+    color: var(--carelon-purple);
+    font-weight: bold;
+}
+
+/* Card Styles */
+.carelon-card {
+    background-color: var(--carelon-white);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.carelon-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Navigation Bar */
+.carelon-nav {
+    background-color: var(--carelon-white);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Form Inputs */
+.carelon-input:focus {
+    border-color: var(--carelon-purple);
+    ring-color: var(--carelon-purple);
+}
+
+/* Loading Spinner */
+.carelon-spinner {
+    border-color: var(--carelon-purple-light);
+    border-top-color: var(--carelon-purple);
+}
+
+/* Success Message */
+.carelon-success {
+    background-color: #dcfce7;
+    border-left: 4px solid #16a34a;
+    color: #166534;
+}
+
+/* Error Message */
+.carelon-error {
+    background-color: #fee2e2;
+    border-left: 4px solid #dc2626;
+    color: #991b1b;
+}
+
+/* Warning Message */
+.carelon-warning {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+}
+
+/* Info Message */
+.carelon-info {
+    background-color: #f3e8ff;
+    border-left: 4px solid var(--carelon-purple);
+    color: var(--carelon-purple-dark);
+}
