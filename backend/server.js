@@ -155,10 +155,27 @@ app.post('/api/login', async (req, res) => {
         console.log('Login request received:', req.body);
         const { username, password } = req.body;
         
-        const user = await User.findOne({ username, password });
+        // Find user by username only
+        const user = await User.findOne({ username });
         
-        if (user) {
-            console.log('User found:', user.username);
+        if (!user) {
+            console.log('User NOT found - invalid username');
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid username or password'
+            });
+        }
+        
+        // Compare password using bcrypt
+        const isPasswordValid = await user.comparePassword(password);
+        
+        if (isPasswordValid) {
+            console.log('User authenticated:', user.username);
+            
+            // Update last login
+            user.lastLogin = new Date();
+            await user.save();
+            
             const token = generateToken(user);
             res.json({
                 success: true,
@@ -169,11 +186,12 @@ app.post('/api/login', async (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: user.role,
-                    profileImage: user.profileImage
+                    profileImage: user.profileImage,
+                    lastLogin: user.lastLogin
                 }
             });
         } else {
-            console.log('User NOT found - invalid credentials');
+            console.log('Invalid password for user:', username);
             res.status(401).json({
                 success: false,
                 message: 'Invalid username or password'
