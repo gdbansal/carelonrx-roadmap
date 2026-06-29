@@ -3,14 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarelonRx Roadmap - User Guide</title>
+    <title>CarelonRx Product 360 - User Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/carelon-theme.css">
     <style>
         @media print {
             .no-print { display: none; }
             body { background: white; }
         }
         .section { page-break-inside: avoid; }
+        
+        /* CarelonRx Purple Theme Overrides */
+        .carelon-purple-bg {
+            background-color: #5009B5;
+        }
+        .carelon-purple-text {
+            color: #5009B5;
+        }
+        .carelon-purple-border {
+            border-color: #5009B5;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -26,7 +38,7 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <button onclick="window.print()" class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition">
                         Download PDF
                     </button>
                     <button onclick="window.location.href='dashboard.html'" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
@@ -54,7 +66,7 @@
             <!-- Table of Contents -->
             <div class="mb-12 section">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Table of Contents</h2>
-                <ol class="list-decimal list-inside space-y-2 text-blue-600">
+                <ol class="list-decimal list-inside space-y-2 carelon-purple-text">
                     <li><a href="#introduction" class="hover:underline">Introduction</a></li>
                     <li><a href="#getting-started" class="hover:underline">Getting Started</a></li>
                     <li><a href="#user-roles" class="hover:underline">User Roles</a></li>
@@ -405,8 +417,8 @@
                 <p class="text-gray-700 mb-4">The Analytics Dashboard provides comprehensive insights into system usage, initiative distribution, and user activity.</p>
                 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Accessing Analytics</h3>
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-                    <p class="font-semibold text-blue-800 mb-2">From Any Page:</p>
+                <div class="bg-purple-50 border-l-4 carelon-purple-border p-4 mb-6">
+                    <p class="font-semibold text-purple-800 mb-2">From Any Page:</p>
                     <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
                         <li>Click on your <strong>Profile Dropdown</strong> (top right)</li>
                         <li>Select <strong>"Analytics"</strong> from the menu</li>
@@ -515,8 +527,8 @@
                             <li>Track system dependencies</li>
                         </ul>
                     </div>
-                    <div class="bg-blue-50 p-4 rounded-lg">
-                        <p class="font-semibold text-blue-800 mb-2">Resource Planning</p>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800 mb-2">Resource Planning</p>
                         <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
                             <li>See system workload</li>
                             <li>Identify bottlenecks</li>
@@ -595,8 +607,8 @@
                 </div>
 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Session Warning</h3>
-                <div class="bg-blue-50 p-4 rounded-lg mb-6">
-                    <p class="font-semibold text-blue-800 mb-2">5-Minute Warning:</p>
+                <div class="bg-purple-50 p-4 rounded-lg mb-6">
+                    <p class="font-semibold text-purple-800 mb-2">5-Minute Warning:</p>
                     <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
                         <li>Appears at 25 minutes of inactivity</li>
                         <li>Modal dialog with two options:
@@ -634,8 +646,8 @@
                             <li>Profile images</li>
                         </ul>
                     </div>
-                    <div class="bg-blue-50 p-4 rounded-lg">
-                        <p class="font-semibold text-blue-800 mb-2">Initiative Data</p>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800 mb-2">Initiative Data</p>
                         <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
                             <li>All initiative fields</li>
                             <li>WSJF calculations</li>
