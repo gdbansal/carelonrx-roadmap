@@ -1,20 +1,44 @@
 /* 
  * CarelonRx Brand Theme
  * Based on official Carelon Brand Guidelines
- * Primary Color: Carelon Purple #5009B5 (Pantone 2091 C)
+ * 
+ * PRIMARY COLOR:
+ * - Carelon Purple #5009B5 (Pantone 2091 C) - Use first and frequently
+ * 
+ * SECONDARY COLORS:
+ * - Light Purple #794CFF (Pantone 2725 C) - Accent color for stats
+ * - Cyan #44B8F3 (Pantone 298 C) - Vibrancy, illustrations, infographics
+ * - Turquoise #00BBBA (Pantone 2398 C) - Vibrancy, illustrations, infographics
+ * - Dark Purple #2B1B49 (Pantone 2685 C) - Deep backgrounds
+ * 
+ * USAGE GUIDELINES:
+ * - Lead with Purple on backgrounds of generous white space
+ * - Use secondary colors sparingly for vibrancy
+ * - Pale Cyan as background color (text boxes)
+ * - Light Purple as accent color (stats, highlights)
+ * - Cyan, Turquoise in illustrations, supergraphics, infographics
  */
 
 :root {
-    /* Primary Brand Colors */
-    --carelon-purple: #5009B5;
-    --carelon-purple-hover: #4007a0;
-    --carelon-purple-light: #6b1fd4;
-    --carelon-purple-dark: #3a0680;
+    /* PRIMARY BRAND COLOR */
+    --carelon-purple: #5009B5;           /* Pantone 2091 C - Main brand color */
+    --carelon-purple-hover: #4007a0;     /* Hover state */
+    --carelon-purple-light: #6b1fd4;     /* Light variant */
+    --carelon-purple-dark: #3a0680;      /* Dark variant */
     
-    /* White */
+    /* SECONDARY BRAND COLORS */
+    --carelon-light-purple: #794CFF;     /* Pantone 2725 C - Accent for stats */
+    --carelon-cyan: #44B8F3;             /* Pantone 298 C - Vibrancy */
+    --carelon-cyan-accessible: #0C7DB6;  /* Accessible cyan for digital text */
+    --carelon-cyan-pale: #E6F7FD;        /* Pale cyan for backgrounds */
+    --carelon-turquoise: #00BBBA;        /* Pantone 2398 C - Vibrancy */
+    --carelon-turquoise-accessible: #028283; /* Accessible turquoise for text */
+    --carelon-dark-purple: #2B1B49;      /* Pantone 2685 C - Deep backgrounds */
+    
+    /* WHITE */
     --carelon-white: #ffffff;
     
-    /* Neutral Colors */
+    /* NEUTRAL COLORS */
     --carelon-gray-50: #f9fafb;
     --carelon-gray-100: #f3f4f6;
     --carelon-gray-200: #e5e7eb;
@@ -138,11 +162,69 @@ a.carelon-link:hover {
     color: #92400e;
 }
 
-/* WSJF Score Badge */
+/* WSJF Score Badge - Using Light Purple accent */
 .wsjf-badge {
     background-color: #f3e8ff;
-    color: var(--carelon-purple);
+    color: var(--carelon-light-purple);
     font-weight: bold;
+}
+
+/* Secondary Color Classes */
+.bg-carelon-light-purple {
+    background-color: var(--carelon-light-purple);
+}
+
+.bg-carelon-cyan {
+    background-color: var(--carelon-cyan);
+}
+
+.bg-carelon-cyan-pale {
+    background-color: var(--carelon-cyan-pale);
+}
+
+.bg-carelon-turquoise {
+    background-color: var(--carelon-turquoise);
+}
+
+.bg-carelon-dark-purple {
+    background-color: var(--carelon-dark-purple);
+}
+
+.text-carelon-light-purple {
+    color: var(--carelon-light-purple);
+}
+
+.text-carelon-cyan {
+    color: var(--carelon-cyan);
+}
+
+.text-carelon-cyan-accessible {
+    color: var(--carelon-cyan-accessible);
+}
+
+.text-carelon-turquoise {
+    color: var(--carelon-turquoise);
+}
+
+.text-carelon-turquoise-accessible {
+    color: var(--carelon-turquoise-accessible);
+}
+
+.text-carelon-dark-purple {
+    color: var(--carelon-dark-purple);
+}
+
+/* Stats Card - Using Light Purple accent per brand guidelines */
+.stats-card {
+    background: linear-gradient(135deg, var(--carelon-light-purple) 0%, var(--carelon-purple) 100%);
+    color: var(--carelon-white);
+}
+
+/* Info Box - Using Pale Cyan background per brand guidelines */
+.info-box {
+    background-color: var(--carelon-cyan-pale);
+    border-left: 4px solid var(--carelon-cyan);
+    color: var(--carelon-gray-800);
 }
 
 /* Card Styles */
