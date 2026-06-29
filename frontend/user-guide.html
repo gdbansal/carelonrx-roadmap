@@ -64,6 +64,7 @@
                     <li><a href="#creating-initiatives" class="hover:underline">Creating Initiatives</a></li>
                     <li><a href="#managing-initiatives" class="hover:underline">Managing Initiatives</a></li>
                     <li><a href="#roadmap-view" class="hover:underline">Roadmap View</a></li>
+                    <li><a href="#analytics-dashboard" class="hover:underline">Analytics Dashboard</a></li>
                     <li><a href="#admin-panel" class="hover:underline">Admin Panel</a></li>
                     <li><a href="#troubleshooting" class="hover:underline">Troubleshooting</a></li>
                 </ol>
@@ -396,9 +397,144 @@
                 </ol>
             </div>
 
+            <!-- Analytics Dashboard -->
+            <div id="analytics-dashboard" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">10. Analytics Dashboard</h2>
+                <p class="text-gray-700 mb-4">The Analytics Dashboard provides comprehensive insights into system usage, initiative distribution, and user activity.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Accessing Analytics</h3>
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                    <p class="font-semibold text-blue-800 mb-2">From Any Page:</p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Click on your <strong>Profile Dropdown</strong> (top right)</li>
+                        <li>Select <strong>"Analytics"</strong> from the menu</li>
+                        <li>View real-time statistics and charts</li>
+                    </ol>
+                    <p class="text-sm text-gray-600 mt-2"><strong>Navigation:</strong> User Guide | Dashboard | New Initiative | View Roadmap | Profile ▼</p>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Summary Cards</h3>
+                <p class="text-gray-700 mb-4">Four key metrics displayed at the top:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="font-semibold text-blue-800">Total Users</p>
+                        <p class="text-sm text-gray-700">Count of all registered users</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="font-semibold text-green-800">Total Initiatives</p>
+                        <p class="text-sm text-gray-700">Count of all initiatives</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800">Active Initiatives</p>
+                        <p class="text-sm text-gray-700">Initiatives not on hold</p>
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-lg">
+                        <p class="font-semibold text-orange-800">This Year</p>
+                        <p class="text-sm text-gray-700">Initiatives for current year (2026)</p>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Visual Charts</h3>
+                <div class="space-y-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="font-semibold text-gray-800 mb-2">1. Priority Distribution (Doughnut Chart)</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Shows breakdown of initiatives by priority</li>
+                            <li>Color-coded: Critical (Red), High (Orange), Medium (Blue), Low (Gray), On Hold (Purple)</li>
+                            <li>Interactive hover for percentages</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="font-semibold text-gray-800 mb-2">2. Initiatives by Year (Bar Chart)</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Distribution across years (2024-2027)</li>
+                            <li>Vertical bars for easy comparison</li>
+                            <li>Shows planning trends</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="font-semibold text-gray-800 mb-2">3. Program Distribution (Pie Chart)</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>AHD vs Bioplus split</li>
+                            <li>Percentage breakdown</li>
+                            <li>Interactive hover</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="font-semibold text-gray-800 mb-2">4. Quarter Distribution (Bar Chart)</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Current year (2026) only</li>
+                            <li>Q1, Q2, Q3, Q4 breakdown</li>
+                            <li>Helps with capacity planning</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">System Usage Statistics Table</h3>
+                <p class="text-gray-700 mb-2"><strong>Columns:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4 mb-4">
+                    <li><strong>System Name:</strong> Dependent system name</li>
+                    <li><strong>Initiatives:</strong> Count of initiatives using this system</li>
+                    <li><strong>Percentage:</strong> Percentage of total system references</li>
+                    <li><strong>Usage Bar:</strong> Visual progress bar</li>
+                </ul>
+                <p class="text-gray-700 mb-2"><strong>Features:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4 mb-6">
+                    <li>Sorted by usage (highest first)</li>
+                    <li>Identifies most-used systems</li>
+                    <li>Helps with resource planning</li>
+                    <li>Tracks dependencies</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">User Activity Table</h3>
+                <p class="text-gray-700 mb-2"><strong>Columns:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4 mb-4">
+                    <li><strong>User:</strong> Name or username</li>
+                    <li><strong>Email:</strong> User email address</li>
+                    <li><strong>Role:</strong> Admin or User badge (color-coded)</li>
+                    <li><strong>Initiatives Created:</strong> Count of initiatives</li>
+                    <li><strong>Last Active:</strong> Last login date</li>
+                </ul>
+                <p class="text-gray-700 mb-2"><strong>Features:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4 mb-6">
+                    <li>Sorted by initiatives created (highest first)</li>
+                    <li>Identifies top contributors</li>
+                    <li>Tracks user engagement</li>
+                    <li>Monitors activity levels</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Benefits</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="font-semibold text-green-800 mb-2">Data-Driven Decisions</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                            <li>Visual insights at a glance</li>
+                            <li>Identify trends and patterns</li>
+                            <li>Track system dependencies</li>
+                        </ul>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="font-semibold text-blue-800 mb-2">Resource Planning</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                            <li>See system workload</li>
+                            <li>Identify bottlenecks</li>
+                            <li>Plan capacity</li>
+                        </ul>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800 mb-2">Performance Tracking</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                            <li>Track initiative distribution</li>
+                            <li>Monitor priority balance</li>
+                            <li>Measure user activity</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
             <!-- Admin Panel -->
             <div id="admin-panel" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">10. Admin Panel</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">11. Admin Panel</h2>
                 <p class="text-red-600 font-semibold mb-4">Access: Admin role only</p>
                 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">User Management</h3>
@@ -434,7 +570,7 @@
 
             <!-- Troubleshooting -->
             <div id="troubleshooting" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">11. Troubleshooting</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">12. Troubleshooting</h2>
                 
                 <div class="space-y-6">
                     <div class="bg-red-50 border-l-4 border-red-500 p-4">
