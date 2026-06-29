@@ -473,6 +473,7 @@
         ];
 
         let systemCounter = 0;
+        let pmSpocNames = new Set();
 
         function addDependentSystem() {
             const container = document.getElementById('dependentSystemsList');
@@ -487,7 +488,7 @@
                         <option value="">Select System</option>
                         ${dependentSystems.map(sys => `<option value="${sys}">${sys}</option>`).join('')}
                     </select>
-                    <input type="text" placeholder="PM/SPOC Name" 
+                    <input type="text" placeholder="PM/SPOC Name" list="pmSpocList"
                         class="system-pm-spoc px-3 py-2 border border-gray-300 rounded-lg text-sm">
                     <input type="url" placeholder="JIRA URL (e.g., https://jira.company.com/browse/PROJ-123)" 
                         class="system-jira-url px-3 py-2 border border-gray-300 rounded-lg text-sm">
@@ -502,11 +503,53 @@
             lucide.createIcons();
         }
 
+        async function loadPmSpocNames() {
+            try {
+                const response = await fetch('https://carelonrx-roadmap.onrender.com/api/initiatives', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success && data.initiatives) {
+                    data.initiatives.forEach(initiative => {
+                        if (initiative.dependentSystems && Array.isArray(initiative.dependentSystems)) {
+                            initiative.dependentSystems.forEach(sys => {
+                                if (sys.pmSpoc && sys.pmSpoc.trim()) {
+                                    pmSpocNames.add(sys.pmSpoc.trim());
+                                }
+                            });
+                        }
+                    });
+                    updatePmSpocDatalist();
+                }
+            } catch (error) {
+                console.error('Error loading PM SPOC names:', error);
+            }
+        }
+
+        function updatePmSpocDatalist() {
+            let datalist = document.getElementById('pmSpocList');
+            if (!datalist) {
+                datalist = document.createElement('datalist');
+                datalist.id = 'pmSpocList';
+                document.body.appendChild(datalist);
+            }
+            
+            datalist.innerHTML = Array.from(pmSpocNames).sort().map(name => 
+                `<option value="${name}">`
+            ).join('');
+        }
+
         function removeSystem(id) {
             document.getElementById(id).remove();
         }
 
         addDependentSystem();
+        
+        // Load PM SPOC names from existing initiatives
+        loadPmSpocNames();
 
         // Check if we're editing an existing initiative
         const urlParams = new URLSearchParams(window.location.search);
