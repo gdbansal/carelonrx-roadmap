@@ -23,22 +23,23 @@
 **CarelonRx Product 360** is a comprehensive product initiative management system designed to help teams plan, track, and visualize product initiatives across quarters and years.
 
 ### Key Features
-- ✅ Initiative intake and tracking
-- ✅ WSJF (Weighted Shortest Job First) prioritization
-- ✅ Visual roadmap timeline with system filtering
-- ✅ Role-based access control
-- ✅ User profile management with image upload
-- ✅ User management (Admin)
-- ✅ Budget approval tracking
-- ✅ Dependent systems management with mandatory PM/SPOC
-- ✅ Hold reason tracking for paused initiatives
-- ✅ Analytics dashboard with charts and statistics
-- ✅ 30-minute session timeout for security
-- ✅ Persistent data storage with MongoDB
-- ✅ Complete change history and audit trails
-- ✅ PDF and Excel export capabilities
-- ✅ Multi-select system filtering on roadmap
-- ✅ Auto-populated current year for new initiatives
+- ✅ **CarelonRx Brand Identity** - Official purple theme (#5009B5) throughout
+- ✅ **Initiative intake and tracking** - Comprehensive form with validation
+- ✅ **WSJF (Weighted Shortest Job First) prioritization** - Auto-calculated scoring
+- ✅ **Visual roadmap timeline** - Interactive timeline with color-coded priorities
+- ✅ **Hold reason display** - Prominent yellow box for On Hold initiatives
+- ✅ **Role-based access control** - Admin, creator, and viewer permissions
+- ✅ **User profile management** - Profile image upload and customization
+- ✅ **User management (Admin)** - Admin panel for user administration
+- ✅ **Budget approval tracking** - Toggle and track budget status
+- ✅ **Dependent systems management** - Multiple systems with PM/SPOC tracking
+- ✅ **Analytics dashboard** - Charts, statistics, and insights
+- ✅ **Streamlined navigation** - Analytics and Admin in profile dropdown
+- ✅ **30-minute session timeout** - Automatic security logout
+- ✅ **Persistent data storage** - MongoDB with complete audit trails
+- ✅ **PDF and Excel export** - Export roadmap for presentations
+- ✅ **Multi-select system filtering** - Filter roadmap by multiple systems
+- ✅ **Unsaved changes warning** - Prevents accidental data loss
 
 ---
 
@@ -101,16 +102,17 @@ The Dashboard is your main hub for viewing and managing initiatives.
 
 ### Dashboard Features
 
-**Top Navigation:**
-- **Dashboard**: Return to main dashboard (indigo button)
+**Top Navigation (CarelonRx Purple Theme):**
 - **User Guide**: Access this help documentation (gray button)
-- **View Roadmap**: See visual timeline (green button)
-- **New Initiative**: Create a new initiative (blue button)
-- **Analytics**: View system statistics and charts (orange button)
-- **Admin** (Admin only): Access user management (purple button)
+- **New Initiative**: Create a new initiative (purple button)
+- **View Roadmap**: See visual timeline (purple button)
 - **Profile Dropdown**: 
-  - Shows your profile image or initials
-  - Click to access "My Profile" or "Logout"
+  - Shows your profile image with purple gradient or initials
+  - Click to access:
+    - 👤 **My Profile**: Manage your account settings
+    - 📊 **Analytics**: View system statistics and charts
+    - 🛡️ **Admin Panel**: User management (admin only)
+    - 🚪 **Logout**: Sign out of the application
 
 **Initiative Table:**
 - **Search**: Filter initiatives by name or description
@@ -431,18 +433,23 @@ The Roadmap provides a visual timeline of all initiatives.
    - Roadmap updates instantly
    - Shows only initiatives with selected systems
 4. Initiatives are displayed as horizontal bars
-4. Bars span from start date to delivery date
-5. **On Hold initiatives** appear with:
+5. Bars span from start date to delivery date
+6. **On Hold initiatives** appear with:
    - Yellow striped pattern with dashed border
    - "(On Hold)" text after initiative name
    - Slightly transparent appearance
-6. Hover over bars to see:
+7. Hover over bars to see:
    - Initiative details
    - Dependent systems
    - PM SPOC information
    - JIRA links (clickable)
-7. Click on any bar to view full initiative details
-8. Use export buttons to save roadmap
+8. **Click on any bar** to view full initiative details in a modal popup
+9. **Hold Reason Display**: For "On Hold" initiatives, the modal shows:
+   - ⚠️ Yellow highlighted box with alert icon
+   - "Hold Reason" label in bold
+   - Complete reason text explaining why the initiative is paused
+   - Positioned prominently at the top for immediate visibility
+10. Use export buttons to save roadmap
 
 ### PDF Export
 
@@ -483,8 +490,13 @@ The Analytics Dashboard provides comprehensive insights into system usage, initi
 
 ### Accessing Analytics
 
-1. Click **"Analytics"** button from dashboard (orange button)
-2. View real-time statistics and charts
+**From Any Page:**
+1. Click on your **Profile Dropdown** (top right)
+2. Select **"Analytics"** from the menu
+3. View real-time statistics and charts
+
+**Navigation on Analytics Page:**
+- User Guide | Dashboard | New Initiative | View Roadmap | Profile ▼
 
 ### Summary Cards
 
@@ -937,17 +949,22 @@ Every initiative update is tracked with:
 **Application URL**: https://carelonrx-roadmap1.onrender.com  
 **API URL**: https://carelonrx-roadmap.onrender.com  
 
-**Recent Updates**:
-- ✅ Added view, edit, delete actions with permissions
-- ✅ Implemented detailed initiative view modal
-- ✅ Added unsaved changes warning
-- ✅ Implemented password encryption (bcrypt)
-- ✅ Implemented email encryption (AES-256)
-- ✅ Added session timeout (30 minutes)
-- ✅ Added Analytics Dashboard
-- ✅ Added system filtering on roadmap
-- ✅ Added hold reason for On Hold initiatives
-- ✅ Made PM/SPOC required for dependent systems
+**Recent Updates (v2.0 - June 2026)**:
+- ✅ **Rebranded to "Product 360"** - New application name
+- ✅ **CarelonRx Brand Theme** - Official purple color (#5009B5) throughout
+- ✅ **Hold Reason Display** - Prominent yellow box in roadmap modal
+- ✅ **Navigation Reorganization** - Analytics and Admin moved to profile dropdown
+- ✅ **Enhanced Button Styling** - Modern shadows and hover effects
+- ✅ **Complete Analytics Navigation** - New Initiative and View Roadmap buttons added
+- ✅ **View, Edit, Delete Actions** - Permission-based initiative management
+- ✅ **Detailed Initiative Modal** - Comprehensive information display
+- ✅ **Unsaved Changes Warning** - Prevents accidental data loss
+- ✅ **Password Encryption** - bcrypt hashing for security
+- ✅ **Email Encryption** - AES-256-CBC for data protection
+- ✅ **Session Timeout** - 30-minute automatic logout
+- ✅ **System Filtering** - Multi-select filter on roadmap
+- ✅ **Hold Reason Tracking** - Required for On Hold initiatives
+- ✅ **PM/SPOC Required** - Mandatory for dependent systems
 
 ---
 

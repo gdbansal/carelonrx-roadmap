@@ -22,27 +22,30 @@
 
 ### 4. Roadmap (1.5 min)
 - Click: "Roadmap" button
-- Show: Visual timeline
+- Show: Visual timeline with CarelonRx purple bars
 - Click: Initiative bar
-- **Highlight: Hold reason in yellow box** ⚠️
-- Show: Export options
+- **Highlight: Hold reason in yellow box with alert icon** ⚠️
+- Emphasize: "This ensures stakeholders immediately see why initiatives are paused"
+- Show: Export options (PDF/Excel)
 
 ### 5. Analytics (30 sec)
-- Click: "Analytics" button
+- Click: Profile dropdown → "Analytics"
 - Show: Charts and insights
+- Point out: Full navigation available (New Initiative, View Roadmap)
 
 ---
 
 ## 🎯 Key Features to Showcase
 
 ### Must Show
-1. ✅ **CarelonRx Purple Branding** (#5009B5)
-2. ✅ **WSJF Auto-Calculation**
-3. ✅ **Hold Reason Display** (in roadmap popup)
-4. ✅ **Dependent Systems** with PM SPOCs
-5. ✅ **Change History/Audit Trail**
-6. ✅ **Permission-Based Actions** (View/Edit/Delete)
-7. ✅ **Export Capabilities** (PDF/Excel)
+1. ✅ **Product 360 Branding** - New name throughout
+2. ✅ **CarelonRx Purple Theme** (#5009B5) - Official brand colors
+3. ✅ **Hold Reason Display** - Yellow box with alert icon in roadmap
+4. ✅ **Streamlined Navigation** - Analytics/Admin in profile dropdown
+5. ✅ **WSJF Auto-Calculation** - Objective prioritization
+6. ✅ **Dependent Systems** - PM SPOCs and JIRA links
+7. ✅ **Permission-Based Actions** - View/Edit/Delete based on role
+8. ✅ **Export Capabilities** - PDF and Excel for presentations
 
 ### Nice to Show
 - Search and filter

@@ -14,7 +14,7 @@
 - Display application login page with light purple gradient background
 
 ### Script
-> "Welcome to CarelonRx Product 360 - a comprehensive product initiative management platform designed to streamline your strategic planning process. Built with the official CarelonRx brand identity, this application helps teams manage, track, and visualize product initiatives from intake to delivery."
+> "Welcome to CarelonRx Product 360 - a comprehensive product initiative management platform designed to streamline your strategic planning process. Notice the clean, modern interface with the official CarelonRx purple branding throughout. This application helps teams manage, track, and visualize product initiatives from intake to delivery."
 
 ---
 
@@ -45,7 +45,7 @@
 4. Scroll through the initiatives table
 
 ### Script
-> "Upon login, users land on the dashboard - the central hub for all initiatives. At the top, we have real-time statistics showing total initiatives, budget approvals, and current quarter initiatives. The purple navigation buttons provide quick access to all major features."
+> "Upon login, users land on the dashboard - the central hub for all initiatives. At the top, we have real-time statistics showing total initiatives, budget approvals, and current quarter initiatives. Notice the clean navigation with CarelonRx purple buttons for New Initiative and View Roadmap. Analytics and Admin are now conveniently located in the profile dropdown menu for a cleaner interface."
 
 ### Key Points to Highlight
 - ✅ **Statistics Cards**: Total initiatives, budget approved/pending, quarterly view
@@ -152,7 +152,7 @@
 7. Demonstrate export options (PDF, Excel)
 
 ### Script
-> "The roadmap provides a visual timeline view of all initiatives. Each initiative is displayed as a colored bar across the months, color-coded by priority. Let's click on an initiative to see details. Notice for 'On Hold' initiatives, we prominently display the hold reason in a yellow highlighted box - this helps stakeholders understand why initiatives are paused. The roadmap can be exported to PDF or Excel for presentations and reports."
+> "The roadmap provides a visual timeline view of all initiatives. Each initiative is displayed as a colored bar across the months, color-coded by priority. Let's click on an initiative to see details. **This is a key feature** - for 'On Hold' initiatives, we prominently display the hold reason in a yellow highlighted box with an alert icon. This ensures stakeholders immediately understand why initiatives are paused - in this case, waiting for budget approval. The roadmap can be exported to PDF or Excel for presentations and reports."
 
 ### Key Points to Highlight
 - ✅ **Visual timeline** by year and quarter
@@ -178,7 +178,7 @@
 4. Highlight insights
 
 ### Script
-> "The analytics dashboard provides insights into your initiative portfolio. We can see distribution by priority, budget status, quarterly trends, and program breakdown. These visualizations help identify bottlenecks and make data-driven decisions."
+> "To access analytics, click on the profile dropdown and select Analytics. The analytics dashboard provides insights into your initiative portfolio with charts showing distribution by priority, budget status, quarterly trends, and program breakdown. Notice the full navigation is available here too - you can create new initiatives or view the roadmap directly from analytics. These visualizations help identify bottlenecks and make data-driven decisions."
 
 ### Key Points to Highlight
 - ✅ **Priority distribution** charts
@@ -196,7 +196,7 @@
 3. Show role assignment capabilities
 
 ### Script
-> "For administrators, there's a dedicated admin panel for user management. Admins can view all users, assign roles, and manage permissions. This ensures proper access control across the organization."
+> "For administrators, the admin panel is accessible from the profile dropdown. Here, admins can view all users, assign roles, and manage permissions. This ensures proper access control across the organization while keeping the main navigation clean and focused."
 
 ### Key Points to Highlight
 - ✅ **User management**
@@ -310,13 +310,16 @@
 
 ## Key Messages to Emphasize
 
-1. **"Built with CarelonRx brand guidelines"** - Official purple color (#5009B5)
-2. **"Comprehensive initiative management"** - From intake to delivery
-3. **"Role-based security"** - Admin, creator, and viewer permissions
-4. **"Visual roadmap planning"** - Timeline view with hold reasons
-5. **"Data-driven insights"** - Analytics and reporting
-6. **"Audit trail"** - Complete change history
-7. **"Export capabilities"** - PDF and Excel for presentations
+1. **"CarelonRx Product 360"** - New brand name for product initiative management
+2. **"Official CarelonRx purple theme"** - Brand color (#5009B5) throughout
+3. **"Hold reason visibility"** - Yellow highlighted box in roadmap for transparency
+4. **"Streamlined navigation"** - Analytics and Admin in profile dropdown
+5. **"Comprehensive initiative management"** - From intake to delivery
+6. **"Role-based security"** - Admin, creator, and viewer permissions
+7. **"Visual roadmap planning"** - Interactive timeline with color-coded priorities
+8. **"Data-driven insights"** - Analytics dashboard with charts
+9. **"Complete audit trail"** - Full change history tracking
+10. **"Export capabilities"** - PDF and Excel for presentations
 
 ---
 
