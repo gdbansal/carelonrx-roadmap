@@ -837,6 +837,11 @@
                 }
             });
 
+            const userBusinessValue = parseFloat(document.getElementById('userBusinessValue').value);
+            const timeCriticality = parseFloat(document.getElementById('timeCriticality').value);
+            const riskReduction = parseFloat(document.getElementById('riskReduction').value);
+            const jobSize = parseFloat(document.getElementById('jobSize').value);
+
             const formData = {
                 name: document.getElementById('initiativeName').value,
                 description: document.getElementById('description').value,
@@ -848,10 +853,10 @@
                 budgetApproved: document.getElementById('budgetApproved').value === 'true',
                 priority: document.getElementById('priority').value,
                 wsjf: parseFloat(document.getElementById('wsjf').value),
-                userBusinessValue: parseFloat(document.getElementById('userBusinessValue').value),
-                timeCriticality: parseFloat(document.getElementById('timeCriticality').value),
-                riskReduction: parseFloat(document.getElementById('riskReduction').value),
-                jobSize: parseFloat(document.getElementById('jobSize').value),
+                userBusinessValue: !isNaN(userBusinessValue) ? userBusinessValue : null,
+                timeCriticality: !isNaN(timeCriticality) ? timeCriticality : null,
+                riskReduction: !isNaN(riskReduction) ? riskReduction : null,
+                jobSize: !isNaN(jobSize) ? jobSize : null,
                 owner: document.getElementById('owner').value,
                 dependentSystems: dependentSystemsData,
                 businessValue: document.getElementById('businessValue').value,
