@@ -560,6 +560,16 @@
         if (initiativeId) {
             isEditMode = true;
             loadInitiativeData(initiativeId);
+        } else {
+            // Set current year as default for new initiatives
+            const currentYear = new Date().getFullYear().toString();
+            const yearSelect = document.getElementById('year');
+            if (yearSelect) {
+                const yearOption = yearSelect.querySelector(`option[value="${currentYear}"]`);
+                if (yearOption) {
+                    yearSelect.value = currentYear;
+                }
+            }
         }
 
         async function loadInitiativeData(id) {
