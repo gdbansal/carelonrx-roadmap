@@ -1,4 +1,4 @@
-# CarelonRx Roadmap - User Guide
+# CarelonRx Product 360 - User Guide
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -20,7 +20,7 @@
 
 ## Introduction
 
-**CarelonRx Roadmap** is a Product Initiative Management system designed to help teams plan, track, and visualize product initiatives across quarters and years.
+**CarelonRx Product 360** is a comprehensive product initiative management system designed to help teams plan, track, and visualize product initiatives across quarters and years.
 
 ### Key Features
 - ✅ Initiative intake and tracking

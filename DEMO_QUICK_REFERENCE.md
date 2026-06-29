@@ -1,4 +1,4 @@
-# CarelonRx Roadmap - Demo Quick Reference
+# CarelonRx Product 360 - Demo Quick Reference
 
 ## 🎬 Quick Demo Flow (5 Minutes)
 
@@ -55,7 +55,7 @@
 ## 📝 Talking Points Cheat Sheet
 
 ### Opening
-> "CarelonRx Roadmap - comprehensive product initiative management with official brand identity"
+> "CarelonRx Product 360 - comprehensive product initiative management with official brand identity"
 
 ### Dashboard
 > "Real-time statistics, WSJF-sorted initiatives, permission-based actions"

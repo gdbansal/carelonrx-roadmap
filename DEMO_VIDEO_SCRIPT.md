@@ -1,9 +1,9 @@
-# CarelonRx Roadmap - Demo Video Script
+# CarelonRx Product 360 - Demo Video Script
 
 ## Video Overview
 **Duration:** 5-7 minutes  
 **Target Audience:** Product managers, executives, and stakeholders  
-**Purpose:** Showcase the CarelonRx Roadmap application features and capabilities
+**Purpose:** Showcase the CarelonRx Product 360 application features and capabilities
 
 ---
 
@@ -14,7 +14,7 @@
 - Display application login page with light purple gradient background
 
 ### Script
-> "Welcome to the CarelonRx Roadmap application - a comprehensive product initiative management platform designed to streamline your strategic planning process. Built with the official CarelonRx brand identity, this application helps teams manage, track, and visualize product initiatives from intake to delivery."
+> "Welcome to CarelonRx Product 360 - a comprehensive product initiative management platform designed to streamline your strategic planning process. Built with the official CarelonRx brand identity, this application helps teams manage, track, and visualize product initiatives from intake to delivery."
 
 ---
 
@@ -237,7 +237,7 @@
 - Display CarelonRx logo
 
 ### Script
-> "The CarelonRx Roadmap application provides a complete solution for product initiative management - from intake to visualization to analytics. With its intuitive interface, robust features, and official CarelonRx branding, it's designed to streamline your strategic planning process. Thank you for watching!"
+> "CarelonRx Product 360 provides a complete solution for product initiative management - from intake to visualization to analytics. With its intuitive interface, robust features, and official CarelonRx branding, it's designed to streamline your strategic planning process. Thank you for watching!"
 
 ---
 
