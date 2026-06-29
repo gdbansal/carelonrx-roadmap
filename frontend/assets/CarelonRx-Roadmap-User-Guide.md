@@ -10,9 +10,11 @@
 7. [Creating Initiatives](#creating-initiatives)
 8. [Managing Initiatives](#managing-initiatives)
 9. [Roadmap View](#roadmap-view)
-10. [Admin Panel](#admin-panel)
-11. [Data Persistence](#data-persistence)
-12. [Troubleshooting](#troubleshooting)
+10. [Analytics Dashboard](#analytics-dashboard)
+11. [Admin Panel](#admin-panel)
+12. [Session Management](#session-management)
+13. [Data Persistence](#data-persistence)
+14. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -23,15 +25,20 @@
 ### Key Features
 - ✅ Initiative intake and tracking
 - ✅ WSJF (Weighted Shortest Job First) prioritization
-- ✅ Visual roadmap timeline
+- ✅ Visual roadmap timeline with system filtering
 - ✅ Role-based access control
 - ✅ User profile management with image upload
 - ✅ User management (Admin)
 - ✅ Budget approval tracking
-- ✅ Dependent systems management
+- ✅ Dependent systems management with mandatory PM/SPOC
+- ✅ Hold reason tracking for paused initiatives
+- ✅ Analytics dashboard with charts and statistics
+- ✅ 30-minute session timeout for security
 - ✅ Persistent data storage with MongoDB
 - ✅ Complete change history and audit trails
 - ✅ PDF and Excel export capabilities
+- ✅ Multi-select system filtering on roadmap
+- ✅ Auto-populated current year for new initiatives
 
 ---
 
@@ -99,6 +106,7 @@ The Dashboard is your main hub for viewing and managing initiatives.
 - **User Guide**: Access this help documentation (gray button)
 - **View Roadmap**: See visual timeline (green button)
 - **New Initiative**: Create a new initiative (blue button)
+- **Analytics**: View system statistics and charts (orange button)
 - **Admin** (Admin only): Access user management (purple button)
 - **Profile Dropdown**: 
   - Shows your profile image or initials
@@ -249,17 +257,22 @@ To change your password:
    - **Initiative Name** (required)
    - **Description** (required)
    - **Program** (required)
-   - **Year** (required): 2025-2030
+   - **Year** (required): Auto-populated with current year (2026), can be changed
    - **Quarter** (required): Q1-Q4
-   - **Start Date** (required)
-   - **Delivery Date** (required)
+   - **Start Date** (if known)
+   - **Delivery Date** (if known)
 
-3. Set **Priority**:
+3. Set **Priority** (required):
    - Critical
    - High
    - Medium
    - Low
    - On Hold (for paused/deferred initiatives)
+   
+4. If **Priority is "On Hold"**, provide **Hold Reason** (required):
+   - Explain why the initiative is on hold
+   - Maximum 500 characters
+   - Examples: "Waiting for budget approval", "Resource constraints", "Dependency blocked"
 
 4. Enter **WSJF Components** (Fibonacci numbers: 1, 2, 3, 5, 8, 13, 21):
    - **User-Business Value**: Business impact
@@ -274,8 +287,10 @@ To change your password:
 
 7. Add **Dependent Systems** (optional):
    - System Name (Available systems: Bioplus Intel Engine, Bioplus V, Intel Engine, CPDL, CPFR, CFX, Digital Integrated, Digital Standalone Mobile, Digital Standalone Portal, IDL, PPI, PST, SOA, CCT, Enterprise Rx, Payment Hub, Self Service Portal)
-   - PM SPOC (Point of Contact) - Autocomplete available with existing names
-   - JIRA URL
+   - **PM SPOC (Point of Contact)** - **REQUIRED** when adding a system
+     - Autocomplete available with existing names
+     - Type to see suggestions from previous entries
+   - JIRA URL (optional)
 
 8. Set **Budget Approval** status
 
@@ -337,11 +352,16 @@ The Roadmap provides a visual timeline of all initiatives.
   - High: Orange gradient
   - Medium: Blue gradient
   - Low: Gray gradient
-  - On Hold: Yellow gradient with dashed border and "(On Hold)" suffix
+  - On Hold: **Purple gradient** with dashed border (unique color for easy identification)
 - **Timeline Bars**: Show start and end dates
 - **Quarter Markers**: Visual indicators for Q1, Q2, Q3, Q4
 - **Hover Details**: See initiative info and dependent systems on hover
 - **Year Filter**: Select year to view (2024-2027)
+- **System Filter**: Multi-select filter to view initiatives by dependent systems
+  - Select one or multiple systems
+  - Shows only initiatives with selected systems
+  - "Select All" option available
+  - "Clear All" to reset filter
 - **Export Options**:
   - Download as PDF (includes all 12 months)
   - Export to Excel (detailed data export)
@@ -351,7 +371,12 @@ The Roadmap provides a visual timeline of all initiatives.
 
 1. Click **"View Roadmap"** from dashboard
 2. Select year from dropdown (default: current year)
-3. Initiatives are displayed as horizontal bars
+3. **Optional**: Filter by systems
+   - Click "Filter by System (All)" button
+   - Check one or more systems
+   - Roadmap updates instantly
+   - Shows only initiatives with selected systems
+4. Initiatives are displayed as horizontal bars
 4. Bars span from start date to delivery date
 5. **On Hold initiatives** appear with:
    - Yellow striped pattern with dashed border
@@ -395,6 +420,191 @@ The Roadmap provides a visual timeline of all initiatives.
 2. Click **"Export Excel"** button
 3. Excel file downloads automatically
 4. File name format: `CarelonRx_Roadmap_YYYY.xlsx`
+
+---
+
+## Analytics Dashboard
+
+The Analytics Dashboard provides comprehensive insights into system usage, initiative distribution, and user activity.
+
+### Accessing Analytics
+
+1. Click **"Analytics"** button from dashboard (orange button)
+2. View real-time statistics and charts
+
+### Summary Cards
+
+**Four Key Metrics Displayed:**
+1. **Total Users**: Count of all registered users
+2. **Total Initiatives**: Count of all initiatives
+3. **Active Initiatives**: Initiatives not on hold
+4. **This Year**: Initiatives for current year (2026)
+
+### Visual Charts
+
+**1. Priority Distribution (Doughnut Chart)**
+- Shows breakdown of initiatives by priority
+- Color-coded: Critical (Red), High (Orange), Medium (Blue), Low (Gray), On Hold (Purple)
+- Interactive hover for percentages
+
+**2. Initiatives by Year (Bar Chart)**
+- Distribution across years (2024-2027)
+- Vertical bars for easy comparison
+- Shows planning trends
+
+**3. Program Distribution (Pie Chart)**
+- AHD vs Bioplus split
+- Percentage breakdown
+- Interactive hover
+
+**4. Quarter Distribution (Bar Chart)**
+- Current year (2026) only
+- Q1, Q2, Q3, Q4 breakdown
+- Helps with capacity planning
+
+### System Usage Statistics Table
+
+**Columns:**
+- **System Name**: Dependent system name
+- **Initiatives**: Count of initiatives using this system
+- **Percentage**: Percentage of total system references
+- **Usage Bar**: Visual progress bar
+
+**Features:**
+- Sorted by usage (highest first)
+- Identifies most-used systems
+- Helps with resource planning
+- Tracks dependencies
+
+**Insights:**
+- Which systems are most critical
+- Underutilized systems
+- Capacity planning data
+- Dependency patterns
+
+### User Activity Table
+
+**Columns:**
+- **User**: Name or username
+- **Email**: User email address
+- **Role**: Admin or User badge (color-coded)
+- **Initiatives Created**: Count of initiatives
+- **Last Active**: Last login date
+
+**Features:**
+- Sorted by initiatives created (highest first)
+- Identifies top contributors
+- Tracks user engagement
+- Monitors activity levels
+
+**Use Cases:**
+- Recognize active contributors
+- Identify inactive users
+- Track team productivity
+- Plan user training
+
+### Benefits
+
+**Data-Driven Decisions:**
+- Visual insights at a glance
+- Identify trends and patterns
+- Track system dependencies
+- Monitor user engagement
+
+**Resource Planning:**
+- See system workload
+- Identify bottlenecks
+- Plan capacity
+- Allocate resources
+
+**Performance Tracking:**
+- Track initiative distribution
+- Monitor priority balance
+- Measure user activity
+- Assess program health
+
+---
+
+## Session Management
+
+The application includes automatic session timeout for security.
+
+### Session Timeout
+
+**Duration**: 30 minutes of inactivity
+
+**How It Works:**
+1. Session timer starts when you login
+2. Timer resets with any user activity:
+   - Mouse movements
+   - Keyboard input
+   - Clicks
+   - Scrolling
+3. After 25 minutes of inactivity, a warning appears
+4. After 30 minutes, automatic logout
+
+### Session Warning
+
+**5-Minute Warning:**
+- Appears at 25 minutes of inactivity
+- Modal dialog with two options:
+  1. **"Stay Logged In"**: Extends session for another 30 minutes
+  2. **"Logout Now"**: Immediately logs you out
+
+**Warning Message:**
+```
+⚠️ Session Expiring Soon
+Your session will expire in 5 minutes
+
+You will be automatically logged out due to inactivity.
+Click "Stay Logged In" to continue your session.
+
+[Stay Logged In]  [Logout Now]
+```
+
+### Automatic Logout
+
+**After 30 Minutes:**
+- Session expires automatically
+- User data cleared from browser
+- Redirected to login page
+- Message displayed: "Your session has expired due to inactivity. Please login again."
+
+### Activity Tracking
+
+**Actions That Reset Timer:**
+- ✅ Mouse movements
+- ✅ Mouse clicks
+- ✅ Keyboard input
+- ✅ Scrolling
+- ✅ Touch events (mobile)
+- ✅ Any interaction with the page
+
+**Actions That Don't Reset Timer:**
+- ❌ Just having the page open
+- ❌ Background tabs
+- ❌ Minimized windows
+
+### Security Benefits
+
+**Why Session Timeout:**
+- 🔒 Prevents unauthorized access to unattended sessions
+- 🛡️ Protects sensitive initiative data
+- ✅ Meets security best practices
+- 📋 Compliance with security policies
+
+**Best Practices:**
+- Don't leave your computer unattended while logged in
+- Lock your computer when stepping away
+- Click "Stay Logged In" if you're still working
+- Logout manually when done for the day
+
+### Tips
+
+- **Working on long tasks?** The timer resets with any activity
+- **Got the warning?** Click "Stay Logged In" to continue
+- **Stepped away?** You'll need to login again after 30 minutes
+- **Multiple tabs?** Activity in any tab resets the timer
 
 ---
 
