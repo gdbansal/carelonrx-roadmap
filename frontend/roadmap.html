@@ -176,16 +176,6 @@
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         <span>New Initiative</span>
                     </button>
-                    <button onclick="window.location.href='analytics.html'" 
-                        class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
-                        <i data-lucide="trending-up" class="w-4 h-4"></i>
-                        <span>Analytics</span>
-                    </button>
-                    <button id="adminLink" onclick="window.location.href='admin.html'" 
-                        class="hidden btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
-                        <i data-lucide="shield" class="w-4 h-4"></i>
-                        <span>Admin</span>
-                    </button>
                     <!-- Profile Dropdown -->
                     <div class="relative">
                         <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
@@ -202,6 +192,14 @@
                             <a href="profile.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
                                 <i data-lucide="user" class="w-4 h-4"></i>
                                 <span>My Profile</span>
+                            </a>
+                            <a href="analytics.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="trending-up" class="w-4 h-4"></i>
+                                <span>Analytics</span>
+                            </a>
+                            <a id="adminDropdownLink" href="admin.html" class="hidden px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="shield" class="w-4 h-4"></i>
+                                <span>Admin Panel</span>
                             </a>
                             <hr class="my-2">
                             <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
@@ -367,6 +365,11 @@
                 document.getElementById('userImage').src = user.profileImage;
                 document.getElementById('userImage').classList.remove('hidden');
                 document.getElementById('userInitials').classList.add('hidden');
+            }
+            
+            // Show admin link if user is admin
+            if (user.role === 'admin') {
+                document.getElementById('adminDropdownLink').classList.remove('hidden');
             }
         }
 
