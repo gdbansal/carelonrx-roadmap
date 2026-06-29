@@ -288,3 +288,134 @@ a.carelon-link:hover {
     border-left: 4px solid var(--carelon-purple);
     color: var(--carelon-purple-dark);
 }
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Mobile Navigation */
+@media (max-width: 768px) {
+    /* Hide button text on mobile, show icons only */
+    .nav-button-text {
+        display: none;
+    }
+    
+    /* Adjust button padding for icon-only view */
+    nav button {
+        padding: 0.5rem !important;
+    }
+    
+    /* Make logo smaller on mobile */
+    nav img {
+        height: 2rem !important;
+    }
+    
+    /* Stack navigation items */
+    nav .flex.items-center.space-x-4 {
+        gap: 0.5rem;
+    }
+    
+    /* Adjust container padding */
+    .container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    
+    /* Make tables horizontally scrollable */
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Adjust card grid for mobile */
+    .grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Make modals full screen on mobile */
+    .modal-content {
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        max-height: 100vh !important;
+    }
+    
+    /* Adjust form inputs for mobile */
+    input, select, textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+    
+    /* Stack form columns on mobile */
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Adjust statistics cards */
+    .stats-card {
+        padding: 1rem !important;
+    }
+    
+    /* Make buttons full width on mobile */
+    .mobile-full-width {
+        width: 100% !important;
+    }
+    
+    /* Adjust profile dropdown */
+    #profileDropdown {
+        right: 0;
+        left: auto;
+        min-width: 200px;
+    }
+    
+    /* Hide subtitle on very small screens */
+    @media (max-width: 480px) {
+        nav p.text-xs {
+            display: none;
+        }
+        
+        nav h1 {
+            font-size: 1rem !important;
+        }
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+    
+    /* 2 column grid on tablets */
+    .grid.grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    button, a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Remove hover effects on touch devices */
+    button:hover, a:hover {
+        transform: none !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    nav, .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+    
+    .container {
+        max-width: 100% !important;
+    }
+}

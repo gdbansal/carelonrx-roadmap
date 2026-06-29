@@ -88,6 +88,7 @@ const initiativeSchema = new mongoose.Schema({
     dependentSystems: [dependentSystemSchema],
     businessValue: String,
     risks: String,
+    dependencies: String,
     createdAt: {
         type: Date,
         default: Date.now
