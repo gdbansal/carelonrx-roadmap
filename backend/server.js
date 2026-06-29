@@ -206,6 +206,7 @@ app.get('/api/initiatives', authMiddleware, async (req, res) => {
                 deliveryDate: i.deliveryDate,
                 budgetApproved: i.budgetApproved,
                 priority: i.priority,
+                holdReason: i.holdReason,
                 wsjf: i.wsjf,
                 userBusinessValue: i.userBusinessValue,
                 timeCriticality: i.timeCriticality,
@@ -250,6 +251,7 @@ app.get('/api/initiatives/:id', authMiddleware, async (req, res) => {
                     deliveryDate: initiative.deliveryDate,
                     budgetApproved: initiative.budgetApproved,
                     priority: initiative.priority,
+                    holdReason: initiative.holdReason,
                     wsjf: initiative.wsjf,
                     userBusinessValue: initiative.userBusinessValue,
                     timeCriticality: initiative.timeCriticality,
@@ -366,7 +368,7 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
         // Track field-level changes
         const fieldChanges = [];
         const fieldsToTrack = ['name', 'description', 'program', 'year', 'quarter', 'startDate', 'deliveryDate', 
-                               'budgetApproved', 'priority', 'wsjf', 'userBusinessValue', 'timeCriticality', 
+                               'budgetApproved', 'priority', 'holdReason', 'wsjf', 'userBusinessValue', 'timeCriticality', 
                                'riskReduction', 'jobSize', 'owner', 'businessValue', 'risks'];
         
         fieldsToTrack.forEach(field => {

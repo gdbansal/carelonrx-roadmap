@@ -168,7 +168,7 @@
                             <label for="priority" class="block text-sm font-semibold text-gray-700 mb-2">
                                 Priority Alignment <span class="text-red-500">*</span>
                             </label>
-                            <select id="priority" required
+                            <select id="priority" required onchange="toggleHoldReason()"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">Select Priority</option>
                                 <option value="Critical">Critical</option>
@@ -177,6 +177,16 @@
                                 <option value="Low">Low</option>
                                 <option value="On Hold">On Hold</option>
                             </select>
+                        </div>
+
+                        <div id="holdReasonContainer" class="hidden">
+                            <label for="holdReason" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Hold Reason <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="holdReason" rows="2" maxlength="500"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Explain why this initiative is on hold"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
                         </div>
 
                         <div class="md:col-span-2">
@@ -426,6 +436,22 @@
 
         loadUserProfile();
 
+        // Toggle Hold Reason field based on priority selection
+        function toggleHoldReason() {
+            const priority = document.getElementById('priority').value;
+            const holdReasonContainer = document.getElementById('holdReasonContainer');
+            const holdReasonField = document.getElementById('holdReason');
+            
+            if (priority === 'On Hold') {
+                holdReasonContainer.classList.remove('hidden');
+                holdReasonField.setAttribute('required', 'required');
+            } else {
+                holdReasonContainer.classList.add('hidden');
+                holdReasonField.removeAttribute('required');
+                holdReasonField.value = ''; // Clear the field when hidden
+            }
+        }
+
         // Calculate WSJF automatically
         function calculateWSJF() {
             const userBusinessValue = parseFloat(document.getElementById('userBusinessValue').value) || 0;
@@ -621,6 +647,8 @@
                     document.getElementById('deliveryDate').value = initiative.deliveryDate || '';
                     document.getElementById('budgetApproved').value = initiative.budgetApproved ? 'true' : 'false';
                     document.getElementById('priority').value = initiative.priority || '';
+                    document.getElementById('holdReason').value = initiative.holdReason || '';
+                    toggleHoldReason(); // Show/hide hold reason based on priority
                     document.getElementById('userBusinessValue').value = initiative.userBusinessValue || '';
                     document.getElementById('timeCriticality').value = initiative.timeCriticality || '';
                     document.getElementById('riskReduction').value = initiative.riskReduction || '';
@@ -863,6 +891,7 @@
                 deliveryDate: document.getElementById('deliveryDate').value || null,
                 budgetApproved: document.getElementById('budgetApproved').value === 'true',
                 priority: document.getElementById('priority').value,
+                holdReason: document.getElementById('holdReason').value || null,
                 wsjf: parseFloat(document.getElementById('wsjf').value),
                 userBusinessValue: !isNaN(userBusinessValue) ? userBusinessValue : null,
                 timeCriticality: !isNaN(timeCriticality) ? timeCriticality : null,

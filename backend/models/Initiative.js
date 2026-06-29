@@ -57,6 +57,10 @@ const initiativeSchema = new mongoose.Schema({
         required: true,
         enum: ['Critical', 'High', 'Medium', 'Low', 'On Hold']
     },
+    holdReason: {
+        type: String,
+        default: null
+    },
     wsjf: {
         type: Number,
         required: true
