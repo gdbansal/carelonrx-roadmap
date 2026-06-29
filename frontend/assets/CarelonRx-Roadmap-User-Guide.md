@@ -273,8 +273,8 @@ To change your password:
 6. Enter **Business Value** and **Risks**
 
 7. Add **Dependent Systems** (optional):
-   - System Name (Available systems: Bioplus Intel Engine, Bioplus V, Intel Engine, CPDL, CPFR, CFX, Digital Integrated, Digital Standalone, IDL, PPI, PST, SOA, CCT, Enterprise Rx, Payment Hub, Self Service Portal)
-   - PM SPOC (Point of Contact)
+   - System Name (Available systems: Bioplus Intel Engine, Bioplus V, Intel Engine, CPDL, CPFR, CFX, Digital Integrated, Digital Standalone Mobile, Digital Standalone Portal, IDL, PPI, PST, SOA, CCT, Enterprise Rx, Payment Hub, Self Service Portal)
+   - PM SPOC (Point of Contact) - Autocomplete available with existing names
    - JIRA URL
 
 8. Set **Budget Approval** status
