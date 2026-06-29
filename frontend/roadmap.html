@@ -323,10 +323,6 @@
         if (!user.username) {
             window.location.href = 'login.html';
         }
-        
-        if (user.role === 'admin') {
-            document.getElementById('adminLink').classList.remove('hidden');
-        }
 
         function logout() {
             localStorage.removeItem('user');
