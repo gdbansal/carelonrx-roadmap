@@ -229,10 +229,6 @@
         if (!user.username) {
             window.location.href = 'login.html';
         }
-        
-        if (user.role === 'admin') {
-            document.getElementById('adminLink').classList.remove('hidden');
-        }
 
         function logout() {
             localStorage.removeItem('user');
@@ -271,6 +267,11 @@
                 document.getElementById('userImage').src = user.profileImage;
                 document.getElementById('userImage').classList.remove('hidden');
                 document.getElementById('userInitials').classList.add('hidden');
+            }
+            
+            // Show admin link if user is admin
+            if (user.role === 'admin') {
+                document.getElementById('adminDropdownLink').classList.remove('hidden');
             }
         }
 
