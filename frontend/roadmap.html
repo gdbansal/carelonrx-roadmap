@@ -731,6 +731,11 @@
             const initiative = allInitiatives.find(i => i.id === id);
             if (!initiative) return;
 
+            // Debug logging
+            console.log('Initiative details:', initiative);
+            console.log('Priority:', initiative.priority);
+            console.log('Hold Reason:', initiative.holdReason);
+
             document.getElementById('modalTitle').textContent = initiative.name;
             document.getElementById('modalContent').innerHTML = `
                 <div class="space-y-4">
@@ -866,7 +871,8 @@
                 'Critical': 'bg-red-100 text-red-800',
                 'High': 'bg-orange-100 text-orange-800',
                 'Medium': 'bg-blue-100 text-blue-800',
-                'Low': 'bg-gray-100 text-gray-800'
+                'Low': 'bg-gray-100 text-gray-800',
+                'On Hold': 'bg-yellow-100 text-yellow-800'
             };
             return classes[priority] || 'bg-gray-100 text-gray-800';
         }
