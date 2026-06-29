@@ -897,7 +897,9 @@
                         window.location.href = 'dashboard.html';
                     }, 2000);
                 } else {
-                    showError(data.message || 'Failed to save initiative');
+                    const errorMsg = data.error ? `${data.message}: ${data.error}` : data.message;
+                    showError(errorMsg || 'Failed to save initiative');
+                    console.error('Server error:', data);
                 }
             } catch (error) {
                 showError('Unable to connect to server. Please ensure the backend is running.');

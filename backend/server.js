@@ -324,7 +324,8 @@ app.post('/api/initiatives', authMiddleware, async (req, res) => {
         console.error('Error creating initiative:', error);
         res.status(500).json({
             success: false,
-            message: 'Error creating initiative'
+            message: 'Error creating initiative',
+            error: error.message || 'Unknown error'
         });
     }
 });
