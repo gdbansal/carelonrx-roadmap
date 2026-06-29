@@ -6,6 +6,7 @@
     <title>CarelonRx Roadmap - Initiative Intake</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="assets/session-manager.js"></script>
 </head>
 <body class="bg-gray-50">
     <nav class="bg-white shadow-lg">
@@ -489,7 +490,7 @@
                         <option value="">Select System</option>
                         ${dependentSystems.map(sys => `<option value="${sys}">${sys}</option>`).join('')}
                     </select>
-                    <input type="text" placeholder="PM/SPOC Name" list="pmSpocList"
+                    <input type="text" placeholder="PM/SPOC Name *" list="pmSpocList" required
                         class="system-pm-spoc px-3 py-2 border border-gray-300 rounded-lg text-sm">
                     <input type="url" placeholder="JIRA URL (e.g., https://jira.company.com/browse/PROJ-123)" 
                         class="system-jira-url px-3 py-2 border border-gray-300 rounded-lg text-sm">
