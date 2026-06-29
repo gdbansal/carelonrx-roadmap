@@ -24,21 +24,36 @@ async function updateUserRole() {
         await mongoose.connect(MONGODB_URI);
         console.log('✅ Connected to MongoDB\n');
 
-        // Find the user
+        // List all users first
+        console.log('📋 All users in database:');
+        const allUsers = await User.find({}, 'username name email role');
+        allUsers.forEach(u => {
+            console.log(`   - ${u.username} | ${u.name} | ${u.email} | Role: ${u.role}`);
+        });
+        console.log();
+
+        // Find the user by username
         const username = 'gagandeep.bansal';
-        const user = await User.findOne({ username });
+        let user = await User.findOne({ username });
 
         if (!user) {
-            console.log(`❌ User '${username}' not found in database`);
-            console.log('\n📋 Available users:');
-            const allUsers = await User.find({}, 'username name role');
-            allUsers.forEach(u => {
-                console.log(`   - ${u.username} (${u.name}) - Role: ${u.role}`);
-            });
-            return;
+            console.log(`❌ User '${username}' not found by username`);
+            
+            // Try to find by email
+            console.log('� Trying to find by email...');
+            user = await User.findOne({ email: /gagandeep\.bansal/i });
+            
+            if (!user) {
+                console.log('❌ User not found by email either');
+                console.log('\n💡 Please check the exact username in the list above');
+                return;
+            } else {
+                console.log(`✅ Found user by email: ${user.username}`);
+            }
         }
 
-        console.log(`📊 Current user details:`);
+        console.log(`\n📊 Current user details:`);
+        console.log(`   ID: ${user._id}`);
         console.log(`   Username: ${user.username}`);
         console.log(`   Name: ${user.name}`);
         console.log(`   Email: ${user.email}`);
@@ -50,16 +65,23 @@ async function updateUserRole() {
         } else {
             console.log(`🔄 Updating role from '${user.role}' to 'admin'...`);
             
-            await User.updateOne(
+            // Use direct MongoDB update
+            const result = await User.collection.updateOne(
                 { _id: user._id },
                 { $set: { role: 'admin' } }
             );
             
-            console.log('✅ Role updated successfully!');
+            console.log(`📝 Update result: ${result.modifiedCount} document(s) modified`);
             
-            // Verify the update
-            const updatedUser = await User.findOne({ username });
+            // Verify the update by fetching fresh from DB
+            const updatedUser = await User.findById(user._id);
             console.log(`\n✅ Verified - New role: ${updatedUser.role}`);
+            
+            if (updatedUser.role === 'admin') {
+                console.log('🎉 SUCCESS! Role updated to admin!');
+            } else {
+                console.log('⚠️  WARNING: Role may not have updated correctly');
+            }
         }
 
         console.log('\n🎉 User now has admin privileges!');
@@ -67,10 +89,12 @@ async function updateUserRole() {
         console.log('   - Admin Panel');
         console.log('   - User Management');
         console.log('   - All Initiatives (view/edit/delete)');
-        console.log('   - System Settings\n');
+        console.log('   - System Settings');
+        console.log('\n💡 User needs to logout and login again to see changes\n');
 
     } catch (error) {
         console.error('❌ Error:', error.message);
+        console.error('Stack:', error.stack);
     } finally {
         await mongoose.connection.close();
         console.log('🔌 Database connection closed');
