@@ -61,6 +61,22 @@ const initiativeSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    userBusinessValue: {
+        type: Number,
+        default: null
+    },
+    timeCriticality: {
+        type: Number,
+        default: null
+    },
+    riskReduction: {
+        type: Number,
+        default: null
+    },
+    jobSize: {
+        type: Number,
+        default: null
+    },
     owner: {
         type: String,
         required: true

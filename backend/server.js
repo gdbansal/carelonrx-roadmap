@@ -357,7 +357,8 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
         // Track field-level changes
         const fieldChanges = [];
         const fieldsToTrack = ['name', 'description', 'program', 'year', 'quarter', 'startDate', 'deliveryDate', 
-                               'budgetApproved', 'priority', 'wsjf', 'owner', 'businessValue', 'risks'];
+                               'budgetApproved', 'priority', 'wsjf', 'userBusinessValue', 'timeCriticality', 
+                               'riskReduction', 'jobSize', 'owner', 'businessValue', 'risks'];
         
         fieldsToTrack.forEach(field => {
             if (req.body[field] !== undefined && req.body[field] !== initiative[field]) {
