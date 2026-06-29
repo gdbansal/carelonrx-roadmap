@@ -113,27 +113,63 @@ The Dashboard is your main hub for viewing and managing initiatives.
   - Click to access "My Profile" or "Logout"
 
 **Initiative Table:**
-- **Search**: Filter initiatives by name
-- **Columns**:
-  - Initiative Name
-  - Program
-  - Year/Quarter
+- **Search**: Filter initiatives by name or description
+- **Year Filter**: Filter by specific year or view all
+- **Sortable Columns** (click header to sort):
+  - Initiative Name & Description
+  - Year
+  - Quarter (Q1, Q2, Q3, Q4)
+  - Budget Status (Approved/Pending)
   - Priority (Critical, High, Medium, Low, On Hold)
   - WSJF Score (sorted highest first by default)
-  - Budget Status
-  - Owner
-  - Actions (View, Edit, Delete)
+- **Actions Column**:
+  - 👁️ **View**: View detailed initiative information (all users)
+  - ✏️ **Edit**: Edit initiative (admin or creator only)
+  - 🗑️ **Delete**: Delete initiative (admin or creator only)
 
 **Statistics Cards:**
 - Total Initiatives
 - Budget Approved
 - Budget Pending
-- Average WSJF
+- This Quarter (current quarter initiatives)
+
+### Initiative Actions
+
+#### View Initiative (All Users)
+1. Click the 👁️ **View** (eye) icon in the Actions column
+2. A detailed modal will open showing:
+   - Initiative name, priority, budget status, and WSJF score
+   - Program, owner, year/quarter, and timeline
+   - Full description
+   - Hold reason (if applicable)
+   - WSJF components (User Value, Time Criticality, RR/OE, Job Size)
+   - Business value and risks
+   - Dependent systems with PM/SPOC and JIRA links
+3. Click **Close** to exit the modal
+
+#### Edit Initiative (Admin or Creator Only)
+1. Click the ✏️ **Edit** (pencil) icon in the Actions column
+2. You'll be redirected to the Initiative Edit page
+3. Make your changes
+4. Click **Submit Initiative** to save
+5. **Note**: A warning will appear if you try to leave without saving
+
+#### Delete Initiative (Admin or Creator Only)
+1. Click the 🗑️ **Delete** (trash) icon in the Actions column
+2. Confirm the deletion in the popup dialog
+3. The initiative will be permanently removed
+
+**Permission Rules:**
+- **All Users**: Can view any initiative
+- **Admin**: Can edit and delete ALL initiatives
+- **Creator**: Can edit and delete THEIR OWN initiatives
+- **Other Users**: Can only view (no edit/delete buttons shown)
 
 ### Filtering and Sorting
-- Use the search box to find specific initiatives
-- Click column headers to sort
-- View initiatives you have permission to edit
+- Use the **search box** to find initiatives by name or description
+- Use the **year dropdown** to filter by specific year
+- Click any **column header** to sort (click again to reverse order)
+- Default sort: WSJF score (highest to lowest)
 
 ---
 
@@ -259,8 +295,26 @@ To change your password:
    - **Program** (required)
    - **Year** (required): Auto-populated with current year (2026), can be changed
    - **Quarter** (required): Q1-Q4
-   - **Start Date** (if known)
-   - **Delivery Date** (if known)
+   - **Start Date** (optional)
+   - **Delivery Date** (optional)
+
+### Unsaved Changes Warning
+
+**Important**: The initiative form now tracks unsaved changes to prevent accidental data loss.
+
+**How it works:**
+- When you make any changes to the form, the system tracks them
+- If you try to leave the page (click Dashboard, close tab, etc.), a warning appears
+- You'll see: "You have unsaved changes. Do you want to leave without saving?"
+- Click **Cancel** to stay and save your work
+- Click **OK** to leave without saving (changes will be lost)
+- After successfully saving, you can navigate away without warnings
+
+**Tips:**
+- Save your work frequently
+- The warning protects you from accidentally losing work
+- No warning appears if you haven't made any changes
+- After clicking "Submit Initiative", the warning is cleared
 
 3. Set **Priority** (required):
    - Critical
@@ -802,12 +856,98 @@ Every initiative update is tracked with:
 
 ---
 
+## Security & Data Protection
+
+### Password Security
+
+**Encryption**:
+- All passwords are encrypted using **bcrypt** hashing
+- Passwords are never stored in plain text
+- One-way encryption means passwords cannot be decrypted
+- Each password has a unique salt for additional security
+
+**Email Protection**:
+- Email addresses are encrypted using **AES-256-CBC** encryption
+- Encrypted before storing in database
+- Automatically decrypted when displayed
+- Military-grade encryption standard
+
+**Best Practices**:
+- ✅ Use strong passwords (minimum 6 characters)
+- ✅ Change password regularly
+- ✅ Never share your password
+- ✅ Logout when done using the application
+- ✅ Report suspicious activity immediately
+
+### Session Management
+
+**Session Timeout**:
+- **30-minute** inactivity timeout
+- **5-minute warning** before timeout
+- Automatic logout after timeout
+- Activity tracking resets timer
+
+**How it works:**
+1. Your session starts when you login
+2. Every action (click, type, etc.) resets the timer
+3. After 25 minutes of inactivity, a warning appears
+4. You have 5 minutes to continue or you'll be logged out
+5. Click "Continue Session" to stay logged in
+6. Click "Logout" or wait to be logged out
+
+**Benefits:**
+- Prevents unauthorized access if you forget to logout
+- Protects sensitive data
+- Meets security compliance requirements
+- Automatic cleanup of inactive sessions
+
+**Tips:**
+- Save your work before stepping away
+- The warning gives you time to finish
+- Any activity resets the timer
+- You can manually logout anytime
+
+### Data Privacy
+
+**What We Protect**:
+- ✅ User passwords (bcrypt hashed)
+- ✅ Email addresses (AES-256 encrypted)
+- ✅ User profiles
+- ✅ Initiative data
+- ✅ Session tokens
+
+**Access Control**:
+- Role-based permissions (Admin, Product Owner, etc.)
+- Initiative creators can edit their own initiatives
+- Admins can manage all data
+- JWT token authentication for all API requests
+
+**Compliance**:
+- GDPR-compliant data protection
+- SOC 2 security controls
+- Industry-standard encryption
+- Regular security audits
+
+---
+
 ## Version Information
 
-**Version**: 1.0  
-**Last Updated**: June 2026  
+**Version**: 2.0  
+**Last Updated**: June 29, 2026  
 **Application URL**: https://carelonrx-roadmap1.onrender.com  
 **API URL**: https://carelonrx-roadmap.onrender.com  
+
+**Recent Updates**:
+- ✅ Added view, edit, delete actions with permissions
+- ✅ Implemented detailed initiative view modal
+- ✅ Added unsaved changes warning
+- ✅ Implemented password encryption (bcrypt)
+- ✅ Implemented email encryption (AES-256)
+- ✅ Added session timeout (30 minutes)
+- ✅ Added Analytics Dashboard
+- ✅ Added system filtering on roadmap
+- ✅ Added hold reason for On Hold initiatives
+- ✅ Made PM/SPOC required for dependent systems
 
 ---
 
