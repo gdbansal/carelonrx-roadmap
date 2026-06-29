@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="assets/session-manager.js"></script>
+    <link rel="stylesheet" href="assets/carelon-theme.css">
 </head>
 <body class="bg-gray-50">
     <nav class="bg-white shadow-lg">
@@ -27,11 +28,11 @@
                         <span>User Guide</span>
                     </button>
                     <button onclick="window.location.href='dashboard.html'" 
-                        class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2">
+                        class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                         <span>Dashboard</span>
                     </button>
-                    <button id="adminLink" class="hidden bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center space-x-2"
+                    <button id="adminLink" class="hidden btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2"
                         onclick="window.location.href='admin.html'">
                         <i data-lucide="shield" class="w-4 h-4"></i>
                         <span>Admin</span>
@@ -39,7 +40,7 @@
                     <!-- Profile Dropdown -->
                     <div class="relative">
                         <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
-                            <div id="userProfileImage" class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                            <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                                 <span id="userInitials">U</span>
                                 <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
                             </div>
