@@ -579,6 +579,44 @@
         // Load PM SPOC names from existing initiatives
         loadPmSpocNames();
 
+        // Track unsaved changes
+        let hasUnsavedChanges = false;
+        let formSubmitted = false;
+
+        // Mark form as changed when any input is modified
+        function markFormAsChanged() {
+            hasUnsavedChanges = true;
+        }
+
+        // Add change listeners to all form inputs
+        document.querySelectorAll('#intakeForm input, #intakeForm select, #intakeForm textarea').forEach(element => {
+            element.addEventListener('change', markFormAsChanged);
+            element.addEventListener('input', markFormAsChanged);
+        });
+
+        // Warn user before leaving page with unsaved changes
+        window.addEventListener('beforeunload', (e) => {
+            if (hasUnsavedChanges && !formSubmitted) {
+                e.preventDefault();
+                e.returnValue = ''; // Chrome requires returnValue to be set
+                return 'You have unsaved changes. Are you sure you want to leave?';
+            }
+        });
+
+        // Intercept navigation clicks
+        document.querySelectorAll('a[href], button[onclick*="location"]').forEach(element => {
+            element.addEventListener('click', (e) => {
+                if (hasUnsavedChanges && !formSubmitted) {
+                    const confirmLeave = confirm('You have unsaved changes. Do you want to leave without saving?');
+                    if (!confirmLeave) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                }
+            });
+        });
+
         // Check if we're editing an existing initiative
         const urlParams = new URLSearchParams(window.location.search);
         const initiativeId = urlParams.get('id');
@@ -688,6 +726,9 @@
                     if (initiative.changeLog && initiative.changeLog.length > 0) {
                         renderChangeLog(initiative.changeLog);
                     }
+                    
+                    // Reset unsaved changes flag after loading data
+                    hasUnsavedChanges = false;
                 } else {
                     showError('Failed to load initiative data');
                 }
@@ -922,6 +963,10 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    // Mark form as submitted to prevent unsaved changes warning
+                    formSubmitted = true;
+                    hasUnsavedChanges = false;
+                    
                     showSuccess();
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
