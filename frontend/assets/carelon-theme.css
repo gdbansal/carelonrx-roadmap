@@ -55,15 +55,20 @@
 .btn-carelon-primary {
     background-color: var(--carelon-purple);
     color: var(--carelon-white);
-    transition: background-color 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(80, 9, 181, 0.2);
 }
 
 .btn-carelon-primary:hover {
     background-color: var(--carelon-purple-hover);
+    box-shadow: 0 4px 8px rgba(80, 9, 181, 0.3);
+    transform: translateY(-1px);
 }
 
 .btn-carelon-primary:active {
     background-color: var(--carelon-purple-dark);
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(80, 9, 181, 0.2);
 }
 
 /* Secondary Button - Gray */
