@@ -22,7 +22,7 @@
                     <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="h-10 w-auto">
                     <div>
                         <h1 class="text-lg font-bold text-gray-800">User Guide</h1>
-                        <p class="text-xs text-gray-600">Product Initiative Management</p>
+                        <p class="text-xs text-gray-600">Product 360</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -45,8 +45,8 @@
             <div class="text-center mb-12 section">
                 <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="w-64 mx-auto mb-6">
                 <h1 class="text-4xl font-bold text-gray-800 mb-4">User Guide</h1>
-                <p class="text-xl text-gray-600 mb-2">Product Initiative Management System</p>
-                <p class="text-sm text-gray-500">Version 1.0 | June 2026</p>
+                <p class="text-xl text-gray-600 mb-2">Product 360</p>
+                <p class="text-sm text-gray-500">Version 2.0 | June 29, 2026</p>
             </div>
 
             <hr class="my-8">
@@ -66,6 +66,8 @@
                     <li><a href="#roadmap-view" class="hover:underline">Roadmap View</a></li>
                     <li><a href="#analytics-dashboard" class="hover:underline">Analytics Dashboard</a></li>
                     <li><a href="#admin-panel" class="hover:underline">Admin Panel</a></li>
+                    <li><a href="#session-management" class="hover:underline">Session Management</a></li>
+                    <li><a href="#data-persistence" class="hover:underline">Data Persistence</a></li>
                     <li><a href="#troubleshooting" class="hover:underline">Troubleshooting</a></li>
                 </ol>
             </div>
@@ -568,9 +570,108 @@
                 </div>
             </div>
 
+            <!-- Session Management -->
+            <div id="session-management" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">12. Session Management</h2>
+                <p class="text-gray-700 mb-4">The application includes automatic session timeout for security.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Session Timeout</h3>
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                    <p class="font-semibold text-yellow-800 mb-2">Duration: 30 minutes of inactivity</p>
+                    <p class="text-gray-700 mb-3"><strong>How It Works:</strong></p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Session timer starts when you login</li>
+                        <li>Timer resets with any user activity:
+                            <ul class="list-disc list-inside ml-6 mt-1">
+                                <li>Mouse movements</li>
+                                <li>Keyboard input</li>
+                                <li>Clicks</li>
+                                <li>Scrolling</li>
+                            </ul>
+                        </li>
+                        <li>After 25 minutes of inactivity, a warning appears</li>
+                        <li>After 30 minutes, automatic logout</li>
+                    </ol>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Session Warning</h3>
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                    <p class="font-semibold text-blue-800 mb-2">5-Minute Warning:</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Appears at 25 minutes of inactivity</li>
+                        <li>Modal dialog with two options:
+                            <ul class="list-disc list-inside ml-6 mt-1">
+                                <li><strong>"Stay Logged In":</strong> Extends session for another 30 minutes</li>
+                                <li><strong>"Logout Now":</strong> Immediately logs you out</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Best Practices</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                    <li>Save your work frequently</li>
+                    <li>Don't leave the application unattended</li>
+                    <li>Click "Stay Logged In" if you see the warning</li>
+                    <li>Log out manually when done</li>
+                </ul>
+            </div>
+
+            <!-- Data Persistence -->
+            <div id="data-persistence" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">13. Data Persistence</h2>
+                <p class="text-gray-700 mb-4">All data is securely stored in MongoDB with complete audit trails.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">What is Stored</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="font-semibold text-green-800 mb-2">User Data</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                            <li>Profile information</li>
+                            <li>Encrypted passwords (bcrypt)</li>
+                            <li>Encrypted emails (AES-256)</li>
+                            <li>Role assignments</li>
+                            <li>Profile images</li>
+                        </ul>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="font-semibold text-blue-800 mb-2">Initiative Data</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                            <li>All initiative fields</li>
+                            <li>WSJF calculations</li>
+                            <li>Dependent systems</li>
+                            <li>Timeline information</li>
+                            <li>Complete change history</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Change History & Audit Trail</h3>
+                <p class="text-gray-700 mb-4">Every initiative maintains a complete audit trail:</p>
+                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-6">
+                    <li><strong>Who:</strong> User who made the change</li>
+                    <li><strong>When:</strong> Timestamp of the change</li>
+                    <li><strong>What:</strong> Fields that were modified</li>
+                    <li><strong>Before/After:</strong> Old and new values</li>
+                    <li><strong>Action:</strong> Created, Updated, or Deleted</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Data Security</h3>
+                <div class="bg-purple-50 border-l-4 border-purple-500 p-4">
+                    <p class="font-semibold text-purple-800 mb-2">Security Measures:</p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                        <li><strong>Password Encryption:</strong> bcrypt hashing (cannot be reversed)</li>
+                        <li><strong>Email Encryption:</strong> AES-256-CBC encryption</li>
+                        <li><strong>JWT Tokens:</strong> Secure authentication tokens</li>
+                        <li><strong>Session Management:</strong> Automatic timeout after 30 minutes</li>
+                        <li><strong>Role-Based Access:</strong> Permissions enforced at API level</li>
+                    </ul>
+                </div>
+            </div>
+
             <!-- Troubleshooting -->
             <div id="troubleshooting" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">12. Troubleshooting</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">14. Troubleshooting</h2>
                 
                 <div class="space-y-6">
                     <div class="bg-red-50 border-l-4 border-red-500 p-4">
@@ -621,7 +722,7 @@
             <!-- Footer -->
             <hr class="my-8">
             <div class="text-center text-gray-600 text-sm">
-                <p><strong>Version 1.0</strong> | Last Updated: June 2026</p>
+                <p><strong>Version 2.0</strong> | Last Updated: June 29, 2026</p>
                 <p class="mt-2">Application URL: <code class="bg-gray-100 px-2 py-1 rounded">https://carelonrx-roadmap1.onrender.com</code></p>
                 <p class="mt-4">© 2026 CarelonRx. All rights reserved.</p>
             </div>
