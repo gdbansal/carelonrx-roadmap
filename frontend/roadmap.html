@@ -756,6 +756,19 @@
                                 ${initiative.budgetApproved ? 'Approved' : 'Pending'}
                             </span>
                         </div>
+                    </div>
+                    ${initiative.priority === 'On Hold' && initiative.holdReason ? `
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                        <div class="flex items-start space-x-2">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-yellow-600 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-semibold text-yellow-800 mb-1">Hold Reason</p>
+                                <p class="text-sm text-yellow-700">${initiative.holdReason}</p>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    <div class="grid grid-cols-2 gap-4">
                         ${initiative.startDate ? `
                         <div>
                             <p class="text-sm text-gray-500">Start Date</p>
