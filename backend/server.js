@@ -864,11 +864,19 @@ app.put('/api/profile', authMiddleware, async (req, res) => {
     }
 });
 
-// ========== MIGRATION ENDPOINTS ==========
+// ========== MIGRATION ENDPOINTS (ADMIN ONLY) ==========
 
-// Migrate passwords endpoint
-app.post('/api/migrate-passwords', async (req, res) => {
+// Migrate passwords endpoint - ADMIN ONLY
+app.post('/api/migrate-passwords', authMiddleware, async (req, res) => {
     try {
+        // Check if user is admin
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Admin privileges required.'
+            });
+        }
+        
         const bcrypt = require('bcryptjs');
         
         // Find all users
@@ -924,9 +932,17 @@ app.post('/api/migrate-passwords', async (req, res) => {
     }
 });
 
-// Update user role endpoint
-app.post('/api/update-user-role', async (req, res) => {
+// Update user role endpoint - ADMIN ONLY
+app.post('/api/update-user-role', authMiddleware, async (req, res) => {
     try {
+        // Check if user is admin
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Admin privileges required.'
+            });
+        }
+        
         const { username, role } = req.body;
         
         if (!username || !role) {
