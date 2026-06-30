@@ -1,5 +1,6 @@
 // Session Management with Auto-Logout
 // Timeout: 30 minutes of inactivity
+// Browser/Tab Close: Requires reauthentication
 
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 const WARNING_TIME = 5 * 60 * 1000; // Show warning 5 minutes before timeout
@@ -9,8 +10,18 @@ let warningShown = false;
 
 // Initialize session management
 function initSessionManagement() {
-    // Check if user is logged in
+    // Check if token exists in sessionStorage (cleared on browser/tab close)
+    const token = sessionStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    // If user exists but no session token, require reauthentication
+    if (user.username && !token) {
+        localStorage.setItem('sessionClosed', 'true');
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+        return;
+    }
+    
     if (!user.username) {
         return; // Not logged in, no need to manage session
     }
@@ -108,6 +119,7 @@ function extendSession() {
 function logoutNow() {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     window.location.href = 'login.html';
 }
 
@@ -119,6 +131,7 @@ function handleSessionTimeout() {
     // Clear user data
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     
     // Redirect to login
     window.location.href = 'login.html';
@@ -128,6 +141,15 @@ function handleSessionTimeout() {
 function checkSessionExpired() {
     if (localStorage.getItem('sessionExpired') === 'true') {
         localStorage.removeItem('sessionExpired');
+        return true;
+    }
+    return false;
+}
+
+// Check if session was closed (browser/tab closed)
+function checkSessionClosed() {
+    if (localStorage.getItem('sessionClosed') === 'true') {
+        localStorage.removeItem('sessionClosed');
         return true;
     }
     return false;
