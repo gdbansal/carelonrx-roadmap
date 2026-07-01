@@ -1461,9 +1461,10 @@
                         .map(p => `${p.name}_${p.role}`)
                         .filter(userId => !estimatedBy.includes(userId));
                     
-                    // For non-PO users, hide estimation details until revealed
+                    // For non-PO users, hide OTHER users' estimation details until revealed
+                    // But ALWAYS show the current user's own estimate
                     const isRevealed = isStoryRevealed(story.id);
-                    const shouldShowDetails = user.role === 'PO' || isRevealed;
+                    const currentUserKey = `${user.name}_${user.role}`;
                     
                     return {
                         story,
@@ -1471,11 +1472,15 @@
                             const [name, role] = userId.split('_');
                             const estimation = storyEstimations[userId];
                             const points = typeof estimation === 'object' ? estimation.points : estimation;
+                            
+                            // Show points if: PO, story is revealed, OR it's the current user's own estimate
+                            const shouldShowPoints = user.role === 'PO' || isRevealed || userId === currentUserKey;
+                            
                             return { 
                                 userId, 
                                 name, 
                                 role, 
-                                points: shouldShowDetails ? points : '***' 
+                                points: shouldShowPoints ? points : '***' 
                             };
                         }),
                         notEstimatedBy: notEstimatedBy.map(userId => {
