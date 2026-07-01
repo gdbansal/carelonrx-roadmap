@@ -1419,10 +1419,17 @@
                                     <span>Estimates Revealed</span>
                                 </span>
                             `}
-                            <button onclick="markComplete('${story.id}')" class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition flex items-center space-x-1.5">
-                                <i data-lucide="check" class="w-3.5 h-3.5"></i>
-                                <span>Complete</span>
-                            </button>
+                            ${!complete ? `
+                                <button onclick="markComplete('${story.id}')" class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition flex items-center space-x-1.5">
+                                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                    <span>Mark Complete</span>
+                                </button>
+                            ` : `
+                                <button onclick="markIncomplete('${story.id}')" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 transition flex items-center space-x-1.5">
+                                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                                    <span>Reopen</span>
+                                </button>
+                            `}
                         </div>
                     ` : ''}
                 </div>
