@@ -249,6 +249,51 @@
             render();
         }
 
+        function leaveSession() {
+            stopPolling();
+            state.currentSession = null;
+            state.sessionId = '';
+            state.stories = [];
+            localStorage.removeItem('storyPointEstimatorSessionId');
+            render();
+        }
+
+        async function endSession() {
+            if (!hasPoPrivileges()) {
+                alert('Only Product Owners and Admins can end sessions.');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to end this session? This will close the session for all participants.')) {
+                return;
+            }
+
+            try {
+                // Mark session as closed
+                const closedSession = {
+                    ...state.currentSession,
+                    status: 'closed',
+                    closedBy: state.user.name,
+                    closedAt: new Date().toISOString()
+                };
+                
+                await updateSession(state.sessionId, closedSession);
+                
+                // Clear local state
+                stopPolling();
+                state.currentSession = null;
+                state.sessionId = '';
+                state.stories = [];
+                localStorage.removeItem('storyPointEstimatorSessionId');
+                
+                alert('Session has been ended successfully. All participants will need to join a new session.');
+                render();
+            } catch (error) {
+                console.error('Error ending session:', error);
+                alert('Failed to end session. Please try again.');
+            }
+        }
+
         function hasPoPrivileges() {
             return state.user && (state.user.role === 'PO' || state.user.role === 'Admin');
         }
@@ -849,6 +894,14 @@
                                     <div class="text-sm text-gray-600">Your Points</div>
                                     <div class="text-3xl font-bold text-blue-600">${totalPoints}</div>
                                 </div>
+                                <button onclick="leaveSession()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700" title="Leave Session">
+                                    <i data-lucide="users" class="w-4 h-4 inline"></i> Leave
+                                </button>
+                                ${hasPoPrivileges() ? `
+                                    <button onclick="endSession()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700" title="End Session (PO/Admin Only)">
+                                        <i data-lucide="x-circle" class="w-4 h-4 inline"></i> End Session
+                                    </button>
+                                ` : ''}
                                 <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                                     <i data-lucide="log-out" class="w-4 h-4 inline"></i> Logout
                                 </button>
@@ -1355,6 +1408,8 @@
         window.revealStory = revealStory;
         window.markComplete = markComplete;
         window.markIncomplete = markIncomplete;
+        window.leaveSession = leaveSession;
+        window.endSession = endSession;
         window.logout = logout;
         window.toggleProfileDropdown = toggleProfileDropdown;
         window.confirmEstimation = confirmEstimation;
