@@ -15,9 +15,15 @@
         <!-- Left Side Panel -->
         <div id="sidePanel" class="side-panel">
             <div class="side-panel-header">
-                <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="h-10 w-auto mb-3">
-                <h2 class="text-white font-bold text-xl">Product 360</h2>
-                <p class="text-white text-opacity-70 text-sm mt-1">Integrated Product Suite</p>
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
+                        <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="w-full h-full object-contain">
+                    </div>
+                    <div>
+                        <h2 class="text-white font-bold text-xl leading-tight">Product 360</h2>
+                    </div>
+                </div>
+                <p class="text-white text-opacity-70 text-sm">Integrated Product Suite</p>
             </div>
             <nav class="mt-6">
                 <a href="dashboard.html" class="side-panel-link" data-module="roadmap">
