@@ -34,6 +34,12 @@
                     <i data-lucide="calculator" class="w-5 h-5"></i>
                     <span>Story Estimations</span>
                 </a>
+                <div class="mt-6 pt-6 border-t border-white border-opacity-20">
+                    <a href="user-guide.html" class="side-panel-link" data-module="user-guide">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                        <span>User Guide</span>
+                    </a>
+                </div>
             </nav>
             
             <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-white border-opacity-20">
@@ -257,6 +263,10 @@ function setActiveLink() {
         }
         // Handle story-estimations page
         else if (currentPage === 'story-estimations.html' && module === 'story-estimations') {
+            link.classList.add('active');
+        }
+        // Handle user-guide page
+        else if (currentPage === 'user-guide.html' && module === 'user-guide') {
             link.classList.add('active');
         }
         // Handle all roadmap module pages (dashboard, analytics, admin, etc.)

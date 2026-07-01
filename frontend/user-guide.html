@@ -96,7 +96,15 @@
                             <li><a href="#analytics-dashboard" class="hover:underline">Analytics Dashboard</a></li>
                         </ol>
                     </li>
-                    <li><a href="#story-estimations" class="hover:underline">Story Estimations Module (Coming Soon)</a></li>
+                    <li><a href="#story-estimations" class="hover:underline">Story Estimations Module</a>
+                        <ol class="list-decimal list-inside ml-6 mt-1 space-y-1">
+                            <li><a href="#creating-session" class="hover:underline">Creating a Session</a></li>
+                            <li><a href="#joining-session" class="hover:underline">Joining a Session</a></li>
+                            <li><a href="#adding-stories" class="hover:underline">Adding Stories</a></li>
+                            <li><a href="#estimating-stories" class="hover:underline">Estimating Stories</a></li>
+                            <li><a href="#revealing-estimates" class="hover:underline">Revealing Estimates</a></li>
+                        </ol>
+                    </li>
                     <li><a href="#user-profile" class="hover:underline">User Profile</a></li>
                     <li><a href="#admin-panel" class="hover:underline">Admin Panel</a></li>
                     <li><a href="#session-management" class="hover:underline">Session Management</a></li>
@@ -629,9 +637,200 @@
                 </div>
             </div>
 
+            <!-- Story Estimations Module -->
+            <div id="story-estimations" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">7. Story Estimations Module</h2>
+                <p class="text-gray-700 mb-4">The Story Estimations module provides agile story point estimation using the Fibonacci sequence for sprint planning and team collaboration.</p>
+                
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+                    <p class="font-semibold text-green-800 mb-2">✓ Now Available!</p>
+                    <p class="text-gray-700">Story Estimations is fully integrated with MongoDB backend for real-time collaboration and data persistence.</p>
+                </div>
+
+                <!-- Creating a Session -->
+                <div id="creating-session" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">7.1 Creating a Session</h3>
+                    <p class="text-gray-700 mb-4">Start a new estimation session for your team:</p>
+                    
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-4">
+                        <li>Click <strong>"Story Estimations"</strong> in the Product 360 sidebar</li>
+                        <li>On the login screen, enter:
+                            <ul class="list-disc list-inside ml-6 mt-2">
+                                <li><strong>Name:</strong> Your name</li>
+                                <li><strong>Role:</strong> Select from Dev, QA, PO (Product Owner), or SM (Scrum Master)</li>
+                            </ul>
+                        </li>
+                        <li>Click <strong>"Login"</strong></li>
+                        <li>Click <strong>"Create New Session"</strong></li>
+                        <li>Fill in session details:
+                            <ul class="list-disc list-inside ml-6 mt-2">
+                                <li><strong>Team Name:</strong> Your team name (e.g., "Team Alpha")</li>
+                                <li><strong>Sprint Value:</strong> Sprint identifier (e.g., "Sprint 23")</li>
+                            </ul>
+                        </li>
+                        <li>Click <strong>"Create"</strong></li>
+                    </ol>
+
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <p class="font-semibold text-blue-800 mb-2">Session ID:</p>
+                        <p class="text-gray-700 text-sm">After creating a session, you'll receive a unique Session ID. Share this ID with team members so they can join your session.</p>
+                    </div>
+                </div>
+
+                <!-- Joining a Session -->
+                <div id="joining-session" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">7.2 Joining a Session</h3>
+                    <p class="text-gray-700 mb-4">Join an existing estimation session:</p>
+                    
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-4">
+                        <li>Get the Session ID from the session creator</li>
+                        <li>Enter your <strong>Name</strong> and select your <strong>Role</strong></li>
+                        <li>Click <strong>"Login"</strong></li>
+                        <li>Enter the <strong>Session ID</strong> in the "Join Session" field</li>
+                        <li>Click <strong>"Join"</strong></li>
+                    </ol>
+
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                        <p class="font-semibold text-yellow-800 mb-2">⚠️ Product Owner Restriction:</p>
+                        <p class="text-gray-700 text-sm">Only one Product Owner (PO) is allowed per session. If a PO already exists, you must choose a different role.</p>
+                    </div>
+                </div>
+
+                <!-- Adding Stories -->
+                <div id="adding-stories" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">7.3 Adding Stories</h3>
+                    <p class="text-gray-700 mb-4">Add user stories to estimate:</p>
+                    
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-4">
+                        <li>In the "Add Story" section, enter:
+                            <ul class="list-disc list-inside ml-6 mt-2">
+                                <li><strong>Story Number:</strong> JIRA ticket number or story ID</li>
+                                <li><strong>Story Summary:</strong> Brief description of the story</li>
+                            </ul>
+                        </li>
+                        <li>Optionally, add a <strong>JIRA Link URL</strong> for the story number</li>
+                        <li>Click <strong>"Add Story"</strong></li>
+                    </ol>
+
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800 mb-2">Story Restrictions:</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4 text-sm">
+                            <li><strong>Dev Only:</strong> Only developers can estimate</li>
+                            <li><strong>QA Only:</strong> Only QA can estimate</li>
+                            <li><strong>All Roles:</strong> Everyone can estimate (default)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Estimating Stories -->
+                <div id="estimating-stories" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">7.4 Estimating Stories</h3>
+                    <p class="text-gray-700 mb-4">Provide story point estimates using Fibonacci sequence:</p>
+                    
+                    <div class="bg-green-50 p-4 rounded-lg mb-4">
+                        <p class="font-semibold text-green-800 mb-2">Fibonacci Points Available:</p>
+                        <p class="text-gray-700 font-mono text-lg">0, 0.5, 1, 2, 3, 5, 8, 13</p>
+                    </div>
+
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-4">
+                        <li>Find the story you want to estimate</li>
+                        <li>Click on the appropriate Fibonacci number button</li>
+                        <li>If prompted (for Dev/QA roles), select a reason for your estimate</li>
+                        <li>Your estimate is saved automatically</li>
+                    </ol>
+
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <p class="font-semibold text-blue-800 mb-2">Estimation Reasons:</p>
+                        <p class="text-gray-700 text-sm mb-2">Developers and QA can provide reasons for their estimates:</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4 text-sm">
+                            <li><strong>Dev:</strong> "Dev analysis is more", "Development is more", etc.</li>
+                            <li><strong>QA:</strong> "QA Analysis will take more time", "Test cases are more", etc.</li>
+                        </ul>
+                    </div>
+
+                    <p class="text-gray-700 mb-2"><strong>Viewing Estimates:</strong></p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                        <li>Your own estimates are always visible to you</li>
+                        <li>Other team members' estimates are hidden until revealed by PO</li>
+                        <li>Average estimates shown after reveal</li>
+                    </ul>
+                </div>
+
+                <!-- Revealing Estimates -->
+                <div id="revealing-estimates" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">7.5 Revealing Estimates</h3>
+                    <p class="text-gray-700 mb-4"><strong>Product Owner Only:</strong> Reveal all team estimates for a story.</p>
+                    
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-4">
+                        <li>Wait for all team members to submit their estimates</li>
+                        <li>Click <strong>"Reveal Estimates"</strong> button for the story</li>
+                        <li>All estimates become visible to everyone</li>
+                        <li>View breakdown by role (Dev average, QA average)</li>
+                        <li>See overall average estimate</li>
+                        <li>Review estimation reasons provided by team members</li>
+                    </ol>
+
+                    <div class="bg-purple-50 p-4 rounded-lg mb-4">
+                        <p class="font-semibold text-purple-800 mb-2">After Revealing:</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4 text-sm">
+                            <li>Team can discuss differences in estimates</li>
+                            <li>Re-estimate if needed</li>
+                            <li>Mark story as complete when consensus reached</li>
+                            <li>Export summary for documentation</li>
+                        </ul>
+                    </div>
+
+                    <p class="text-gray-700 mb-2"><strong>Export Options:</strong></p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                        <li><strong>Download Summary:</strong> Export all estimates to Excel</li>
+                        <li><strong>Story Analysis:</strong> Includes averages by role</li>
+                        <li><strong>Deviation Analysis:</strong> User estimation patterns</li>
+                        <li><strong>Audit Log:</strong> Complete estimation history</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Key Features</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="font-semibold text-green-800 mb-2">✓ Real-Time Collaboration</p>
+                            <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                                <li>MongoDB backend sync</li>
+                                <li>Multi-user sessions</li>
+                                <li>Instant updates</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-blue-800 mb-2">✓ Data Persistence</p>
+                            <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                                <li>Permanent storage</li>
+                                <li>Session history</li>
+                                <li>Audit trail</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-purple-800 mb-2">✓ Role-Based Access</p>
+                            <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                                <li>PO controls reveals</li>
+                                <li>Dev/QA restrictions</li>
+                                <li>Participant tracking</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-orange-800 mb-2">✓ Export & Reports</p>
+                            <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                                <li>Excel export</li>
+                                <li>Deviation analysis</li>
+                                <li>Audit logs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Admin Panel -->
             <div id="admin-panel" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">11. Admin Panel</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">8. Admin Panel</h2>
                 <p class="text-red-600 font-semibold mb-4">Access: Admin role only</p>
                 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">User Management</h3>
