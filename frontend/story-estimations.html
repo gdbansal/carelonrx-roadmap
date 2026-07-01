@@ -519,16 +519,28 @@
                         setLoginRole(estimationUser.role);
                         console.log('✅ Auto-logged in with Product 360 user:', estimationUser);
                     } else {
-                        // Not logged in to Product 360, redirect to login
-                        console.warn('⚠️ No Product 360 authentication found, redirecting to login');
-                        window.location.href = 'login.html';
-                        return;
+                        // Product 360 user exists but incomplete, allow manual login
+                        console.log('ℹ️ Product 360 user incomplete, showing manual login');
+                        // Fall back to Story Estimations saved user
+                        const savedUser = localStorage.getItem('storyPointEstimatorUser');
+                        if (savedUser) {
+                            const savedUserData = safeJsonParse(savedUser, null);
+                            if (savedUserData) {
+                                setUser(savedUserData);
+                            }
+                        }
                     }
                 } else {
-                    // Not logged in to Product 360, redirect to login
-                    console.warn('⚠️ No Product 360 authentication found, redirecting to login');
-                    window.location.href = 'login.html';
-                    return;
+                    // Not logged in to Product 360, allow manual login for Story Estimations
+                    console.log('ℹ️ No Product 360 authentication, allowing manual login for Story Estimations');
+                    // Fall back to Story Estimations saved user
+                    const savedUser = localStorage.getItem('storyPointEstimatorUser');
+                    if (savedUser) {
+                        const savedUserData = safeJsonParse(savedUser, null);
+                        if (savedUserData) {
+                            setUser(savedUserData);
+                        }
+                    }
                 }
                 
                 // Check for session ID in URL parameters first
