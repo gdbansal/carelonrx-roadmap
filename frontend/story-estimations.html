@@ -1544,13 +1544,13 @@
                                 </h2>
                                 <p className="text-center text-gray-600">
                                     {sessionId ? 'Ready to join session!' : 
-                                     user.role === 'PO' ? 'Create a new session or join an existing one' : 
+                                     hasPoPrivileges() ? 'Create a new session or join an existing one' : 
                                      'Join an existing session using the session ID'}
                                 </p>
                             </div>
                             <div className="bg-white p-8 rounded-lg shadow-sm border space-y-6">
                                 <div className="space-y-4">
-                                    {user.role === 'PO' && (
+                                    {hasPoPrivileges() && (
                                         <>
                                             {!showCreateSessionForm ? (
                                                 <button
