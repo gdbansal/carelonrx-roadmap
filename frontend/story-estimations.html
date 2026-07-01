@@ -447,6 +447,8 @@
         }
 
         async function saveEstimation(storyId, points, reason) {
+            isUpdating = true; // Pause polling during update
+            
             if (!state.currentSession.estimations[storyId]) {
                 state.currentSession.estimations[storyId] = {};
             }
@@ -466,10 +468,27 @@
             
             state.currentSession.estimations[storyId][userKey] = estimationData;
 
-            console.log('✅ Estimation saved:', { storyId, userKey, points, reason });
+            console.log('✅ Estimation saved to state:', { 
+                storyId, 
+                userKey, 
+                points, 
+                reason,
+                estimationData,
+                currentEstimations: state.currentSession.estimations[storyId]
+            });
             
-            await updateSession(state.sessionId, state.currentSession);
+            // Render immediately with local state
             render();
+            
+            // Then sync to server
+            try {
+                await updateSession(state.sessionId, state.currentSession);
+                console.log('✅ Estimation synced to server');
+            } catch (error) {
+                console.error('❌ Failed to sync estimation:', error);
+            } finally {
+                isUpdating = false; // Resume polling
+            }
         }
 
         function confirmEstimation() {
@@ -598,11 +617,21 @@
         }
 
         function getUserEstimation(storyId) {
-            if (!state.currentSession || !state.user) return null;
+            if (!state.currentSession || !state.user) {
+                console.log('getUserEstimation: No session or user');
+                return null;
+            }
             
             const userKey = `${state.user.name}_${state.user.role}`;
             const storyEstimations = state.currentSession.estimations[storyId] || {};
             const estimation = storyEstimations[userKey];
+            
+            console.log('getUserEstimation:', {
+                storyId,
+                userKey,
+                estimation,
+                allEstimations: state.currentSession.estimations[storyId]
+            });
             
             if (!estimation) return null;
             
@@ -1569,9 +1598,10 @@
         // POLLING FOR REAL-TIME UPDATES
         // ============================================
         let pollInterval = null;
+        let isUpdating = false; // Flag to prevent polling during updates
 
         async function refreshSession() {
-            if (!state.sessionId || !state.currentSession) return;
+            if (!state.sessionId || !state.currentSession || isUpdating) return;
             
             try {
                 const session = await getSession(state.sessionId);
