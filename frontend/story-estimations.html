@@ -149,6 +149,7 @@
         }
 
         function logout() {
+            stopPolling(); // Stop polling when logging out
             localStorage.removeItem('user');
             localStorage.removeItem('token');
             localStorage.removeItem('storyPointEstimatorSessionId');
@@ -183,6 +184,7 @@
             state.currentSession = sessionData;
             state.stories = [];
             localStorage.setItem('storyPointEstimatorSessionId', newSessionId);
+            startPolling(); // Start polling for real-time updates
             render();
         }
 
@@ -205,6 +207,7 @@
             state.currentSession = session;
             state.stories = session.stories || [];
             localStorage.setItem('storyPointEstimatorSessionId', sessionId);
+            startPolling(); // Start polling for real-time updates
             render();
         }
 
@@ -670,6 +673,60 @@
         window.logout = logout;
 
         // ============================================
+        // POLLING FOR REAL-TIME UPDATES
+        // ============================================
+        let pollInterval = null;
+
+        async function refreshSession() {
+            if (!state.sessionId || !state.currentSession) return;
+            
+            try {
+                const session = await getSession(state.sessionId);
+                if (session) {
+                    // Check if there are actual changes
+                    const currentData = JSON.stringify({
+                        participants: state.currentSession.participants,
+                        stories: state.currentSession.stories,
+                        estimations: state.currentSession.estimations,
+                        revealedStories: state.currentSession.revealedStories,
+                        completedStories: state.currentSession.completedStories
+                    });
+                    
+                    const newData = JSON.stringify({
+                        participants: session.participants,
+                        stories: session.stories,
+                        estimations: session.estimations,
+                        revealedStories: session.revealedStories,
+                        completedStories: session.completedStories
+                    });
+                    
+                    if (currentData !== newData) {
+                        console.log('🔄 Session updated from server');
+                        state.currentSession = session;
+                        state.stories = session.stories || [];
+                        render();
+                    }
+                }
+            } catch (error) {
+                console.error('Polling error:', error);
+            }
+        }
+
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(refreshSession, 3000); // Poll every 3 seconds
+            console.log('✅ Started polling for real-time updates');
+        }
+
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+                console.log('⏹️ Stopped polling');
+            }
+        }
+
+        // ============================================
         // INITIALIZATION
         // ============================================
         async function init() {
@@ -686,6 +743,7 @@
                             state.sessionId = savedSessionId;
                             state.currentSession = session;
                             state.stories = session.stories || [];
+                            startPolling(); // Start polling for updates
                         }
                     } catch (error) {
                         console.error('Failed to load saved session:', error);
