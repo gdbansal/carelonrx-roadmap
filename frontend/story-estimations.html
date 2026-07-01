@@ -101,7 +101,8 @@
             reasonModalStoryId: null,
             reasonModalPoints: null,
             selectedReason: '',
-            showDashboard: false
+            showDashboard: false,
+            editingStoryId: null
         };
 
         // ============================================
@@ -328,6 +329,58 @@
             state.currentSession.stories = state.stories;
             await updateSession(state.sessionId, state.currentSession);
             render();
+        }
+
+        function startEditStory(storyId) {
+            state.editingStoryId = storyId;
+            render();
+        }
+
+        function cancelEditStory() {
+            state.editingStoryId = null;
+            render();
+        }
+
+        async function saveEditStory(storyId) {
+            const numberInput = document.getElementById(`editNumber_${storyId}`);
+            const summaryInput = document.getElementById(`editSummary_${storyId}`);
+            
+            if (!numberInput || !summaryInput) return;
+            
+            const newNumber = numberInput.value.trim();
+            const newSummary = summaryInput.value.trim();
+            
+            if (!newNumber || !newSummary) {
+                alert('Story number and summary are required');
+                return;
+            }
+            
+            const story = state.stories.find(s => s.id === storyId);
+            if (story) {
+                // Extract ticket ID if it's a URL
+                const ticketId = extractTicketId(newNumber);
+                story.number = ticketId;
+                story.summary = newSummary;
+                
+                // Update URL if it's a JIRA link
+                if (newNumber.startsWith('http')) {
+                    story.numberUrl = newNumber;
+                }
+                
+                state.currentSession.stories = state.stories;
+                await updateSession(state.sessionId, state.currentSession);
+            }
+            
+            state.editingStoryId = null;
+            render();
+        }
+
+        function extractTicketId(input) {
+            if (input.startsWith('http')) {
+                const match = input.match(/\/browse\/([A-Z]+-\d+)/i);
+                return match ? match[1] : input;
+            }
+            return input;
         }
 
         // ============================================
@@ -1001,26 +1054,54 @@
 
             return `
                 <div class="border rounded-lg p-4 ${complete ? 'bg-green-50 border-green-200' : 'bg-white'}">
-                    <div class="flex items-start justify-between mb-3">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                ${story.numberUrl ? `
-                                    <a href="${story.numberUrl}" target="_blank" class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium hover:bg-blue-200">
-                                        ${story.number} <i data-lucide="external-link" class="w-3 h-3 inline"></i>
-                                    </a>
-                                ` : `
-                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">${story.number}</span>
-                                `}
-                                ${story.restrictions?.devOnly ? '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">👨‍💻 Dev Only</span>' : ''}
-                                ${story.restrictions?.qaOnly ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">🧪 QA Only</span>' : ''}
-                                ${complete ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Complete</span>' : ''}
+                    ${state.editingStoryId === story.id ? `
+                        <!-- Edit Mode -->
+                        <div class="mb-3">
+                            <div class="space-y-2">
+                                <input type="text" id="editNumber_${story.id}" value="${story.number}" 
+                                    placeholder="Story Number / JIRA URL"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="text" id="editSummary_${story.id}" value="${story.summary}" 
+                                    placeholder="Story Summary"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
-                            <h4 class="font-medium text-gray-900">${story.summary}</h4>
+                            <div class="flex gap-2 mt-2">
+                                <button onclick="saveEditStory('${story.id}')" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">
+                                    <i data-lucide="check" class="w-3 h-3 inline"></i> Save
+                                </button>
+                                <button onclick="cancelEditStory()" class="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600">
+                                    <i data-lucide="x" class="w-3 h-3 inline"></i> Cancel
+                                </button>
+                            </div>
                         </div>
-                        <button onclick="removeStory('${story.id}')" class="text-red-600 hover:text-red-800">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
+                    ` : `
+                        <!-- View Mode -->
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    ${story.numberUrl ? `
+                                        <a href="${story.numberUrl}" target="_blank" class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium hover:bg-blue-200">
+                                            ${story.number} <i data-lucide="external-link" class="w-3 h-3 inline"></i>
+                                        </a>
+                                    ` : `
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">${story.number}</span>
+                                    `}
+                                    ${story.restrictions?.devOnly ? '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">👨‍💻 Dev Only</span>' : ''}
+                                    ${story.restrictions?.qaOnly ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">🧪 QA Only</span>' : ''}
+                                    ${complete ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Complete</span>' : ''}
+                                </div>
+                                <h4 class="font-medium text-gray-900">${story.summary}</h4>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="startEditStory('${story.id}')" class="text-blue-600 hover:text-blue-800">
+                                    <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="removeStory('${story.id}')" class="text-red-600 hover:text-red-800">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `}
 
                     <!-- Estimation Buttons -->
                     <div class="mb-3">
@@ -1178,6 +1259,9 @@
         };
 
         window.removeStory = removeStory;
+        window.startEditStory = startEditStory;
+        window.cancelEditStory = cancelEditStory;
+        window.saveEditStory = saveEditStory;
         window.updateEstimation = updateEstimation;
         window.revealStory = revealStory;
         window.markComplete = markComplete;
