@@ -473,13 +473,22 @@
                 try {
                     if (isNewSession) {
                         console.log('Creating new session via API:', id);
-                        await api.createSession(id, sessionData);
+                        const result = await api.createSession(id, sessionData);
+                        console.log('✅ Session created successfully:', result);
+                        return result;
                     } else {
                         console.log('Updating existing session via API:', id);
-                        await api.updateSession(id, sessionData);
+                        const result = await api.updateSession(id, sessionData);
+                        console.log('✅ Session updated successfully:', result);
+                        return result;
                     }
                 } catch (error) {
-                    console.error('Failed to save session:', error);
+                    console.error('❌ Failed to save session:', error);
+                    // Show user-friendly error message
+                    if (isNewSession) {
+                        alert(`Session created locally but may not sync with server. Error: ${error.message}`);
+                    }
+                    throw error;
                 }
             };
 
@@ -1156,7 +1165,7 @@
                 return colors[role] || 'bg-gray-100 text-gray-800';
             };
 
-            const createSession = () => {
+            const createSession = async () => {
                 if (teamName.trim() === '' || sprintValue.trim() === '') {
                     alert('Please enter both team name and sprint value.');
                     return;
@@ -1169,7 +1178,8 @@
                 const newSessionId = generateSessionId();
                 const createdAt = new Date().toISOString();
                 const newSession = {
-                    id: newSessionId,
+                    sessionId: newSessionId,  // Changed from 'id' to 'sessionId' for MongoDB compatibility
+                    id: newSessionId,         // Keep 'id' for backward compatibility
                     participants: [{ name: user.name, role: user.role }],
                     stories: [],
                     estimations: {},
@@ -1197,15 +1207,27 @@
                     })
                 };
                 
-                saveSession(newSessionId, newSession, true); // isNewSession = true
-                console.log('Session saved with values:', newSession);
-                setSessionId(newSessionId);
-                setCurrentSession(newSession);
-                setHasExplicitlyJoined(true);  // Mark as explicitly joined when creating session
-                localStorage.setItem('storyPointEstimatorSessionId', newSessionId);
-                setShowCreateSessionForm(false);
-                setTeamName('');
-                setSprintValue('');
+                try {
+                    await saveSession(newSessionId, newSession, true); // isNewSession = true
+                    console.log('✅ Session created successfully with values:', newSession);
+                    setSessionId(newSessionId);
+                    setCurrentSession(newSession);
+                    setHasExplicitlyJoined(true);  // Mark as explicitly joined when creating session
+                    localStorage.setItem('storyPointEstimatorSessionId', newSessionId);
+                    setShowCreateSessionForm(false);
+                    setTeamName('');
+                    setSprintValue('');
+                } catch (error) {
+                    console.error('❌ Error creating session:', error);
+                    // Session still created in localStorage via fallback, so proceed
+                    setSessionId(newSessionId);
+                    setCurrentSession(newSession);
+                    setHasExplicitlyJoined(true);
+                    localStorage.setItem('storyPointEstimatorSessionId', newSessionId);
+                    setShowCreateSessionForm(false);
+                    setTeamName('');
+                    setSprintValue('');
+                }
             };
 
             const joinSession = async (id) => {
