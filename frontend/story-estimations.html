@@ -886,33 +886,40 @@
                                 <p class="text-gray-600">${state.currentSession.sprintValue}</p>
                                 <p class="text-sm text-gray-500">Session ID: ${state.sessionId}</p>
                             </div>
-                            <div class="flex items-center space-x-4">
-                                <button onclick="toggleDashboard()" class="px-4 py-2 ${state.showDashboard ? 'bg-purple-600' : 'bg-gray-600'} text-white rounded-md hover:bg-purple-700 transition">
-                                    <i data-lucide="bar-chart-2" class="w-4 h-4 inline"></i> ${state.showDashboard ? 'Hide' : 'Show'} Dashboard
+                            <div class="flex items-center space-x-3">
+                                <button onclick="toggleDashboard()" class="btn-carelon-${state.showDashboard ? 'primary' : 'secondary'} px-4 py-2 text-white rounded-lg transition flex items-center space-x-2">
+                                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                                    <span>${state.showDashboard ? 'Hide' : 'Show'} Dashboard</span>
                                 </button>
-                                <div class="text-right">
-                                    <div class="text-sm text-gray-600">Your Points</div>
-                                    <div class="text-3xl font-bold text-blue-600">${totalPoints}</div>
+                                <div class="text-right bg-gradient-to-br from-purple-50 to-blue-50 px-4 py-2 rounded-lg border border-purple-200">
+                                    <div class="text-xs text-gray-600 font-medium">Your Points</div>
+                                    <div class="text-2xl font-bold text-carelon-purple">${totalPoints}</div>
                                 </div>
-                                <button onclick="leaveSession()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700" title="Leave Session">
-                                    <i data-lucide="users" class="w-4 h-4 inline"></i> Leave
+                                <button onclick="leaveSession()" class="btn-carelon-secondary px-4 py-2 text-white rounded-lg hover:bg-gray-700 transition flex items-center space-x-2" title="Leave Session">
+                                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                                    <span>Leave</span>
                                 </button>
                                 ${hasPoPrivileges() ? `
-                                    <button onclick="endSession()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700" title="End Session (PO/Admin Only)">
-                                        <i data-lucide="x-circle" class="w-4 h-4 inline"></i> End Session
+                                    <button onclick="endSession()" class="bg-red-600 px-4 py-2 text-white rounded-lg hover:bg-red-700 transition flex items-center space-x-2" title="End Session (PO/Admin Only)">
+                                        <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                        <span>End Session</span>
                                     </button>
                                 ` : ''}
-                                <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                                    <i data-lucide="log-out" class="w-4 h-4 inline"></i> Logout
+                                <button onclick="logout()" class="bg-red-600 px-4 py-2 text-white rounded-lg hover:bg-red-700 transition flex items-center space-x-2">
+                                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                                    <span>Logout</span>
                                 </button>
                             </div>
                         </div>
                         
-                        <div class="mt-4 pt-4 border-t">
-                            <div class="flex items-center justify-between mb-2">
-                                <h3 class="text-sm font-semibold text-gray-700">Participants (${state.currentSession.participants.length})</h3>
-                                <button onclick="copyShareLink()" class="px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 flex items-center space-x-1">
-                                    <i data-lucide="share-2" class="w-3 h-3"></i>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-semibold text-gray-800 flex items-center space-x-2">
+                                    <i data-lucide="users" class="w-4 h-4 text-carelon-purple"></i>
+                                    <span>Participants (${state.currentSession.participants.length})</span>
+                                </h3>
+                                <button onclick="copyShareLink()" class="btn-carelon-primary px-3 py-1.5 text-white text-xs rounded-lg flex items-center space-x-1.5">
+                                    <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
                                     <span>Copy Link</span>
                                 </button>
                             </div>
@@ -1025,29 +1032,32 @@
 
                     <!-- Manage Estimation Reasons - PO/Admin Only -->
                     ${hasPoPrivileges() ? `
-                        <div class="bg-white rounded-lg shadow-sm p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-lg font-semibold text-gray-900">Manage Estimation Reasons</h3>
+                        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                            <div class="flex items-center justify-between mb-5">
+                                <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                                    <i data-lucide="list" class="w-5 h-5 text-carelon-purple"></i>
+                                    <span>Manage Estimation Reasons</span>
+                                </h3>
                                 ${(!state.currentSession.devEstimationReasons || state.currentSession.devEstimationReasons.length === 0) && 
                                   (!state.currentSession.qaEstimationReasons || state.currentSession.qaEstimationReasons.length === 0) ? `
-                                    <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                    <span class="text-xs text-purple-700 bg-purple-50 px-3 py-1.5 rounded-full border border-purple-200">
                                         <i data-lucide="info" class="w-3 h-3 inline"></i> Using default reasons
                                     </span>
                                 ` : ''}
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Dev Reasons -->
-                                <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-                                    <h4 class="text-md font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                                        <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                        Developer Reasons (${getEstimationReasons('Dev').length})
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-5 rounded-lg border-l-4 border-carelon-cyan shadow-sm">
+                                    <h4 class="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                        <i data-lucide="code" class="w-4 h-4 text-carelon-cyan"></i>
+                                        <span>Developer Reasons (${getEstimationReasons('Dev').length})</span>
                                     </h4>
                                     <div class="mb-3">
                                         <div class="flex gap-2">
                                             <input type="text" id="newDevReason" placeholder="Add new dev reason..." 
-                                                class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                            <button onclick="addDevReason()" class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-                                                Add
+                                                class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-carelon-cyan focus:border-transparent">
+                                            <button onclick="addDevReason()" class="px-4 py-2 bg-carelon-cyan text-white text-sm rounded-lg hover:bg-blue-600 transition">
+                                                <i data-lucide="plus" class="w-4 h-4"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -1064,17 +1074,17 @@
                                 </div>
                                 
                                 <!-- QA Reasons -->
-                                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-                                    <h4 class="text-md font-semibold text-green-800 mb-3 flex items-center gap-2">
-                                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                                        QA Reasons (${getEstimationReasons('QA').length})
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-lg border-l-4 border-carelon-turquoise shadow-sm">
+                                    <h4 class="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-carelon-turquoise"></i>
+                                        <span>QA Reasons (${getEstimationReasons('QA').length})</span>
                                     </h4>
                                     <div class="mb-3">
                                         <div class="flex gap-2">
                                             <input type="text" id="newQaReason" placeholder="Add new QA reason..." 
-                                                class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                                            <button onclick="addQaReason()" class="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">
-                                                Add
+                                                class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-carelon-turquoise focus:border-transparent">
+                                            <button onclick="addQaReason()" class="px-4 py-2 bg-carelon-turquoise text-white text-sm rounded-lg hover:bg-teal-600 transition">
+                                                <i data-lucide="plus" class="w-4 h-4"></i>
                                             </button>
                                         </div>
                                     </div>
