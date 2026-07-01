@@ -387,15 +387,15 @@
         // ESTIMATION MANAGEMENT
         // ============================================
         async function updateEstimation(storyId, points) {
-            // Show reason modal for Dev/QA roles
-            if ((state.user.role === 'Dev' || state.user.role === 'QA') && points > 0) {
+            // Show reason modal for Dev/QA roles (but not for null/? or 0)
+            if ((state.user.role === 'Dev' || state.user.role === 'QA') && points !== null && points > 0) {
                 state.showReasonModal = true;
                 state.reasonModalStoryId = storyId;
                 state.reasonModalPoints = points;
                 state.selectedReason = '';
                 render();
             } else {
-                // For other roles or 0 points, save directly
+                // For other roles, 0 points, or null (?), save directly
                 await saveEstimation(storyId, points, '');
             }
         }
@@ -572,7 +572,7 @@
             const storyEstimations = state.currentSession.estimations[storyId] || {};
             const estimates = Object.values(storyEstimations)
                 .map(est => typeof est === 'object' ? est.points : est)
-                .filter(points => points !== null && points !== undefined);
+                .filter(points => points !== null && points !== undefined && !isNaN(points));
             
             if (estimates.length === 0) return 0;
             
@@ -587,7 +587,7 @@
             const roleEstimates = Object.entries(storyEstimations)
                 .filter(([userId]) => userId.endsWith(`_${role}`))
                 .map(([, est]) => typeof est === 'object' ? est.points : est)
-                .filter(points => points !== null && points !== undefined);
+                .filter(points => points !== null && points !== undefined && !isNaN(points));
             
             if (roleEstimates.length === 0) return 0;
             
@@ -1156,6 +1156,14 @@
                                     ${points}
                                 </button>
                             `).join('')}
+                            <button onclick="updateEstimation('${story.id}', null)" 
+                                class="fibonacci-btn px-3 py-2 rounded-md font-semibold ${
+                                    userEst === null 
+                                        ? 'selected bg-gray-600 text-white' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }">
+                                ?
+                            </button>
                         </div>
                     </div>
 
@@ -1170,6 +1178,7 @@
                                 
                                 if (est) {
                                     const reason = est.devReason || est.qaReason || '';
+                                    const displayPoints = est.points === null ? '?' : est.points;
                                     return `
                                         <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
                                             <div class="flex items-center justify-between mb-1">
@@ -1177,8 +1186,8 @@
                                                     <span class="font-medium text-gray-900">${participant.name}</span>
                                                     <span class="text-gray-500 text-xs ml-1">(${participant.role})</span>
                                                 </div>
-                                                <span class="font-bold text-lg ${shouldShow ? 'text-blue-600' : 'text-gray-400'}">
-                                                    ${shouldShow ? est.points : '***'}
+                                                <span class="font-bold text-lg ${shouldShow ? (est.points === null ? 'text-gray-600' : 'text-blue-600') : 'text-gray-400'}">
+                                                    ${shouldShow ? displayPoints : '***'}
                                                 </span>
                                             </div>
                                             ${shouldShow && reason ? `
