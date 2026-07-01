@@ -1280,6 +1280,8 @@
             const complete = isComplete(story.id);
             const estimations = state.currentSession.estimations[story.id] || {};
             const userKey = `${state.user.name}_${state.user.role}`;
+            
+            console.log('Rendering story:', story.id, 'userEst:', userEst, 'type:', typeof userEst);
 
             return `
                 <div class="border rounded-lg p-4 ${complete ? 'bg-green-50 border-green-200' : 'bg-white'}">
@@ -1337,16 +1339,19 @@
                     <div class="mb-3">
                         <div class="text-sm font-medium text-gray-700 mb-2">Your Estimation:</div>
                         <div class="flex flex-wrap gap-2">
-                            ${FIBONACCI.map(points => `
-                                <button onclick="updateEstimation('${story.id}', ${points})" 
-                                    class="fibonacci-btn px-3 py-2 rounded-md font-semibold ${
-                                        userEst === points 
-                                            ? 'selected bg-blue-600 text-white' 
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }">
-                                    ${points}
-                                </button>
-                            `).join('')}
+                            ${FIBONACCI.map(points => {
+                                const isSelected = userEst !== null && Number(userEst) === Number(points);
+                                return `
+                                    <button onclick="updateEstimation('${story.id}', ${points})" 
+                                        class="fibonacci-btn px-3 py-2 rounded-md font-semibold ${
+                                            isSelected
+                                                ? 'selected bg-blue-600 text-white' 
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }">
+                                        ${points}
+                                    </button>
+                                `;
+                            }).join('')}
                             <button onclick="updateEstimation('${story.id}', null)" 
                                 class="fibonacci-btn px-3 py-2 rounded-md font-semibold ${
                                     userEst === null 
