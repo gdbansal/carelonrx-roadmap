@@ -155,10 +155,27 @@ app.post('/api/login', async (req, res) => {
         console.log('Login request received:', req.body);
         const { username, password } = req.body;
         
-        const user = await User.findOne({ username, password });
+        // Find user by username only
+        const user = await User.findOne({ username });
         
-        if (user) {
-            console.log('User found:', user.username);
+        if (!user) {
+            console.log('User NOT found - invalid username');
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid username or password'
+            });
+        }
+        
+        // Compare password using bcrypt
+        const isPasswordValid = await user.comparePassword(password);
+        
+        if (isPasswordValid) {
+            console.log('User authenticated:', user.username);
+            
+            // Update last login
+            user.lastLogin = new Date();
+            await user.save();
+            
             const token = generateToken(user);
             res.json({
                 success: true,
@@ -169,11 +186,12 @@ app.post('/api/login', async (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: user.role,
-                    profileImage: user.profileImage
+                    profileImage: user.profileImage,
+                    lastLogin: user.lastLogin
                 }
             });
         } else {
-            console.log('User NOT found - invalid credentials');
+            console.log('Invalid password for user:', username);
             res.status(401).json({
                 success: false,
                 message: 'Invalid username or password'
@@ -206,7 +224,12 @@ app.get('/api/initiatives', authMiddleware, async (req, res) => {
                 deliveryDate: i.deliveryDate,
                 budgetApproved: i.budgetApproved,
                 priority: i.priority,
+                holdReason: i.holdReason,
                 wsjf: i.wsjf,
+                userBusinessValue: i.userBusinessValue,
+                timeCriticality: i.timeCriticality,
+                riskReduction: i.riskReduction,
+                jobSize: i.jobSize,
                 owner: i.owner,
                 dependentSystems: i.dependentSystems,
                 businessValue: i.businessValue,
@@ -246,7 +269,12 @@ app.get('/api/initiatives/:id', authMiddleware, async (req, res) => {
                     deliveryDate: initiative.deliveryDate,
                     budgetApproved: initiative.budgetApproved,
                     priority: initiative.priority,
+                    holdReason: initiative.holdReason,
                     wsjf: initiative.wsjf,
+                    userBusinessValue: initiative.userBusinessValue,
+                    timeCriticality: initiative.timeCriticality,
+                    riskReduction: initiative.riskReduction,
+                    jobSize: initiative.jobSize,
                     owner: initiative.owner,
                     dependentSystems: initiative.dependentSystems,
                     businessValue: initiative.businessValue,
@@ -316,7 +344,8 @@ app.post('/api/initiatives', authMiddleware, async (req, res) => {
         console.error('Error creating initiative:', error);
         res.status(500).json({
             success: false,
-            message: 'Error creating initiative'
+            message: 'Error creating initiative',
+            error: error.message || 'Unknown error'
         });
     }
 });
@@ -357,7 +386,8 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
         // Track field-level changes
         const fieldChanges = [];
         const fieldsToTrack = ['name', 'description', 'program', 'year', 'quarter', 'startDate', 'deliveryDate', 
-                               'budgetApproved', 'priority', 'wsjf', 'owner', 'businessValue', 'risks'];
+                               'budgetApproved', 'priority', 'holdReason', 'wsjf', 'userBusinessValue', 'timeCriticality', 
+                               'riskReduction', 'jobSize', 'owner', 'businessValue', 'risks'];
         
         fieldsToTrack.forEach(field => {
             if (req.body[field] !== undefined && req.body[field] !== initiative[field]) {
@@ -830,6 +860,151 @@ app.put('/api/profile', authMiddleware, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error updating profile'
+        });
+    }
+});
+
+// ========== MIGRATION ENDPOINTS (ADMIN ONLY) ==========
+
+// Migrate passwords endpoint - ADMIN ONLY
+app.post('/api/migrate-passwords', authMiddleware, async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Admin privileges required.'
+            });
+        }
+        
+        const bcrypt = require('bcryptjs');
+        
+        // Find all users
+        const users = await User.find({});
+        let migratedCount = 0;
+        const results = [];
+
+        for (const user of users) {
+            // Check if password is already hashed (bcrypt hashes start with $2a$ or $2b$)
+            if (user.password && !user.password.startsWith('$2')) {
+                const plainPassword = user.password;
+                
+                // Hash the plain text password
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(plainPassword, salt);
+                
+                // Update the user with hashed password
+                await User.updateOne(
+                    { _id: user._id },
+                    { $set: { password: hashedPassword } }
+                );
+                
+                results.push(`✅ Hashed password for: ${user.username}`);
+                migratedCount++;
+            } else {
+                results.push(`⏭️ Skipped (already hashed): ${user.username}`);
+            }
+        }
+
+        // Verify admin user
+        const adminUser = await User.findOne({ username: 'admin' });
+        let adminVerified = false;
+        if (adminUser) {
+            adminVerified = await bcrypt.compare('admin123', adminUser.password);
+        }
+
+        res.json({
+            success: true,
+            message: 'Password migration completed',
+            totalUsers: users.length,
+            migratedCount,
+            alreadyHashed: users.length - migratedCount,
+            adminVerified,
+            details: results
+        });
+    } catch (error) {
+        console.error('Migration error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Migration failed',
+            error: error.message
+        });
+    }
+});
+
+// Update user role endpoint - ADMIN ONLY
+app.post('/api/update-user-role', authMiddleware, async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Admin privileges required.'
+            });
+        }
+        
+        const { username, role } = req.body;
+        
+        if (!username || !role) {
+            return res.status(400).json({
+                success: false,
+                message: 'Username and role are required'
+            });
+        }
+
+        // List all users
+        const allUsers = await User.find({}, 'username name email role');
+        
+        // Find the user
+        let user = await User.findOne({ username });
+        
+        if (!user) {
+            // Try by email
+            user = await User.findOne({ email: new RegExp(username, 'i') });
+        }
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: `User '${username}' not found`,
+                availableUsers: allUsers.map(u => ({
+                    username: u.username,
+                    name: u.name,
+                    email: u.email,
+                    role: u.role
+                }))
+            });
+        }
+
+        const oldRole = user.role;
+        
+        // Update role
+        await User.collection.updateOne(
+            { _id: user._id },
+            { $set: { role } }
+        );
+        
+        // Verify update
+        const updatedUser = await User.findById(user._id);
+
+        res.json({
+            success: true,
+            message: `Role updated successfully`,
+            user: {
+                username: updatedUser.username,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                oldRole,
+                newRole: updatedUser.role
+            },
+            note: 'User must logout and login again to see changes'
+        });
+    } catch (error) {
+        console.error('Role update error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Role update failed',
+            error: error.message
         });
     }
 });

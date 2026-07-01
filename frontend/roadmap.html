@@ -9,6 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="assets/session-manager.js"></script>
+    <link rel="stylesheet" href="assets/carelon-theme.css">
     <style>
         .roadmap-grid {
             display: grid;
@@ -76,6 +78,12 @@
         .priority-high { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
         .priority-medium { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
         .priority-low { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
+        .priority-on-hold { 
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            border: 3px dashed #581c87;
+            opacity: 0.95;
+            box-shadow: inset 0 0 0 2px rgba(147, 51, 234, 0.3);
+        }
         .quarter-marker {
             position: relative;
         }
@@ -139,118 +147,9 @@
         .system-name {
             font-weight: 500;
         }
-        /* Side Panel Styles */
-        .side-panel {
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 250px;
-            background: linear-gradient(180deg, #5009B5 0%, #3d0891 100%);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            z-index: 100;
-            padding-top: 80px;
-            transition: transform 0.3s ease;
-        }
-        .side-panel-link {
-            display: flex;
-            align-items: center;
-            padding: 16px 24px;
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
-            font-weight: 500;
-        }
-        .side-panel-link:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            border-left-color: #fbbf24;
-        }
-        .side-panel-link.active {
-            background-color: rgba(255, 255, 255, 0.15);
-            color: white;
-            border-left-color: #fbbf24;
-        }
-        .side-panel-link i {
-            margin-right: 12px;
-            width: 20px;
-            height: 20px;
-        }
-        .main-content-with-sidebar {
-            margin-left: 250px;
-            transition: margin-left 0.3s ease;
-        }
-        .side-panel-toggle {
-            position: fixed;
-            left: 250px;
-            top: 90px;
-            background: #5009B5;
-            color: white;
-            border: none;
-            border-radius: 0 8px 8px 0;
-            padding: 12px 8px;
-            cursor: pointer;
-            z-index: 101;
-            transition: left 0.3s ease;
-            box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
-        }
-        .side-panel-toggle:hover {
-            background: #3d0891;
-        }
-        .side-panel.collapsed {
-            transform: translateX(-250px);
-        }
-        .side-panel.collapsed + .side-panel-toggle {
-            left: 0;
-        }
-        .side-panel.collapsed ~ .main-content-with-sidebar {
-            margin-left: 0;
-        }
-        @media (max-width: 768px) {
-            .side-panel {
-                transform: translateX(-250px);
-            }
-            .side-panel-toggle {
-                left: 0;
-            }
-            .main-content-with-sidebar {
-                margin-left: 0;
-            }
-            .side-panel.mobile-open {
-                transform: translateX(0);
-            }
-            .side-panel.mobile-open + .side-panel-toggle {
-                left: 250px;
-            }
-        }
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Left Side Panel -->
-    <div id="sidePanel" class="side-panel">
-        <div class="px-6 py-4 border-b border-white border-opacity-20">
-            <h2 class="text-white font-bold text-lg">Navigation</h2>
-        </div>
-        <nav class="mt-4">
-            <a href="#roadmap" class="side-panel-link active" onclick="navigateToSection('roadmap', event)">
-                <i data-lucide="map" class="w-5 h-5"></i>
-                <span>Roadmap</span>
-            </a>
-            <a href="#safe-estimations" class="side-panel-link" onclick="navigateToSection('safe-estimations', event)">
-                <i data-lucide="calculator" class="w-5 h-5"></i>
-                <span>SAFe Estimations</span>
-            </a>
-        </nav>
-    </div>
-
-    <!-- Toggle Button -->
-    <button id="sidePanelToggle" class="side-panel-toggle" onclick="toggleSidePanel()">
-        <i data-lucide="chevron-left" class="w-5 h-5"></i>
-    </button>
-
-    <!-- Main Content -->
-    <div class="main-content-with-sidebar">
     <nav class="bg-white shadow-lg">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
@@ -258,7 +157,7 @@
                     <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="h-10 w-auto">
                     <div>
                         <h1 class="text-lg font-bold text-gray-800">Roadmap</h1>
-                        <p class="text-xs text-gray-600">Visual Timeline View</p>
+                        <p class="text-xs text-gray-600">Product 360</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -268,27 +167,47 @@
                         <span>User Guide</span>
                     </button>
                     <button onclick="window.location.href='dashboard.html'" 
-                        class="text-gray-700 hover:text-gray-900 flex items-center space-x-2">
-                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                        <span>Back to Dashboard</span>
+                        class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        <span>Dashboard</span>
                     </button>
                     <button onclick="window.location.href='intake.html'" 
-                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                        class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         <span>New Initiative</span>
                     </button>
-                    <button id="adminLink" onclick="window.location.href='admin.html'" 
-                        class="hidden bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center space-x-2">
-                        <i data-lucide="shield" class="w-4 h-4"></i>
-                        <span>Admin</span>
-                    </button>
-                    <div class="flex items-center space-x-2 text-gray-700">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                        <span id="userName" class="font-semibold"></span>
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                            <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                                <span id="userInitials">U</span>
+                                <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
+                            </div>
+                            <span id="userName" class="font-semibold text-gray-700"></span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <a href="profile.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="analytics.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="trending-up" class="w-4 h-4"></i>
+                                <span>Analytics</span>
+                            </a>
+                            <a id="adminDropdownLink" href="admin.html" class="hidden px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="shield" class="w-4 h-4"></i>
+                                <span>Admin Panel</span>
+                            </a>
+                            <hr class="my-2">
+                            <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                <span>Logout</span>
+                            </button>
+                        </div>
                     </div>
-                    <button onclick="logout()" class="text-red-600 hover:text-red-800">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -316,6 +235,35 @@
                 </div>
             </div>
 
+            <div class="mb-4">
+                <div class="relative">
+                    <button id="systemFilterButton" onclick="toggleSystemFilter()" 
+                        class="w-full md:w-auto border border-gray-300 rounded-lg px-4 py-2 bg-white hover:bg-gray-50 flex items-center justify-between space-x-2">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="filter" class="w-4 h-4"></i>
+                            <span id="systemFilterLabel">Filter by System (All)</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    
+                    <div id="systemFilterDropdown" class="hidden absolute z-50 mt-2 w-full md:w-96 bg-white border border-gray-300 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+                        <div class="p-3 border-b border-gray-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-semibold text-gray-700">Select Systems</span>
+                                <button onclick="clearSystemFilter()" class="text-xs text-blue-600 hover:text-blue-800">Clear All</button>
+                            </div>
+                            <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                <input type="checkbox" id="selectAllSystems" onchange="toggleAllSystems()" class="w-4 h-4 text-blue-600 rounded">
+                                <span class="text-sm font-semibold text-gray-700">Select All</span>
+                            </label>
+                        </div>
+                        <div id="systemFilterList" class="p-2">
+                            <!-- System checkboxes will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="flex items-center space-x-4 mb-6">
                 <div class="flex items-center space-x-2">
                     <div class="w-4 h-4 rounded priority-critical"></div>
@@ -333,6 +281,10 @@
                     <div class="w-4 h-4 rounded priority-low"></div>
                     <span class="text-sm text-gray-600">Low</span>
                 </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 rounded priority-on-hold"></div>
+                    <span class="text-sm text-gray-600">On Hold</span>
+                </div>
             </div>
         </div>
 
@@ -349,152 +301,7 @@
                 Create First Initiative
             </button>
         </div>
-
-        <!-- Roadmap Section -->
-        <div id="roadmap-section" class="section-content">
-            <!-- Roadmap content is already above -->
-        </div>
-
-        <!-- SAFe Estimations Section -->
-        <div id="safe-estimations-section" class="section-content hidden">
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">SAFe Estimations</h2>
-                <p class="text-gray-600 mb-6">Scaled Agile Framework (SAFe) estimation tools and calculators for program increment planning.</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Story Points Calculator -->
-                    <div class="border border-gray-200 rounded-lg p-6">
-                        <div class="flex items-center space-x-3 mb-4">
-                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <i data-lucide="calculator" class="w-6 h-6 text-purple-600"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-800">Story Points Calculator</h3>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">Calculate story points using Fibonacci sequence for agile estimation.</p>
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Complexity</label>
-                                <select id="complexity" class="w-full border rounded-lg px-3 py-2">
-                                    <option value="1">1 - Very Simple</option>
-                                    <option value="2">2 - Simple</option>
-                                    <option value="3">3 - Moderate</option>
-                                    <option value="5">5 - Complex</option>
-                                    <option value="8">8 - Very Complex</option>
-                                    <option value="13">13 - Extremely Complex</option>
-                                </select>
-                            </div>
-                            <div class="bg-purple-50 p-4 rounded-lg">
-                                <p class="text-sm text-gray-600">Estimated Story Points:</p>
-                                <p id="storyPoints" class="text-3xl font-bold text-purple-600">3</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Velocity Calculator -->
-                    <div class="border border-gray-200 rounded-lg p-6">
-                        <div class="flex items-center space-x-3 mb-4">
-                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i data-lucide="trending-up" class="w-6 h-6 text-blue-600"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-800">Team Velocity</h3>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">Calculate average team velocity across sprints.</p>
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Sprint 1 Points</label>
-                                <input type="number" id="sprint1" class="w-full border rounded-lg px-3 py-2" value="25">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Sprint 2 Points</label>
-                                <input type="number" id="sprint2" class="w-full border rounded-lg px-3 py-2" value="30">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Sprint 3 Points</label>
-                                <input type="number" id="sprint3" class="w-full border rounded-lg px-3 py-2" value="28">
-                            </div>
-                            <button onclick="calculateVelocity()" class="w-full btn-carelon-primary text-white py-2 rounded-lg">
-                                Calculate Average
-                            </button>
-                            <div class="bg-blue-50 p-4 rounded-lg">
-                                <p class="text-sm text-gray-600">Average Velocity:</p>
-                                <p id="avgVelocity" class="text-3xl font-bold text-blue-600">27.7</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PI Planning Capacity -->
-                    <div class="border border-gray-200 rounded-lg p-6">
-                        <div class="flex items-center space-x-3 mb-4">
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <i data-lucide="users" class="w-6 h-6 text-green-600"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-800">PI Capacity</h3>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">Calculate Program Increment capacity for your team.</p>
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Team Size</label>
-                                <input type="number" id="teamSize" class="w-full border rounded-lg px-3 py-2" value="8">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Sprints in PI</label>
-                                <input type="number" id="sprintsInPI" class="w-full border rounded-lg px-3 py-2" value="5">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Velocity per Sprint</label>
-                                <input type="number" id="velocityPerSprint" class="w-full border rounded-lg px-3 py-2" value="30">
-                            </div>
-                            <button onclick="calculatePICapacity()" class="w-full btn-carelon-primary text-white py-2 rounded-lg">
-                                Calculate Capacity
-                            </button>
-                            <div class="bg-green-50 p-4 rounded-lg">
-                                <p class="text-sm text-gray-600">Total PI Capacity:</p>
-                                <p id="piCapacity" class="text-3xl font-bold text-green-600">150</p>
-                                <p class="text-xs text-gray-500 mt-1">Story Points</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- WSJF Calculator -->
-                    <div class="border border-gray-200 rounded-lg p-6">
-                        <div class="flex items-center space-x-3 mb-4">
-                            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                                <i data-lucide="bar-chart" class="w-6 h-6 text-orange-600"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-800">WSJF Score</h3>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4">Weighted Shortest Job First prioritization.</p>
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Business Value (1-10)</label>
-                                <input type="number" id="businessValue" class="w-full border rounded-lg px-3 py-2" min="1" max="10" value="8">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Time Criticality (1-10)</label>
-                                <input type="number" id="timeCriticality" class="w-full border rounded-lg px-3 py-2" min="1" max="10" value="7">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Risk Reduction (1-10)</label>
-                                <input type="number" id="riskReduction" class="w-full border rounded-lg px-3 py-2" min="1" max="10" value="5">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Job Size (1-10)</label>
-                                <input type="number" id="jobSize" class="w-full border rounded-lg px-3 py-2" min="1" max="10" value="5">
-                            </div>
-                            <button onclick="calculateWSJF()" class="w-full btn-carelon-primary text-white py-2 rounded-lg">
-                                Calculate WSJF
-                            </button>
-                            <div class="bg-orange-50 p-4 rounded-lg">
-                                <p class="text-sm text-gray-600">WSJF Score:</p>
-                                <p id="wsjfScore" class="text-3xl font-bold text-orange-600">4.0</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-    <!-- End Main Content -->
 
     <div id="initiativeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -516,11 +323,6 @@
         if (!user.username) {
             window.location.href = 'login.html';
         }
-        document.getElementById('userName').textContent = user.name || user.username;
-        
-        if (user.role === 'admin') {
-            document.getElementById('adminLink').classList.remove('hidden');
-        }
 
         function logout() {
             localStorage.removeItem('user');
@@ -528,8 +330,148 @@
             window.location.href = 'login.html';
         }
 
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
+            lucide.createIcons();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const button = event.target.closest('button[onclick="toggleProfileDropdown()"]');
+            
+            if (!button && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        function loadUserProfile() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            // Set user name
+            document.getElementById('userName').textContent = user.name || user.username;
+            
+            // Set initials
+            const initials = (user.name || user.username || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            document.getElementById('userInitials').textContent = initials;
+            
+            // Load profile image if exists
+            if (user.profileImage) {
+                document.getElementById('userImage').src = user.profileImage;
+                document.getElementById('userImage').classList.remove('hidden');
+                document.getElementById('userInitials').classList.add('hidden');
+            }
+            
+            // Show admin link if user is admin
+            if (user.role === 'admin') {
+                document.getElementById('adminDropdownLink').classList.remove('hidden');
+            }
+        }
+
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         let allInitiatives = [];
+        let selectedSystems = [];
+        const allSystems = [
+            'Bioplus Intel Engine',
+            'Bioplus V',
+            'Intel Engine',
+            'CPDL',
+            'CPFR',
+            'CFX',
+            'Digital Integrated',
+            'Digital Standalone Mobile',
+            'Digital Standalone Portal',
+            'IDL',
+            'PPI',
+            'PST',
+            'SOA',
+            'CCT',
+            'Enterprise Rx',
+            'Payment Hub',
+            'Self Service Portal'
+        ];
+
+        // Initialize system filter
+        function initSystemFilter() {
+            const filterList = document.getElementById('systemFilterList');
+            filterList.innerHTML = '';
+            
+            allSystems.forEach(system => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer';
+                label.innerHTML = `
+                    <input type="checkbox" value="${system}" onchange="updateSystemFilter()" 
+                        class="system-checkbox w-4 h-4 text-blue-600 rounded">
+                    <span class="text-sm text-gray-700">${system}</span>
+                `;
+                filterList.appendChild(label);
+            });
+            
+            lucide.createIcons();
+        }
+
+        // Toggle system filter dropdown
+        function toggleSystemFilter() {
+            const dropdown = document.getElementById('systemFilterDropdown');
+            dropdown.classList.toggle('hidden');
+            lucide.createIcons();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('systemFilterDropdown');
+            const button = document.getElementById('systemFilterButton');
+            
+            if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Toggle all systems
+        function toggleAllSystems() {
+            const selectAll = document.getElementById('selectAllSystems');
+            const checkboxes = document.querySelectorAll('.system-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+            
+            updateSystemFilter();
+        }
+
+        // Update system filter
+        function updateSystemFilter() {
+            const checkboxes = document.querySelectorAll('.system-checkbox:checked');
+            selectedSystems = Array.from(checkboxes).map(cb => cb.value);
+            
+            // Update "Select All" checkbox
+            const allCheckboxes = document.querySelectorAll('.system-checkbox');
+            const selectAll = document.getElementById('selectAllSystems');
+            selectAll.checked = selectedSystems.length === allCheckboxes.length;
+            
+            // Update label
+            const label = document.getElementById('systemFilterLabel');
+            if (selectedSystems.length === 0) {
+                label.textContent = 'Filter by System (All)';
+            } else if (selectedSystems.length === 1) {
+                label.textContent = `Filter: ${selectedSystems[0]}`;
+            } else {
+                label.textContent = `Filter: ${selectedSystems.length} systems selected`;
+            }
+            
+            renderRoadmap();
+        }
+
+        // Clear system filter
+        function clearSystemFilter() {
+            const checkboxes = document.querySelectorAll('.system-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.getElementById('selectAllSystems').checked = false;
+            updateSystemFilter();
+        }
 
         async function loadRoadmap() {
             try {
@@ -542,6 +484,7 @@
                 
                 if (data.success) {
                     allInitiatives = data.initiatives;
+                    initSystemFilter();
                     renderRoadmap();
                 }
             } catch (error) {
@@ -552,7 +495,20 @@
 
         function renderRoadmap() {
             const selectedYear = document.getElementById('yearFilter').value;
-            const initiatives = allInitiatives.filter(i => i.year === selectedYear);
+            let initiatives = allInitiatives.filter(i => i.year === selectedYear);
+            
+            // Filter by selected systems
+            if (selectedSystems.length > 0) {
+                initiatives = initiatives.filter(initiative => {
+                    // Check if initiative has any dependent systems that match selected systems
+                    if (!initiative.dependentSystems || initiative.dependentSystems.length === 0) {
+                        return false;
+                    }
+                    return initiative.dependentSystems.some(dep => 
+                        selectedSystems.includes(dep.system)
+                    );
+                });
+            }
             
             if (initiatives.length === 0) {
                 document.getElementById('roadmapGrid').parentElement.classList.add('hidden');
@@ -573,9 +529,11 @@
                 grid.innerHTML += `<div class="roadmap-header ${isQuarterEnd ? 'quarter-marker' : ''}">${month}</div>`;
             });
 
+            // Sort by WSJF descending (highest first)
             initiatives.sort((a, b) => {
-                const priorityOrder = { 'Critical': 0, 'High': 1, 'Medium': 2, 'Low': 3 };
-                return priorityOrder[a.priority] - priorityOrder[b.priority];
+                const aWSJF = parseFloat(a.wsjf) || 0;
+                const bWSJF = parseFloat(b.wsjf) || 0;
+                return bWSJF - aWSJF;
             });
 
             initiatives.forEach(initiative => {
@@ -601,10 +559,13 @@
                 const { startPosition, width } = calculateContinuousPosition(initiative);
                 if (startPosition !== null && width > 0) {
                     const bar = document.createElement('div');
-                    bar.className = `initiative-bar priority-${initiative.priority.toLowerCase()}`;
+                    bar.className = `initiative-bar priority-${initiative.priority.toLowerCase().replace(/\s+/g, '-')}`;
                     bar.style.left = `${startPosition}%`;
                     bar.style.width = `${width}%`;
-                    bar.textContent = initiative.name;
+                    // Show "(On Hold)" suffix for On Hold priority initiatives
+                    bar.textContent = initiative.priority === 'On Hold' 
+                        ? `${initiative.name} (On Hold)` 
+                        : initiative.name;
                     bar.onclick = () => showInitiativeDetails(initiative.id);
                     
                     // Create tooltip with impacted systems
@@ -770,6 +731,11 @@
             const initiative = allInitiatives.find(i => i.id === id);
             if (!initiative) return;
 
+            // Debug logging
+            console.log('Initiative details:', initiative);
+            console.log('Priority:', initiative.priority);
+            console.log('Hold Reason:', initiative.holdReason);
+
             document.getElementById('modalTitle').textContent = initiative.name;
             document.getElementById('modalContent').innerHTML = `
                 <div class="space-y-4">
@@ -794,6 +760,19 @@
                                 ${initiative.budgetApproved ? 'Approved' : 'Pending'}
                             </span>
                         </div>
+                    </div>
+                    ${initiative.priority === 'On Hold' && initiative.holdReason ? `
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                        <div class="flex items-start space-x-2">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-yellow-600 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-semibold text-yellow-800 mb-1">Hold Reason</p>
+                                <p class="text-sm text-yellow-700">${initiative.holdReason}</p>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    <div class="grid grid-cols-2 gap-4">
                         ${initiative.startDate ? `
                         <div>
                             <p class="text-sm text-gray-500">Start Date</p>
@@ -854,8 +833,14 @@
                     ` : ''}
                     ${initiative.risks ? `
                     <div>
-                        <p class="text-sm text-gray-500 mb-2">Risks & Dependencies</p>
+                        <p class="text-sm text-gray-500 mb-2">Risks</p>
                         <p class="text-gray-700">${initiative.risks}</p>
+                    </div>
+                    ` : ''}
+                    ${initiative.dependencies ? `
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">Dependencies</p>
+                        <p class="text-gray-700">${initiative.dependencies}</p>
                     </div>
                     ` : ''}
                     <div class="pt-4 flex space-x-2">
@@ -886,23 +871,31 @@
                 'Critical': 'bg-red-100 text-red-800',
                 'High': 'bg-orange-100 text-orange-800',
                 'Medium': 'bg-blue-100 text-blue-800',
-                'Low': 'bg-gray-100 text-gray-800'
+                'Low': 'bg-gray-100 text-gray-800',
+                'On Hold': 'bg-yellow-100 text-yellow-800'
             };
             return classes[priority] || 'bg-gray-100 text-gray-800';
         }
 
         async function exportRoadmap() {
             try {
-                const exportButton = event.target.closest('button');
-                const originalHTML = exportButton.innerHTML;
-                exportButton.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i><span>Exporting...</span>';
-                exportButton.disabled = true;
-                lucide.createIcons();
+                // Hide export buttons during capture
+                const exportButtons = document.querySelectorAll('button[onclick*="export"]');
+                exportButtons.forEach(btn => btn.style.visibility = 'hidden');
                 
-                // Wait a bit for any animations to complete
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Store original styles
+                const roadmapGrid = document.getElementById('roadmapGrid');
+                const originalGridWidth = roadmapGrid.style.minWidth;
+                const originalBodyWidth = document.body.style.width;
                 
-                // Capture the entire roadmap container including header and grid
+                // Force wider layout to ensure all months are visible
+                roadmapGrid.style.minWidth = '1600px';
+                document.body.style.width = '1800px';
+                
+                // Wait for layout to update
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // Capture the entire roadmap container
                 const container = document.querySelector('.container.mx-auto.px-6.py-8');
                 
                 const canvas = await html2canvas(container, {
@@ -910,38 +903,86 @@
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#f9fafb',
-                    windowWidth: container.scrollWidth,
-                    windowHeight: container.scrollHeight
+                    windowWidth: 1800,
+                    windowHeight: container.scrollHeight,
+                    allowTaint: true,
+                    foreignObjectRendering: false,
+                    imageTimeout: 0,
+                    scrollY: -window.scrollY,
+                    scrollX: -window.scrollX,
+                    height: container.scrollHeight,
+                    width: 1800,
+                    x: 0,
+                    y: 0
                 });
+                
+                // Restore original styles
+                roadmapGrid.style.minWidth = originalGridWidth;
+                document.body.style.width = originalBodyWidth;
+                exportButtons.forEach(btn => btn.style.visibility = 'visible');
                 
                 const imgData = canvas.toDataURL('image/png');
                 
                 const { jsPDF } = window.jspdf;
+                
+                // A3 landscape dimensions
+                const pageWidth = 420; // mm
+                const pageHeight = 297; // mm
+                
+                // Calculate scaling to fit content while maintaining aspect ratio
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const imgRatio = imgWidth / imgHeight;
+                const pageRatio = pageWidth / pageHeight;
+                
+                let pdfWidth, pdfHeight;
+                
+                // Fit to width or height depending on aspect ratio
+                if (imgRatio > pageRatio) {
+                    // Image is wider - fit to width
+                    pdfWidth = pageWidth;
+                    pdfHeight = pageWidth / imgRatio;
+                } else {
+                    // Image is taller - fit to height
+                    pdfHeight = pageHeight;
+                    pdfWidth = pageHeight * imgRatio;
+                }
+                
                 const pdf = new jsPDF({
                     orientation: 'landscape',
                     unit: 'mm',
                     format: 'a3'
                 });
                 
-                const pdfWidth = 420;
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                // Handle multi-page PDF if content is too tall
+                let heightLeft = pdfHeight;
+                let position = 0;
                 
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                heightLeft -= pageHeight;
+                
+                while (heightLeft > 0) {
+                    position = heightLeft - pdfHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                    heightLeft -= pageHeight;
+                }
                 
                 const year = document.getElementById('yearFilter').value;
                 pdf.save('CarelonRx_Roadmap_' + year + '.pdf');
                 
-                exportButton.innerHTML = originalHTML;
-                exportButton.disabled = false;
                 lucide.createIcons();
                 
             } catch (error) {
                 console.error('Error exporting roadmap:', error);
                 alert('Failed to export roadmap. Please try again.');
                 
-                const exportButton = event.target.closest('button');
-                exportButton.innerHTML = '<i data-lucide="download" class="w-5 h-5"></i><span>Export</span>';
-                exportButton.disabled = false;
+                // Restore original styles and button visibility in case of error
+                const roadmapGrid = document.getElementById('roadmapGrid');
+                roadmapGrid.style.minWidth = '';
+                document.body.style.width = '';
+                const exportButtons = document.querySelectorAll('button[onclick*="export"]');
+                exportButtons.forEach(btn => btn.style.visibility = 'visible');
                 lucide.createIcons();
             }
         }
@@ -972,6 +1013,8 @@
                                 'Business Owner': initiative.owner || '',
                                 'Start Date': initiative.startDate ? new Date(initiative.startDate).toLocaleDateString() : '',
                                 'Delivery Date': initiative.deliveryDate ? new Date(initiative.deliveryDate).toLocaleDateString() : '',
+                                'Risks': initiative.risks || '',
+                                'Dependencies': initiative.dependencies || '',
                                 'Dependent System': system.system || '',
                                 'PM/SPOC': system.pmSpoc || '',
                                 'JIRA URL': system.jiraUrl || ''
@@ -988,6 +1031,8 @@
                             'Business Owner': initiative.owner || '',
                             'Start Date': initiative.startDate ? new Date(initiative.startDate).toLocaleDateString() : '',
                             'Delivery Date': initiative.deliveryDate ? new Date(initiative.deliveryDate).toLocaleDateString() : '',
+                            'Risks': initiative.risks || '',
+                            'Dependencies': initiative.dependencies || '',
                             'Dependent System': '',
                             'PM/SPOC': '',
                             'JIRA URL': ''
@@ -1008,6 +1053,8 @@
                     { wch: 20 }, // Business Owner
                     { wch: 15 }, // Start Date
                     { wch: 15 }, // Delivery Date
+                    { wch: 30 }, // Risks
+                    { wch: 30 }, // Dependencies
                     { wch: 20 }, // Dependent System
                     { wch: 20 }, // PM/SPOC
                     { wch: 40 }  // JIRA URL
@@ -1031,85 +1078,8 @@
 
         document.getElementById('yearFilter').addEventListener('change', renderRoadmap);
 
+        loadUserProfile();
         loadRoadmap();
-
-        // Side Panel Navigation Functions
-        function toggleSidePanel() {
-            const sidePanel = document.getElementById('sidePanel');
-            const toggleBtn = document.getElementById('sidePanelToggle');
-            const toggleIcon = toggleBtn.querySelector('i');
-            
-            sidePanel.classList.toggle('collapsed');
-            
-            if (sidePanel.classList.contains('collapsed')) {
-                toggleIcon.setAttribute('data-lucide', 'chevron-right');
-            } else {
-                toggleIcon.setAttribute('data-lucide', 'chevron-left');
-            }
-            lucide.createIcons();
-        }
-
-        function navigateToSection(section, event) {
-            event.preventDefault();
-            
-            // Update active link
-            document.querySelectorAll('.side-panel-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
-            
-            // Hide all sections
-            const roadmapSection = document.getElementById('roadmap-section');
-            const safeSection = document.getElementById('safe-estimations-section');
-            const roadmapContent = document.querySelector('.container.mx-auto.px-6.py-8');
-            
-            if (section === 'roadmap') {
-                roadmapContent.style.display = 'block';
-                safeSection.classList.add('hidden');
-            } else if (section === 'safe-estimations') {
-                roadmapContent.style.display = 'none';
-                safeSection.classList.remove('hidden');
-                lucide.createIcons();
-            }
-            
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // SAFe Estimation Calculator Functions
-        document.getElementById('complexity')?.addEventListener('change', function() {
-            document.getElementById('storyPoints').textContent = this.value;
-        });
-
-        function calculateVelocity() {
-            const sprint1 = parseFloat(document.getElementById('sprint1').value) || 0;
-            const sprint2 = parseFloat(document.getElementById('sprint2').value) || 0;
-            const sprint3 = parseFloat(document.getElementById('sprint3').value) || 0;
-            
-            const average = ((sprint1 + sprint2 + sprint3) / 3).toFixed(1);
-            document.getElementById('avgVelocity').textContent = average;
-        }
-
-        function calculatePICapacity() {
-            const teamSize = parseFloat(document.getElementById('teamSize').value) || 0;
-            const sprints = parseFloat(document.getElementById('sprintsInPI').value) || 0;
-            const velocity = parseFloat(document.getElementById('velocityPerSprint').value) || 0;
-            
-            const capacity = sprints * velocity;
-            document.getElementById('piCapacity').textContent = capacity;
-        }
-
-        function calculateWSJF() {
-            const businessValue = parseFloat(document.getElementById('businessValue').value) || 0;
-            const timeCriticality = parseFloat(document.getElementById('timeCriticality').value) || 0;
-            const riskReduction = parseFloat(document.getElementById('riskReduction').value) || 0;
-            const jobSize = parseFloat(document.getElementById('jobSize').value) || 1;
-            
-            const costOfDelay = businessValue + timeCriticality + riskReduction;
-            const wsjf = (costOfDelay / jobSize).toFixed(1);
-            
-            document.getElementById('wsjfScore').textContent = wsjf;
-        }
     </script>
 </body>
 </html>

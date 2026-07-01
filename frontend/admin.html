@@ -6,6 +6,7 @@
     <title>CarelonRx Roadmap - Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="assets/carelon-theme.css">
 </head>
 <body class="bg-gray-50">
     <nav class="bg-white shadow-lg">
@@ -15,7 +16,7 @@
                     <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="h-10 w-auto">
                     <div>
                         <h1 class="text-lg font-bold text-gray-800">Roadmap</h1>
-                        <p class="text-xs text-gray-600">Product Initiative Management</p>
+                        <p class="text-xs text-gray-600">Product 360</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -25,27 +26,52 @@
                         <span>User Guide</span>
                     </button>
                     <button onclick="window.location.href='dashboard.html'" 
-                        class="text-gray-700 hover:text-gray-900 flex items-center space-x-2">
+                        class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                         <span>Dashboard</span>
                     </button>
                     <button onclick="window.location.href='roadmap.html'" 
-                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
+                        class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
                         <span>View Roadmap</span>
                     </button>
                     <button onclick="window.location.href='intake.html'" 
-                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                        class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         <span>New Initiative</span>
                     </button>
-                    <div class="flex items-center space-x-2 text-gray-700">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                        <span id="userName" class="font-semibold"></span>
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                            <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                                <span id="userInitials">U</span>
+                                <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
+                            </div>
+                            <span id="userName" class="font-semibold text-gray-700"></span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <a href="profile.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="analytics.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="trending-up" class="w-4 h-4"></i>
+                                <span>Analytics</span>
+                            </a>
+                            <a id="adminDropdownLink" href="admin.html" class="hidden px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="shield" class="w-4 h-4"></i>
+                                <span>Admin Panel</span>
+                            </a>
+                            <hr class="my-2">
+                            <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                <span>Logout</span>
+                            </button>
+                        </div>
                     </div>
-                    <button onclick="logout()" class="text-red-600 hover:text-red-800">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -94,37 +120,42 @@
                     <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
                         Full Name <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" id="name" required
+                    <input type="text" id="name" required maxlength="200"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter full name">
+                    <p class="text-xs text-gray-500 mt-1">Maximum 200 characters</p>
                 </div>
 
                 <div>
                     <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">
                         Username <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" id="username" required
+                    <input type="text" id="username" required maxlength="200"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter username">
+                    <p class="text-xs text-gray-500 mt-1">Maximum 200 characters</p>
                 </div>
 
                 <div>
                     <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
                         Email <span class="text-red-500">*</span>
                     </label>
-                    <input type="email" id="email" required
+                    <input type="email" id="email" required maxlength="200"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter email">
-                    <p class="text-xs text-gray-500 mt-1">Must be @elevancehealth.com or @carelon.com</p>
+                    <p class="text-xs text-gray-500 mt-1">Must be @elevancehealth.com or @carelon.com (max 200 characters)</p>
                 </div>
 
                 <div>
                     <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
                         Password <span class="text-red-500">*</span>
                     </label>
-                    <input type="password" id="password" required
+                    <input type="password" id="password" required minlength="8"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter password">
+                    <div class="text-xs text-gray-600 mt-1">
+                        <p>Must contain: 8+ chars, uppercase, lowercase, number, special char (!@#$%^&*)</p>
+                    </div>
                 </div>
 
                 <div>
@@ -187,13 +218,78 @@
                 return;
             }
 
-            document.getElementById('userName').textContent = user.name || user.username;
+            loadUserProfile();
         }
 
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = 'index.html';
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
+            lucide.createIcons();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const button = event.target.closest('button[onclick="toggleProfileDropdown()"]');
+            
+            if (!button && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        function loadUserProfile() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            // Set user name
+            document.getElementById('userName').textContent = user.name || user.username;
+            
+            // Set initials
+            const initials = (user.name || user.username || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            document.getElementById('userInitials').textContent = initials;
+            
+            // Load profile image if exists
+            if (user.profileImage) {
+                document.getElementById('userImage').src = user.profileImage;
+                document.getElementById('userImage').classList.remove('hidden');
+                document.getElementById('userInitials').classList.add('hidden');
+            }
+            
+            // Show admin link if user is admin
+            if (user.role === 'admin') {
+                document.getElementById('adminDropdownLink').classList.remove('hidden');
+            }
+        }
+
+        function validatePasswordComplexity(password) {
+            const minLength = 8;
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSpecialChar = /[!@#$%^&*]/.test(password);
+
+            if (password.length < minLength) {
+                return { isValid: false, message: 'Password must be at least 8 characters long' };
+            }
+            if (!hasUpperCase) {
+                return { isValid: false, message: 'Password must contain at least one uppercase letter (A-Z)' };
+            }
+            if (!hasLowerCase) {
+                return { isValid: false, message: 'Password must contain at least one lowercase letter (a-z)' };
+            }
+            if (!hasNumber) {
+                return { isValid: false, message: 'Password must contain at least one number (0-9)' };
+            }
+            if (!hasSpecialChar) {
+                return { isValid: false, message: 'Password must contain at least one special character (!@#$%^&*)' };
+            }
+
+            return { isValid: true, message: '' };
         }
 
         async function loadUsers() {
@@ -374,6 +470,12 @@
 
             const password = document.getElementById('password').value;
             if (password) {
+                // Validate password complexity
+                const passwordValidation = validatePasswordComplexity(password);
+                if (!passwordValidation.isValid) {
+                    showError(passwordValidation.message);
+                    return;
+                }
                 userData.password = password;
             }
 

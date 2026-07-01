@@ -3,14 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarelonRx Roadmap - User Guide</title>
+    <title>CarelonRx Product 360 - User Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/carelon-theme.css">
     <style>
         @media print {
             .no-print { display: none; }
             body { background: white; }
         }
         .section { page-break-inside: avoid; }
+        
+        /* CarelonRx Purple Theme Overrides */
+        .carelon-purple-bg {
+            background-color: #5009B5;
+        }
+        .carelon-purple-text {
+            color: #5009B5;
+        }
+        .carelon-purple-border {
+            border-color: #5009B5;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -22,11 +34,11 @@
                     <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="h-10 w-auto">
                     <div>
                         <h1 class="text-lg font-bold text-gray-800">User Guide</h1>
-                        <p class="text-xs text-gray-600">Product Initiative Management</p>
+                        <p class="text-xs text-gray-600">Product 360</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <button onclick="window.print()" class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition">
                         Download PDF
                     </button>
                     <button onclick="window.location.href='dashboard.html'" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
@@ -45,8 +57,8 @@
             <div class="text-center mb-12 section">
                 <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="w-64 mx-auto mb-6">
                 <h1 class="text-4xl font-bold text-gray-800 mb-4">User Guide</h1>
-                <p class="text-xl text-gray-600 mb-2">Product Initiative Management System</p>
-                <p class="text-sm text-gray-500">Version 1.0 | June 2026</p>
+                <p class="text-xl text-gray-600 mb-2">Product 360</p>
+                <p class="text-sm text-gray-500">Version 2.0 | June 29, 2026</p>
             </div>
 
             <hr class="my-8">
@@ -54,16 +66,20 @@
             <!-- Table of Contents -->
             <div class="mb-12 section">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Table of Contents</h2>
-                <ol class="list-decimal list-inside space-y-2 text-blue-600">
+                <ol class="list-decimal list-inside space-y-2 carelon-purple-text">
                     <li><a href="#introduction" class="hover:underline">Introduction</a></li>
                     <li><a href="#getting-started" class="hover:underline">Getting Started</a></li>
                     <li><a href="#user-roles" class="hover:underline">User Roles</a></li>
                     <li><a href="#login-signup" class="hover:underline">Login & Signup</a></li>
                     <li><a href="#dashboard" class="hover:underline">Dashboard</a></li>
+                    <li><a href="#user-profile" class="hover:underline">User Profile</a></li>
                     <li><a href="#creating-initiatives" class="hover:underline">Creating Initiatives</a></li>
                     <li><a href="#managing-initiatives" class="hover:underline">Managing Initiatives</a></li>
                     <li><a href="#roadmap-view" class="hover:underline">Roadmap View</a></li>
+                    <li><a href="#analytics-dashboard" class="hover:underline">Analytics Dashboard</a></li>
                     <li><a href="#admin-panel" class="hover:underline">Admin Panel</a></li>
+                    <li><a href="#session-management" class="hover:underline">Session Management</a></li>
+                    <li><a href="#data-persistence" class="hover:underline">Data Persistence</a></li>
                     <li><a href="#troubleshooting" class="hover:underline">Troubleshooting</a></li>
                 </ol>
             </div>
@@ -190,7 +206,7 @@
                         <li><strong>New Initiative</strong>: Create a new initiative</li>
                         <li><strong>View Roadmap</strong>: See visual timeline</li>
                         <li><strong>Admin</strong> (Admin only): Access user management</li>
-                        <li><strong>User Menu</strong>: View your name and logout</li>
+                        <li><strong>Profile Dropdown</strong>: Access your profile and logout</li>
                     </ul>
                 </div>
 
@@ -209,9 +225,91 @@
                 </div>
             </div>
 
+            <!-- User Profile -->
+            <div id="user-profile" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">6. User Profile</h2>
+                <p class="text-gray-700 mb-4">The User Profile feature allows you to manage your personal information and upload a profile picture.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Accessing Your Profile</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-6">
+                    <li>Click on your <strong>profile image/name</strong> in the top-right corner</li>
+                    <li>A dropdown menu will appear</li>
+                    <li>Click <strong>"My Profile"</strong></li>
+                    <li>You'll be taken to your profile page</li>
+                </ol>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Profile Dropdown Menu</h3>
+                <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6">
+                    <p class="font-semibold text-purple-800 mb-2">Located in top-right corner:</p>
+                    <ul class="list-disc list-inside text-gray-700 ml-4">
+                        <li><strong>Profile Image</strong>: Shows your photo or colored initials</li>
+                        <li><strong>Your Name</strong>: Displays your full name</li>
+                        <li><strong>My Profile</strong>: Navigate to profile page</li>
+                        <li><strong>Logout</strong>: Sign out of the application</li>
+                    </ul>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Uploading a Profile Image</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-6">
+                    <li>Go to your <strong>Profile page</strong></li>
+                    <li>Click the <strong>camera icon</strong> on your profile image</li>
+                    <li>Select an image file (JPG, PNG, GIF - max 2MB)</li>
+                    <li>Image will preview immediately</li>
+                    <li>Click <strong>"Save Changes"</strong></li>
+                    <li>Your image appears in navigation bar and profile page</li>
+                </ol>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Updating Your Profile</h3>
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                    <p class="font-semibold text-blue-800 mb-2">Editable Fields:</p>
+                    <ul class="list-disc list-inside text-gray-700 ml-4">
+                        <li><strong>Full Name</strong>: Update your display name</li>
+                        <li><strong>Email</strong>: Change email (must be @elevancehealth.com or @carelon.com)</li>
+                        <li><strong>Password</strong>: Change password (minimum 6 characters)</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gray-50 border-l-4 border-gray-500 p-4 mb-6">
+                    <p class="font-semibold text-gray-800 mb-2">Read-Only Fields:</p>
+                    <ul class="list-disc list-inside text-gray-700 ml-4">
+                        <li><strong>Username</strong>: Cannot be changed</li>
+                        <li><strong>Role</strong>: Contact admin to change</li>
+                    </ul>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Profile Image Display</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4">
+                        <p class="font-semibold text-green-800 mb-2">With Image:</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Your uploaded photo appears in a circle</li>
+                            <li>Shown in navigation and profile page</li>
+                        </ul>
+                    </div>
+                    <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4">
+                        <p class="font-semibold text-indigo-800 mb-2">Without Image:</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Colored circle with your initials</li>
+                            <li>Example: "John Doe" → "JD"</li>
+                            <li>Gradient background (blue to purple)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                    <p class="font-semibold text-yellow-800 mb-2">Tips:</p>
+                    <ul class="list-disc list-inside text-gray-700 ml-4">
+                        <li>Upload a professional photo for better recognition</li>
+                        <li>Keep your email current for notifications</li>
+                        <li>Change password regularly for security</li>
+                        <li>Your image appears everywhere you're mentioned</li>
+                    </ul>
+                </div>
+            </div>
+
             <!-- Creating Initiatives -->
             <div id="creating-initiatives" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">6. Creating Initiatives</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">7. Creating Initiatives</h2>
                 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Step-by-Step Guide</h3>
                 <ol class="list-decimal list-inside space-y-3 text-gray-700 ml-4 mb-6">
@@ -260,7 +358,7 @@
 
             <!-- Managing Initiatives -->
             <div id="managing-initiatives" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">7. Managing Initiatives</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">8. Managing Initiatives</h2>
                 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Viewing Initiatives</h3>
                 <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-6">
@@ -291,7 +389,7 @@
 
             <!-- Roadmap View -->
             <div id="roadmap-view" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">8. Roadmap View</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">9. Roadmap View</h2>
                 <p class="text-gray-700 mb-4">The Roadmap provides a visual timeline of all initiatives.</p>
                 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Features</h3>
@@ -313,9 +411,144 @@
                 </ol>
             </div>
 
+            <!-- Analytics Dashboard -->
+            <div id="analytics-dashboard" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">10. Analytics Dashboard</h2>
+                <p class="text-gray-700 mb-4">The Analytics Dashboard provides comprehensive insights into system usage, initiative distribution, and user activity.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Accessing Analytics</h3>
+                <div class="bg-purple-50 border-l-4 carelon-purple-border p-4 mb-6">
+                    <p class="font-semibold text-purple-800 mb-2">From Any Page:</p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Click on your <strong>Profile Dropdown</strong> (top right)</li>
+                        <li>Select <strong>"Analytics"</strong> from the menu</li>
+                        <li>View real-time statistics and charts</li>
+                    </ol>
+                    <p class="text-sm text-gray-600 mt-2"><strong>Navigation:</strong> User Guide | Dashboard | New Initiative | View Roadmap | Profile ▼</p>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Summary Cards</h3>
+                <p class="text-gray-700 mb-4">Four key metrics displayed at the top:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="font-semibold text-blue-800">Total Users</p>
+                        <p class="text-sm text-gray-700">Count of all registered users</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="font-semibold text-green-800">Total Initiatives</p>
+                        <p class="text-sm text-gray-700">Count of all initiatives</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800">Active Initiatives</p>
+                        <p class="text-sm text-gray-700">Initiatives not on hold</p>
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-lg">
+                        <p class="font-semibold text-orange-800">This Year</p>
+                        <p class="text-sm text-gray-700">Initiatives for current year (2026)</p>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Visual Charts</h3>
+                <div class="space-y-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="font-semibold text-gray-800 mb-2">1. Priority Distribution (Doughnut Chart)</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Shows breakdown of initiatives by priority</li>
+                            <li>Color-coded: Critical (Red), High (Orange), Medium (Blue), Low (Gray), On Hold (Purple)</li>
+                            <li>Interactive hover for percentages</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="font-semibold text-gray-800 mb-2">2. Initiatives by Year (Bar Chart)</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Distribution across years (2024-2027)</li>
+                            <li>Vertical bars for easy comparison</li>
+                            <li>Shows planning trends</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="font-semibold text-gray-800 mb-2">3. Program Distribution (Pie Chart)</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>AHD vs Bioplus split</li>
+                            <li>Percentage breakdown</li>
+                            <li>Interactive hover</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="font-semibold text-gray-800 mb-2">4. Quarter Distribution (Bar Chart)</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4">
+                            <li>Current year (2026) only</li>
+                            <li>Q1, Q2, Q3, Q4 breakdown</li>
+                            <li>Helps with capacity planning</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">System Usage Statistics Table</h3>
+                <p class="text-gray-700 mb-2"><strong>Columns:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4 mb-4">
+                    <li><strong>System Name:</strong> Dependent system name</li>
+                    <li><strong>Initiatives:</strong> Count of initiatives using this system</li>
+                    <li><strong>Percentage:</strong> Percentage of total system references</li>
+                    <li><strong>Usage Bar:</strong> Visual progress bar</li>
+                </ul>
+                <p class="text-gray-700 mb-2"><strong>Features:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4 mb-6">
+                    <li>Sorted by usage (highest first)</li>
+                    <li>Identifies most-used systems</li>
+                    <li>Helps with resource planning</li>
+                    <li>Tracks dependencies</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">User Activity Table</h3>
+                <p class="text-gray-700 mb-2"><strong>Columns:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4 mb-4">
+                    <li><strong>User:</strong> Name or username</li>
+                    <li><strong>Email:</strong> User email address</li>
+                    <li><strong>Role:</strong> Admin or User badge (color-coded)</li>
+                    <li><strong>Initiatives Created:</strong> Count of initiatives</li>
+                    <li><strong>Last Active:</strong> Last login date</li>
+                </ul>
+                <p class="text-gray-700 mb-2"><strong>Features:</strong></p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4 mb-6">
+                    <li>Sorted by initiatives created (highest first)</li>
+                    <li>Identifies top contributors</li>
+                    <li>Tracks user engagement</li>
+                    <li>Monitors activity levels</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Benefits</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="font-semibold text-green-800 mb-2">Data-Driven Decisions</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                            <li>Visual insights at a glance</li>
+                            <li>Identify trends and patterns</li>
+                            <li>Track system dependencies</li>
+                        </ul>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800 mb-2">Resource Planning</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                            <li>See system workload</li>
+                            <li>Identify bottlenecks</li>
+                            <li>Plan capacity</li>
+                        </ul>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800 mb-2">Performance Tracking</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                            <li>Track initiative distribution</li>
+                            <li>Monitor priority balance</li>
+                            <li>Measure user activity</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
             <!-- Admin Panel -->
             <div id="admin-panel" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">9. Admin Panel</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">11. Admin Panel</h2>
                 <p class="text-red-600 font-semibold mb-4">Access: Admin role only</p>
                 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">User Management</h3>
@@ -349,9 +582,108 @@
                 </div>
             </div>
 
+            <!-- Session Management -->
+            <div id="session-management" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">12. Session Management</h2>
+                <p class="text-gray-700 mb-4">The application includes automatic session timeout for security.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Session Timeout</h3>
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                    <p class="font-semibold text-yellow-800 mb-2">Duration: 30 minutes of inactivity</p>
+                    <p class="text-gray-700 mb-3"><strong>How It Works:</strong></p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Session timer starts when you login</li>
+                        <li>Timer resets with any user activity:
+                            <ul class="list-disc list-inside ml-6 mt-1">
+                                <li>Mouse movements</li>
+                                <li>Keyboard input</li>
+                                <li>Clicks</li>
+                                <li>Scrolling</li>
+                            </ul>
+                        </li>
+                        <li>After 25 minutes of inactivity, a warning appears</li>
+                        <li>After 30 minutes, automatic logout</li>
+                    </ol>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Session Warning</h3>
+                <div class="bg-purple-50 p-4 rounded-lg mb-6">
+                    <p class="font-semibold text-purple-800 mb-2">5-Minute Warning:</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Appears at 25 minutes of inactivity</li>
+                        <li>Modal dialog with two options:
+                            <ul class="list-disc list-inside ml-6 mt-1">
+                                <li><strong>"Stay Logged In":</strong> Extends session for another 30 minutes</li>
+                                <li><strong>"Logout Now":</strong> Immediately logs you out</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Best Practices</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                    <li>Save your work frequently</li>
+                    <li>Don't leave the application unattended</li>
+                    <li>Click "Stay Logged In" if you see the warning</li>
+                    <li>Log out manually when done</li>
+                </ul>
+            </div>
+
+            <!-- Data Persistence -->
+            <div id="data-persistence" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">13. Data Persistence</h2>
+                <p class="text-gray-700 mb-4">All data is securely stored in MongoDB with complete audit trails.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">What is Stored</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="font-semibold text-green-800 mb-2">User Data</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                            <li>Profile information</li>
+                            <li>Encrypted passwords (bcrypt)</li>
+                            <li>Encrypted emails (AES-256)</li>
+                            <li>Role assignments</li>
+                            <li>Profile images</li>
+                        </ul>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="font-semibold text-purple-800 mb-2">Initiative Data</p>
+                        <ul class="list-disc list-inside text-sm text-gray-700 ml-2">
+                            <li>All initiative fields</li>
+                            <li>WSJF calculations</li>
+                            <li>Dependent systems</li>
+                            <li>Timeline information</li>
+                            <li>Complete change history</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Change History & Audit Trail</h3>
+                <p class="text-gray-700 mb-4">Every initiative maintains a complete audit trail:</p>
+                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-6">
+                    <li><strong>Who:</strong> User who made the change</li>
+                    <li><strong>When:</strong> Timestamp of the change</li>
+                    <li><strong>What:</strong> Fields that were modified</li>
+                    <li><strong>Before/After:</strong> Old and new values</li>
+                    <li><strong>Action:</strong> Created, Updated, or Deleted</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Data Security</h3>
+                <div class="bg-purple-50 border-l-4 border-purple-500 p-4">
+                    <p class="font-semibold text-purple-800 mb-2">Security Measures:</p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                        <li><strong>Password Encryption:</strong> bcrypt hashing (cannot be reversed)</li>
+                        <li><strong>Email Encryption:</strong> AES-256-CBC encryption</li>
+                        <li><strong>JWT Tokens:</strong> Secure authentication tokens</li>
+                        <li><strong>Session Management:</strong> Automatic timeout after 30 minutes</li>
+                        <li><strong>Role-Based Access:</strong> Permissions enforced at API level</li>
+                    </ul>
+                </div>
+            </div>
+
             <!-- Troubleshooting -->
             <div id="troubleshooting" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">10. Troubleshooting</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">14. Troubleshooting</h2>
                 
                 <div class="space-y-6">
                     <div class="bg-red-50 border-l-4 border-red-500 p-4">
@@ -402,7 +734,7 @@
             <!-- Footer -->
             <hr class="my-8">
             <div class="text-center text-gray-600 text-sm">
-                <p><strong>Version 1.0</strong> | Last Updated: June 2026</p>
+                <p><strong>Version 2.0</strong> | Last Updated: June 29, 2026</p>
                 <p class="mt-2">Application URL: <code class="bg-gray-100 px-2 py-1 rounded">https://carelonrx-roadmap1.onrender.com</code></p>
                 <p class="mt-4">© 2026 CarelonRx. All rights reserved.</p>
             </div>

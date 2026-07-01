@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarelonRx Roadmap - Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="assets/session-manager.js"></script>
+    <link rel="stylesheet" href="assets/carelon-theme.css">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="h-10 w-auto">
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-800">Roadmap</h1>
+                        <p class="text-xs text-gray-600">Product 360</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.location.href='user-guide.html'" 
+                        class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition flex items-center space-x-2">
+                        <i data-lucide="book-open" class="w-4 h-4"></i>
+                        <span>User Guide</span>
+                    </button>
+                    <button onclick="window.location.href='dashboard.html'" 
+                        class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="window.location.href='intake.html'" 
+                        class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>New Initiative</span>
+                    </button>
+                    <button onclick="window.location.href='roadmap.html'" 
+                        class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                        <span>View Roadmap</span>
+                    </button>
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                            <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                                <span id="userInitials">U</span>
+                                <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
+                            </div>
+                            <span id="userName" class="font-semibold text-gray-700"></span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <a href="profile.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="analytics.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="trending-up" class="w-4 h-4"></i>
+                                <span>Analytics</span>
+                            </a>
+                            <a id="adminDropdownLink" href="admin.html" class="hidden px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                <i data-lucide="shield" class="w-4 h-4"></i>
+                                <span>Admin Panel</span>
+                            </a>
+                            <hr class="my-2">
+                            <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="mb-6">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Analytics Dashboard</h2>
+            <p class="text-gray-600">System usage statistics and initiative metrics</p>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
+                    </div>
+                </div>
+                <h3 class="text-gray-600 text-sm font-semibold mb-1">Total Users</h3>
+                <p id="totalUsers" class="text-3xl font-bold text-gray-800">0</p>
+                <p class="text-xs text-gray-500 mt-2">Registered accounts</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="folder" class="w-6 h-6 text-green-600"></i>
+                    </div>
+                </div>
+                <h3 class="text-gray-600 text-sm font-semibold mb-1">Total Initiatives</h3>
+                <p id="totalInitiatives" class="text-3xl font-bold text-gray-800">0</p>
+                <p class="text-xs text-gray-500 mt-2">All projects</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="activity" class="w-6 h-6 text-purple-600"></i>
+                    </div>
+                </div>
+                <h3 class="text-gray-600 text-sm font-semibold mb-1">Active Initiatives</h3>
+                <p id="activeInitiatives" class="text-3xl font-bold text-gray-800">0</p>
+                <p class="text-xs text-gray-500 mt-2">Not on hold</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i data-lucide="calendar" class="w-6 h-6 text-orange-600"></i>
+                    </div>
+                </div>
+                <h3 class="text-gray-600 text-sm font-semibold mb-1">This Year</h3>
+                <p id="thisYearInitiatives" class="text-3xl font-bold text-gray-800">0</p>
+                <p class="text-xs text-gray-500 mt-2">2026 initiatives</p>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Priority Distribution -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i data-lucide="pie-chart" class="w-5 h-5 mr-2"></i>
+                    Priority Distribution
+                </h3>
+                <canvas id="priorityChart"></canvas>
+            </div>
+
+            <!-- Initiatives by Year -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i data-lucide="bar-chart" class="w-5 h-5 mr-2"></i>
+                    Initiatives by Year
+                </h3>
+                <canvas id="yearChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Program Distribution -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i data-lucide="layers" class="w-5 h-5 mr-2"></i>
+                    Program Distribution
+                </h3>
+                <canvas id="programChart"></canvas>
+            </div>
+
+            <!-- Quarter Distribution -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i data-lucide="calendar-days" class="w-5 h-5 mr-2"></i>
+                    Quarter Distribution (2026)
+                </h3>
+                <canvas id="quarterChart"></canvas>
+            </div>
+        </div>
+
+        <!-- System Usage Table -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i data-lucide="server" class="w-5 h-5 mr-2"></i>
+                System Usage Statistics
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">System Name</th>
+                            <th class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Initiatives</th>
+                            <th class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Percentage</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Usage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="systemStatsTable">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- User Activity Table -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i data-lucide="user-check" class="w-5 h-5 mr-2"></i>
+                User Activity
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">User</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Email</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Role</th>
+                            <th class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Initiatives Created</th>
+                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Last Active</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userActivityTable">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.username) {
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
+            lucide.createIcons();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const button = event.target.closest('button[onclick="toggleProfileDropdown()"]');
+            
+            if (!button && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        function loadUserProfile() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            // Set user name
+            document.getElementById('userName').textContent = user.name || user.username;
+            
+            // Set initials
+            const initials = (user.name || user.username || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            document.getElementById('userInitials').textContent = initials;
+            
+            // Load profile image if exists
+            if (user.profileImage) {
+                document.getElementById('userImage').src = user.profileImage;
+                document.getElementById('userImage').classList.remove('hidden');
+                document.getElementById('userInitials').classList.add('hidden');
+            }
+            
+            // Show admin link if user is admin
+            if (user.role === 'admin') {
+                document.getElementById('adminDropdownLink').classList.remove('hidden');
+            }
+        }
+
+        loadUserProfile();
+
+        let allUsers = [];
+        let allInitiatives = [];
+
+        // Load analytics data
+        async function loadAnalytics() {
+            try {
+                // Load users
+                const usersResponse = await fetch('https://carelonrx-roadmap.onrender.com/api/users', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const usersData = await usersResponse.json();
+                
+                // Load initiatives
+                const initiativesResponse = await fetch('https://carelonrx-roadmap.onrender.com/api/initiatives', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const initiativesData = await initiativesResponse.json();
+                
+                if (usersData.success && initiativesData.success) {
+                    allUsers = usersData.users;
+                    allInitiatives = initiativesData.initiatives;
+                    
+                    updateSummaryCards();
+                    createCharts();
+                    populateSystemStats();
+                    populateUserActivity();
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                alert('Unable to load analytics data. Please ensure the backend is running.');
+            }
+        }
+
+        function updateSummaryCards() {
+            // Total users
+            document.getElementById('totalUsers').textContent = allUsers.length;
+            
+            // Total initiatives
+            document.getElementById('totalInitiatives').textContent = allInitiatives.length;
+            
+            // Active initiatives (not on hold)
+            const activeCount = allInitiatives.filter(i => i.priority !== 'On Hold').length;
+            document.getElementById('activeInitiatives').textContent = activeCount;
+            
+            // This year initiatives
+            const currentYear = new Date().getFullYear().toString();
+            const thisYearCount = allInitiatives.filter(i => i.year === currentYear).length;
+            document.getElementById('thisYearInitiatives').textContent = thisYearCount;
+        }
+
+        function createCharts() {
+            createPriorityChart();
+            createYearChart();
+            createProgramChart();
+            createQuarterChart();
+        }
+
+        function createPriorityChart() {
+            const priorityCounts = {
+                'Critical': 0,
+                'High': 0,
+                'Medium': 0,
+                'Low': 0,
+                'On Hold': 0
+            };
+            
+            allInitiatives.forEach(i => {
+                if (priorityCounts[i.priority] !== undefined) {
+                    priorityCounts[i.priority]++;
+                }
+            });
+            
+            const ctx = document.getElementById('priorityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(priorityCounts),
+                    datasets: [{
+                        data: Object.values(priorityCounts),
+                        backgroundColor: [
+                            '#dc2626', // Critical - Red
+                            '#f59e0b', // High - Orange
+                            '#3b82f6', // Medium - Blue
+                            '#6b7280', // Low - Gray
+                            '#9333ea'  // On Hold - Purple
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createYearChart() {
+            const yearCounts = {};
+            
+            allInitiatives.forEach(i => {
+                yearCounts[i.year] = (yearCounts[i.year] || 0) + 1;
+            });
+            
+            const sortedYears = Object.keys(yearCounts).sort();
+            
+            const ctx = document.getElementById('yearChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedYears,
+                    datasets: [{
+                        label: 'Initiatives',
+                        data: sortedYears.map(year => yearCounts[year]),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createProgramChart() {
+            const programCounts = {};
+            
+            allInitiatives.forEach(i => {
+                programCounts[i.program] = (programCounts[i.program] || 0) + 1;
+            });
+            
+            const ctx = document.getElementById('programChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(programCounts),
+                    datasets: [{
+                        data: Object.values(programCounts),
+                        backgroundColor: [
+                            '#8b5cf6', // Purple
+                            '#10b981'  // Green
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createQuarterChart() {
+            const currentYear = new Date().getFullYear().toString();
+            const quarterCounts = {
+                'Q1': 0,
+                'Q2': 0,
+                'Q3': 0,
+                'Q4': 0
+            };
+            
+            allInitiatives
+                .filter(i => i.year === currentYear)
+                .forEach(i => {
+                    if (quarterCounts[i.quarter] !== undefined) {
+                        quarterCounts[i.quarter]++;
+                    }
+                });
+            
+            const ctx = document.getElementById('quarterChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(quarterCounts),
+                    datasets: [{
+                        label: 'Initiatives',
+                        data: Object.values(quarterCounts),
+                        backgroundColor: '#f59e0b'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function populateSystemStats() {
+            const systemCounts = {};
+            let totalSystemReferences = 0;
+            
+            allInitiatives.forEach(initiative => {
+                if (initiative.dependentSystems && Array.isArray(initiative.dependentSystems)) {
+                    initiative.dependentSystems.forEach(dep => {
+                        if (dep.system) {
+                            systemCounts[dep.system] = (systemCounts[dep.system] || 0) + 1;
+                            totalSystemReferences++;
+                        }
+                    });
+                }
+            });
+            
+            const sortedSystems = Object.entries(systemCounts)
+                .sort((a, b) => b[1] - a[1]);
+            
+            const tableBody = document.getElementById('systemStatsTable');
+            tableBody.innerHTML = '';
+            
+            if (sortedSystems.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No system data available</td></tr>';
+                return;
+            }
+            
+            sortedSystems.forEach(([system, count]) => {
+                const percentage = ((count / totalSystemReferences) * 100).toFixed(1);
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="py-3 px-4 text-sm text-gray-800">${system}</td>
+                    <td class="py-3 px-4 text-sm text-center text-gray-800 font-semibold">${count}</td>
+                    <td class="py-3 px-4 text-sm text-center text-gray-600">${percentage}%</td>
+                    <td class="py-3 px-4">
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function populateUserActivity() {
+            const userStats = allUsers.map(user => {
+                const initiativesCreated = allInitiatives.filter(i => i.createdBy === user.username).length;
+                return {
+                    ...user,
+                    initiativesCreated
+                };
+            }).sort((a, b) => b.initiativesCreated - a.initiativesCreated);
+            
+            const tableBody = document.getElementById('userActivityTable');
+            tableBody.innerHTML = '';
+            
+            userStats.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50';
+                
+                const roleBadge = user.role === 'admin' 
+                    ? '<span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-semibold">Admin</span>'
+                    : '<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-semibold">User</span>';
+                
+                const lastActive = user.lastLogin 
+                    ? new Date(user.lastLogin).toLocaleDateString()
+                    : 'Never';
+                
+                row.innerHTML = `
+                    <td class="py-3 px-4 text-sm text-gray-800 font-semibold">${user.name || user.username}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600">${user.email}</td>
+                    <td class="py-3 px-4 text-sm">${roleBadge}</td>
+                    <td class="py-3 px-4 text-sm text-center text-gray-800 font-semibold">${user.initiativesCreated}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600">${lastActive}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Load analytics on page load
+        loadAnalytics();
+        lucide.createIcons();
+    </script>
+</body>
+</html>
