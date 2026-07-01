@@ -513,18 +513,28 @@
                         // Map Product 360 roles to Story Estimations roles
                         let mappedRole = userData.role || 'Dev';
                         
-                        // Map Product Owner variations to PO
-                        if (mappedRole === 'Product Owner' || mappedRole === 'Product Manager') {
+                        // Normalize role to lowercase for comparison
+                        const normalizedRole = mappedRole.toLowerCase().replace(/\s+/g, '_');
+                        
+                        // Map database roles (lowercase with underscores) to Story Estimations roles
+                        if (normalizedRole === 'admin') {
+                            mappedRole = 'Admin';
+                        }
+                        else if (normalizedRole === 'product_owner' || normalizedRole === 'product_manager') {
                             mappedRole = 'PO';
                         }
-                        // Map Scrum Master and RTE to SM
-                        else if (mappedRole === 'Scrum Master' || mappedRole === 'RTE') {
+                        else if (normalizedRole === 'scrum_master' || normalizedRole === 'rte') {
                             mappedRole = 'SM';
                         }
-                        // Keep Admin as Admin (for PO privileges)
-                        // Keep Dev, QA as is
+                        else if (normalizedRole === 'business_owner' || normalizedRole === 'stakeholder') {
+                            mappedRole = 'Dev';
+                        }
+                        // Keep Dev, QA, PO, SM as is if already in correct format
+                        else if (['Dev', 'QA', 'PO', 'SM', 'Admin'].includes(mappedRole)) {
+                            // Already in correct format, keep as is
+                        }
                         // Default everything else to Dev
-                        else if (!['Admin', 'Dev', 'QA', 'PO', 'SM'].includes(mappedRole)) {
+                        else {
                             mappedRole = 'Dev';
                         }
                         
