@@ -30,10 +30,9 @@
                     <i data-lucide="map" class="w-5 h-5"></i>
                     <span>Roadmap</span>
                 </a>
-                <a href="#" class="side-panel-link disabled" onclick="showComingSoon(event)">
+                <a href="story-estimations.html" class="side-panel-link" data-module="story-estimations">
                     <i data-lucide="calculator" class="w-5 h-5"></i>
                     <span>Story Estimations</span>
-                    <span class="coming-soon-badge">COMING SOON</span>
                 </a>
             </nav>
             
@@ -246,7 +245,29 @@ function setActiveLink() {
     links.forEach(link => {
         link.classList.remove('active');
         const href = link.getAttribute('href');
-        if (href && (currentPage === href || currentPage === '' && href === 'dashboard.html')) {
+        const module = link.getAttribute('data-module');
+        
+        // Check if current page matches the link
+        if (href && currentPage === href) {
+            link.classList.add('active');
+        }
+        // Default to dashboard for empty/root path
+        else if (currentPage === '' && href === 'dashboard.html') {
+            link.classList.add('active');
+        }
+        // Handle story-estimations page
+        else if (currentPage === 'story-estimations.html' && module === 'story-estimations') {
+            link.classList.add('active');
+        }
+        // Handle all roadmap module pages (dashboard, analytics, admin, etc.)
+        else if (module === 'roadmap' && (
+            currentPage.includes('dashboard') || 
+            currentPage.includes('analytics') || 
+            currentPage.includes('admin') || 
+            currentPage.includes('roadmap') || 
+            currentPage.includes('intake') || 
+            currentPage.includes('profile')
+        )) {
             link.classList.add('active');
         }
     });
