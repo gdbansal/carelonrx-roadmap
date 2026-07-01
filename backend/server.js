@@ -1015,7 +1015,9 @@ app.post('/api/update-user-role', authMiddleware, async (req, res) => {
 // Create a new estimation session
 app.post('/api/sessions', async (req, res) => {
     try {
-        const { sessionId, sessionData } = req.body;
+        // Support both formats: { sessionId, sessionData } and { sessionId, ...data }
+        const { sessionId, sessionData, ...restData } = req.body;
+        const dataToSave = sessionData || restData;
         
         // Check if session already exists
         const existingSession = await EstimationSession.findOne({ sessionId });
@@ -1028,7 +1030,7 @@ app.post('/api/sessions', async (req, res) => {
         
         const session = new EstimationSession({
             sessionId,
-            ...sessionData
+            ...dataToSave
         });
         
         await session.save();
