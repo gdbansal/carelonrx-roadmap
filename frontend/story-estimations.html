@@ -510,14 +510,33 @@
                     const userData = safeJsonParse(product360User, null);
                     if (userData && userData.username) {
                         // Auto-login with Product 360 user info
+                        // Map Product 360 roles to Story Estimations roles
+                        let mappedRole = userData.role || 'Dev';
+                        
+                        // Map Product Owner variations to PO
+                        if (mappedRole === 'Product Owner' || mappedRole === 'Product Manager') {
+                            mappedRole = 'PO';
+                        }
+                        // Map Scrum Master and RTE to SM
+                        else if (mappedRole === 'Scrum Master' || mappedRole === 'RTE') {
+                            mappedRole = 'SM';
+                        }
+                        // Keep Admin as Admin (for PO privileges)
+                        // Keep Dev, QA as is
+                        // Default everything else to Dev
+                        else if (!['Admin', 'Dev', 'QA', 'PO', 'SM'].includes(mappedRole)) {
+                            mappedRole = 'Dev';
+                        }
+                        
                         const estimationUser = {
                             name: userData.fullName || userData.username,
-                            role: userData.role || 'Dev' // Map role or default to Dev
+                            role: mappedRole
                         };
                         setUser(estimationUser);
                         setLoginName(estimationUser.name);
                         setLoginRole(estimationUser.role);
                         console.log('✅ Auto-logged in with Product 360 user:', estimationUser);
+                        console.log('   Original role:', userData.role, '→ Mapped role:', mappedRole);
                     } else {
                         // Product 360 user exists but incomplete, allow manual login
                         console.log('ℹ️ Product 360 user incomplete, showing manual login');
