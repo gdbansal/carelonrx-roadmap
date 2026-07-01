@@ -280,9 +280,9 @@
                 return 'session_' + Math.random().toString(36).substring(2, 11);
             };
 
-            // API Configuration - Force localStorage mode for Product 360 integration
-            // Story Estimations uses localStorage only (no backend API)
-            const USE_LOCALSTORAGE_ONLY = true;
+            // API Configuration - MongoDB backend enabled for Product 360
+            // Story Estimations now uses MongoDB backend with localStorage fallback
+            const USE_LOCALSTORAGE_ONLY = false;
             
             const isLocalHost = window.location.hostname === 'localhost' || 
                                window.location.hostname === '127.0.0.1' ||
@@ -290,8 +290,8 @@
                                window.location.port === '64317'; // Browser preview proxy
             
             const API_BASE = isLocalHost
-                ? 'http://127.0.0.1:53849/api'  // Local development - matches our server
-                : '/api';  // Production - same domain, no CORS issues!
+                ? 'http://127.0.0.1:5000/api'  // Local development
+                : 'https://carelonrx-roadmap.onrender.com/api';  // Production - same backend as Roadmap
             
             // Debug logging for environment detection
             console.log('🌐 Environment Detection:');

@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const connectDB = require('./config/database');
 const User = require('./models/User');
 const Initiative = require('./models/Initiative');
+const EstimationSession = require('./models/EstimationSession');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -1009,6 +1010,205 @@ app.post('/api/update-user-role', authMiddleware, async (req, res) => {
     }
 });
 
+// ========== STORY ESTIMATIONS API ==========
+
+// Create a new estimation session
+app.post('/api/sessions', async (req, res) => {
+    try {
+        const { sessionId, sessionData } = req.body;
+        
+        // Check if session already exists
+        const existingSession = await EstimationSession.findOne({ sessionId });
+        if (existingSession) {
+            return res.status(409).json({
+                success: false,
+                message: 'Session already exists'
+            });
+        }
+        
+        const session = new EstimationSession({
+            sessionId,
+            ...sessionData
+        });
+        
+        await session.save();
+        
+        res.status(201).json({
+            success: true,
+            message: 'Session created successfully',
+            session: session.toObject()
+        });
+    } catch (error) {
+        console.error('Create session error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create session',
+            error: error.message
+        });
+    }
+});
+
+// Get a specific session
+app.get('/api/sessions/:sessionId', async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        
+        const session = await EstimationSession.findOne({ sessionId });
+        
+        if (!session) {
+            return res.status(404).json({
+                success: false,
+                message: 'Session not found'
+            });
+        }
+        
+        res.json(session.toObject());
+    } catch (error) {
+        console.error('Get session error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve session',
+            error: error.message
+        });
+    }
+});
+
+// Update a session
+app.put('/api/sessions/:sessionId', async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const { sessionData } = req.body;
+        
+        const session = await EstimationSession.findOneAndUpdate(
+            { sessionId },
+            { ...sessionData, lastUpdated: new Date() },
+            { new: true, runValidators: true }
+        );
+        
+        if (!session) {
+            return res.status(404).json({
+                success: false,
+                message: 'Session not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Session updated successfully',
+            session: session.toObject()
+        });
+    } catch (error) {
+        console.error('Update session error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update session',
+            error: error.message
+        });
+    }
+});
+
+// Add participant to session
+app.post('/api/sessions/:sessionId/participants', async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const { participant } = req.body;
+        
+        const session = await EstimationSession.findOne({ sessionId });
+        
+        if (!session) {
+            return res.status(404).json({
+                success: false,
+                message: 'Session not found'
+            });
+        }
+        
+        // Check if participant already exists
+        const existingParticipant = session.participants.find(
+            p => p.name === participant.name && p.role === participant.role
+        );
+        
+        if (!existingParticipant) {
+            session.participants.push({
+                ...participant,
+                joinedAt: new Date()
+            });
+            await session.save();
+        }
+        
+        res.json({
+            success: true,
+            message: 'Participant added successfully',
+            session: session.toObject()
+        });
+    } catch (error) {
+        console.error('Add participant error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to add participant',
+            error: error.message
+        });
+    }
+});
+
+// Get all active sessions (optional - for admin/dashboard)
+app.get('/api/sessions', async (req, res) => {
+    try {
+        const sessions = await EstimationSession.find({ status: 'active' })
+            .sort({ createdAt: -1 })
+            .limit(50);
+        
+        res.json({
+            success: true,
+            sessions: sessions.map(s => s.toObject())
+        });
+    } catch (error) {
+        console.error('Get sessions error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve sessions',
+            error: error.message
+        });
+    }
+});
+
+// Delete/Close a session
+app.delete('/api/sessions/:sessionId', async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const { closedBy } = req.body;
+        
+        const session = await EstimationSession.findOneAndUpdate(
+            { sessionId },
+            {
+                status: 'closed',
+                closedBy: closedBy || 'Unknown',
+                closedAt: new Date()
+            },
+            { new: true }
+        );
+        
+        if (!session) {
+            return res.status(404).json({
+                success: false,
+                message: 'Session not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Session closed successfully',
+            session: session.toObject()
+        });
+    } catch (error) {
+        console.error('Close session error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to close session',
+            error: error.message
+        });
+    }
+});
+
 // ========== HEALTH CHECK ==========
 
 app.get('/api/health', (req, res) => {
@@ -1021,9 +1221,10 @@ app.get('/api/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`\n🚀 CarelonRx Roadmap API Server`);
+    console.log(`\n🚀 CarelonRx Product 360 API Server`);
     console.log(`📡 Server running on http://localhost:${PORT}`);
     console.log(`\n📋 Available endpoints:`);
+    console.log(`\n   🗺️  ROADMAP MODULE:`);
     console.log(`   POST   /api/signup`);
     console.log(`   POST   /api/login`);
     console.log(`   GET    /api/initiatives`);
@@ -1039,6 +1240,14 @@ app.listen(PORT, () => {
     console.log(`   GET    /api/profile`);
     console.log(`   PUT    /api/profile`);
     console.log(`   GET    /api/stats`);
+    console.log(`\n   🧮 STORY ESTIMATIONS MODULE:`);
+    console.log(`   POST   /api/sessions`);
+    console.log(`   GET    /api/sessions`);
+    console.log(`   GET    /api/sessions/:sessionId`);
+    console.log(`   PUT    /api/sessions/:sessionId`);
+    console.log(`   DELETE /api/sessions/:sessionId`);
+    console.log(`   POST   /api/sessions/:sessionId/participants`);
+    console.log(`\n   ❤️  HEALTH:`);
     console.log(`   GET    /api/health`);
     console.log(`\n✅ Ready to accept requests!\n`);
 });
