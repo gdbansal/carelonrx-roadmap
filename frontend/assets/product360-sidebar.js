@@ -157,7 +157,7 @@
             .side-panel-toggle {
                 position: fixed;
                 left: 280px;
-                top: 20px;
+                top: 90px;
                 background: #5009B5;
                 color: white;
                 border: none;
