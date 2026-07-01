@@ -60,9 +60,20 @@
             <!-- Title Page -->
             <div class="text-center mb-12 section">
                 <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="w-64 mx-auto mb-6">
-                <h1 class="text-4xl font-bold text-gray-800 mb-4">User Guide</h1>
-                <p class="text-xl text-gray-600 mb-2">Product 360</p>
-                <p class="text-sm text-gray-500">Version 2.0 | June 29, 2026</p>
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">Product 360 User Guide</h1>
+                <p class="text-xl text-gray-600 mb-2">Integrated Product Suite</p>
+                <div class="flex items-center justify-center space-x-4 text-sm mt-3">
+                    <div class="flex items-center space-x-1 text-purple-600">
+                        <i data-lucide="map" class="w-4 h-4"></i>
+                        <span>Roadmap Module</span>
+                    </div>
+                    <span class="text-gray-400">•</span>
+                    <div class="flex items-center space-x-1 text-yellow-600">
+                        <i data-lucide="calculator" class="w-4 h-4"></i>
+                        <span>Story Estimations Module</span>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500 mt-4">Version 2.0 | July 1, 2026</p>
             </div>
 
             <hr class="my-8">
@@ -71,16 +82,22 @@
             <div class="mb-12 section">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Table of Contents</h2>
                 <ol class="list-decimal list-inside space-y-2 carelon-purple-text">
-                    <li><a href="#introduction" class="hover:underline">Introduction</a></li>
+                    <li><a href="#introduction" class="hover:underline">Introduction to Product 360</a></li>
                     <li><a href="#getting-started" class="hover:underline">Getting Started</a></li>
+                    <li><a href="#navigation" class="hover:underline">Product 360 Navigation</a></li>
                     <li><a href="#user-roles" class="hover:underline">User Roles</a></li>
                     <li><a href="#login-signup" class="hover:underline">Login & Signup</a></li>
-                    <li><a href="#dashboard" class="hover:underline">Dashboard</a></li>
+                    <li><a href="#roadmap-module" class="hover:underline">Roadmap Module</a>
+                        <ol class="list-decimal list-inside ml-6 mt-1 space-y-1">
+                            <li><a href="#dashboard" class="hover:underline">Dashboard</a></li>
+                            <li><a href="#creating-initiatives" class="hover:underline">Creating Initiatives</a></li>
+                            <li><a href="#managing-initiatives" class="hover:underline">Managing Initiatives</a></li>
+                            <li><a href="#roadmap-view" class="hover:underline">Roadmap View</a></li>
+                            <li><a href="#analytics-dashboard" class="hover:underline">Analytics Dashboard</a></li>
+                        </ol>
+                    </li>
+                    <li><a href="#story-estimations" class="hover:underline">Story Estimations Module (Coming Soon)</a></li>
                     <li><a href="#user-profile" class="hover:underline">User Profile</a></li>
-                    <li><a href="#creating-initiatives" class="hover:underline">Creating Initiatives</a></li>
-                    <li><a href="#managing-initiatives" class="hover:underline">Managing Initiatives</a></li>
-                    <li><a href="#roadmap-view" class="hover:underline">Roadmap View</a></li>
-                    <li><a href="#analytics-dashboard" class="hover:underline">Analytics Dashboard</a></li>
                     <li><a href="#admin-panel" class="hover:underline">Admin Panel</a></li>
                     <li><a href="#session-management" class="hover:underline">Session Management</a></li>
                     <li><a href="#data-persistence" class="hover:underline">Data Persistence</a></li>
@@ -90,18 +107,37 @@
 
             <!-- Introduction -->
             <div id="introduction" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">1. Introduction</h2>
-                <p class="text-gray-700 mb-4"><strong>CarelonRx Roadmap</strong> is a Product Initiative Management system designed to help teams plan, track, and visualize product initiatives across quarters and years.</p>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">1. Introduction to Product 360</h2>
+                <p class="text-gray-700 mb-4"><strong>CarelonRx Product 360</strong> is an integrated product suite that combines multiple tools for comprehensive product management. The platform provides a unified experience with a persistent side panel for seamless navigation between modules.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Product 360 Modules</h3>
+                <div class="space-y-4 mb-6">
+                    <div class="border-l-4 border-purple-600 pl-4 py-2 bg-purple-50">
+                        <h4 class="font-bold text-gray-800 flex items-center space-x-2">
+                            <i data-lucide="map" class="w-5 h-5 text-purple-600"></i>
+                            <span>Roadmap Module (Available Now)</span>
+                        </h4>
+                        <p class="text-gray-700 text-sm mt-1">Product initiative management system for planning, tracking, and visualizing initiatives across quarters and years.</p>
+                    </div>
+                    <div class="border-l-4 border-yellow-600 pl-4 py-2 bg-yellow-50">
+                        <h4 class="font-bold text-gray-800 flex items-center space-x-2">
+                            <i data-lucide="calculator" class="w-5 h-5 text-yellow-600"></i>
+                            <span>Story Estimations Module (Coming Soon)</span>
+                        </h4>
+                        <p class="text-gray-700 text-sm mt-1">SAFe agile estimation tools including story points, velocity tracking, PI capacity, and WSJF scoring.</p>
+                    </div>
+                </div>
                 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Key Features</h3>
                 <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
-                    <li>Initiative intake and tracking</li>
-                    <li>WSJF (Weighted Shortest Job First) prioritization</li>
-                    <li>Visual roadmap timeline</li>
-                    <li>Role-based access control</li>
-                    <li>User management (Admin)</li>
-                    <li>Budget approval tracking</li>
-                    <li>Dependent systems management</li>
+                    <li><strong>Unified Navigation:</strong> Side panel for seamless module switching</li>
+                    <li><strong>Initiative Management:</strong> Complete intake and tracking system</li>
+                    <li><strong>WSJF Prioritization:</strong> Weighted Shortest Job First methodology</li>
+                    <li><strong>Visual Timeline:</strong> Interactive roadmap across quarters</li>
+                    <li><strong>Analytics Dashboard:</strong> Real-time statistics and charts</li>
+                    <li><strong>Role-Based Access:</strong> Admin and user permissions</li>
+                    <li><strong>Budget Tracking:</strong> Approval status management</li>
+                    <li><strong>Dependency Management:</strong> Track system dependencies</li>
                 </ul>
             </div>
 
@@ -119,13 +155,56 @@
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Accessing the Application</h3>
                 <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
                     <li>Navigate to: <code class="bg-gray-100 px-2 py-1 rounded">https://carelonrx-roadmap1.onrender.com</code></li>
-                    <li>You'll see the login page with the CarelonRx logo</li>
+                    <li>You'll see the Product 360 login page with module showcase</li>
+                    <li>After login, you'll land on the Dashboard with the Product 360 sidebar</li>
                 </ol>
+            </div>
+
+            <!-- Product 360 Navigation -->
+            <div id="navigation" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">3. Product 360 Navigation</h2>
+                <p class="text-gray-700 mb-4">Product 360 features a persistent left sidebar that provides seamless navigation between modules.</p>
+                
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Side Panel Components</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-4">
+                    <li><strong>CarelonRx Logo:</strong> Displayed in a white rounded container</li>
+                    <li><strong>Product 360 Title:</strong> Main branding header</li>
+                    <li><strong>Module Links:</strong> Navigation to Roadmap and Story Estimations</li>
+                    <li><strong>Toggle Button:</strong> Collapse/expand sidebar (chevron icon)</li>
+                    <li><strong>Version Info:</strong> Current version and copyright at bottom</li>
+                </ul>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Available Modules</h3>
+                <div class="space-y-3 mb-4">
+                    <div class="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg">
+                        <i data-lucide="map" class="w-5 h-5 text-purple-600 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Roadmap</h4>
+                            <p class="text-sm text-gray-700">Access the complete initiative management system including Dashboard, Intake, Timeline, Analytics, and Admin Panel.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg opacity-75">
+                        <i data-lucide="calculator" class="w-5 h-5 text-yellow-600 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Story Estimations <span class="text-xs text-yellow-600">(Coming Soon)</span></h4>
+                            <p class="text-sm text-gray-700">Future module for SAFe agile estimation tools. Clicking this shows a "Coming Soon" modal.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Navigation Tips</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                    <li>The sidebar persists across all pages for consistent navigation</li>
+                    <li>Active module is highlighted with a yellow left border</li>
+                    <li>Use the toggle button to collapse sidebar for more screen space</li>
+                    <li>On mobile devices, sidebar is hidden by default</li>
+                    <li>All Roadmap module pages are accessible via top navigation bar</li>
+                </ul>
             </div>
 
             <!-- User Roles -->
             <div id="user-roles" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">3. User Roles</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">4. User Roles</h2>
                 <p class="text-gray-700 mb-4">The system supports multiple roles with different permissions:</p>
                 
                 <table class="w-full border-collapse border border-gray-300 mb-4">
