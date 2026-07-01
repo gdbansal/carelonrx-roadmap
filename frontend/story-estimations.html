@@ -522,13 +522,15 @@
             if (!reason.trim()) return;
             
             if (role === 'Dev') {
-                if (!state.currentSession.devEstimationReasons) {
-                    state.currentSession.devEstimationReasons = [];
+                if (!state.currentSession.devEstimationReasons || state.currentSession.devEstimationReasons.length === 0) {
+                    // Initialize with current reasons (including defaults)
+                    state.currentSession.devEstimationReasons = [...getEstimationReasons('Dev')];
                 }
                 state.currentSession.devEstimationReasons.push(reason);
             } else if (role === 'QA') {
-                if (!state.currentSession.qaEstimationReasons) {
-                    state.currentSession.qaEstimationReasons = [];
+                if (!state.currentSession.qaEstimationReasons || state.currentSession.qaEstimationReasons.length === 0) {
+                    // Initialize with current reasons (including defaults)
+                    state.currentSession.qaEstimationReasons = [...getEstimationReasons('QA')];
                 }
                 state.currentSession.qaEstimationReasons.push(reason);
             }
