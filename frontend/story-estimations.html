@@ -242,7 +242,11 @@
             localStorage.removeItem('user');
             localStorage.removeItem('token');
             localStorage.removeItem('storyPointEstimatorSessionId');
-            window.location.href = 'login.html';
+            state.user = null;
+            state.sessionId = '';
+            state.currentSession = null;
+            state.stories = [];
+            render();
         }
 
         function hasPoPrivileges() {
