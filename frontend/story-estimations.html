@@ -463,6 +463,17 @@
             render();
         }
 
+        async function markIncomplete(storyId) {
+            if (!hasPoPrivileges()) return;
+            
+            if (state.currentSession.completedStories && state.currentSession.completedStories[storyId]) {
+                delete state.currentSession.completedStories[storyId];
+            }
+
+            await updateSession(state.sessionId, state.currentSession);
+            render();
+        }
+
         function getUserEstimation(storyId) {
             const userKey = `${state.user.name}_${state.user.role}`;
             const estimation = state.currentSession?.estimations?.[storyId]?.[userKey];
@@ -896,11 +907,15 @@
                                     <i data-lucide="eye" class="w-3 h-3 inline"></i> Reveal
                                 </button>
                             ` : ''}
-                            ${!complete ? `
+                            ${complete ? `
+                                <button onclick="markIncomplete('${story.id}')" class="px-3 py-1 bg-orange-600 text-white rounded text-sm hover:bg-orange-700">
+                                    <i data-lucide="rotate-ccw" class="w-3 h-3 inline"></i> Reopen
+                                </button>
+                            ` : `
                                 <button onclick="markComplete('${story.id}')" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">
                                     <i data-lucide="check" class="w-3 h-3 inline"></i> Complete
                                 </button>
-                            ` : ''}
+                            `}
                         </div>
                     ` : ''}
                 </div>
@@ -980,6 +995,7 @@
         window.updateEstimation = updateEstimation;
         window.revealStory = revealStory;
         window.markComplete = markComplete;
+        window.markIncomplete = markIncomplete;
         window.logout = logout;
         window.toggleProfileDropdown = toggleProfileDropdown;
         window.confirmEstimation = confirmEstimation;
