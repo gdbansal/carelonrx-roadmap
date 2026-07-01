@@ -42,7 +42,7 @@ const estimationSessionSchema = new mongoose.Schema({
         name: String,
         role: {
             type: String,
-            enum: ['Dev', 'QA', 'PO', 'SM']
+            enum: ['Dev', 'QA', 'PO', 'SM', 'Admin']
         },
         joinedAt: {
             type: Date,
