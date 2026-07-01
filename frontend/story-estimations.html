@@ -96,7 +96,11 @@
             user: null,
             sessionId: '',
             currentSession: null,
-            stories: []
+            stories: [],
+            showReasonModal: false,
+            reasonModalStoryId: null,
+            reasonModalPoints: null,
+            selectedReason: ''
         };
 
         // ============================================
@@ -329,21 +333,99 @@
         // ESTIMATION MANAGEMENT
         // ============================================
         async function updateEstimation(storyId, points) {
-            // Prompt for reason
-            const reason = prompt(`You estimated ${points} points.\n\nPlease provide a reason for your estimation (optional):`);
-            
+            // Show reason modal for Dev/QA roles
+            if ((state.user.role === 'Dev' || state.user.role === 'QA') && points > 0) {
+                state.showReasonModal = true;
+                state.reasonModalStoryId = storyId;
+                state.reasonModalPoints = points;
+                state.selectedReason = '';
+                render();
+            } else {
+                // For other roles or 0 points, save directly
+                await saveEstimation(storyId, points, '');
+            }
+        }
+
+        async function saveEstimation(storyId, points, reason) {
             if (!state.currentSession.estimations[storyId]) {
                 state.currentSession.estimations[storyId] = {};
             }
 
             const userKey = `${state.user.name}_${state.user.role}`;
-            state.currentSession.estimations[storyId][userKey] = {
+            const estimationData = {
                 points,
-                reason: reason || '',
                 timestamp: new Date().toISOString()
             };
+            
+            // Add role-specific reason
+            if (state.user.role === 'Dev' && reason) {
+                estimationData.devReason = reason;
+            } else if (state.user.role === 'QA' && reason) {
+                estimationData.qaReason = reason;
+            }
+            
+            state.currentSession.estimations[storyId][userKey] = estimationData;
 
             console.log('✅ Estimation saved:', { storyId, userKey, points, reason });
+            
+            await updateSession(state.sessionId, state.currentSession);
+            render();
+        }
+
+        function confirmEstimation() {
+            saveEstimation(state.reasonModalStoryId, state.reasonModalPoints, state.selectedReason);
+            state.showReasonModal = false;
+            state.reasonModalStoryId = null;
+            state.reasonModalPoints = null;
+            state.selectedReason = '';
+        }
+
+        function cancelEstimation() {
+            state.showReasonModal = false;
+            state.reasonModalStoryId = null;
+            state.reasonModalPoints = null;
+            state.selectedReason = '';
+            render();
+        }
+
+        function getEstimationReasons(role) {
+            if (!state.currentSession) return [];
+            if (role === 'Dev') {
+                return state.currentSession.devEstimationReasons || [];
+            } else if (role === 'QA') {
+                return state.currentSession.qaEstimationReasons || [];
+            }
+            return [];
+        }
+
+        async function addEstimationReason(role, reason) {
+            if (!hasPoPrivileges()) return;
+            if (!reason.trim()) return;
+            
+            if (role === 'Dev') {
+                if (!state.currentSession.devEstimationReasons) {
+                    state.currentSession.devEstimationReasons = [];
+                }
+                state.currentSession.devEstimationReasons.push(reason);
+            } else if (role === 'QA') {
+                if (!state.currentSession.qaEstimationReasons) {
+                    state.currentSession.qaEstimationReasons = [];
+                }
+                state.currentSession.qaEstimationReasons.push(reason);
+            }
+            
+            await updateSession(state.sessionId, state.currentSession);
+            render();
+        }
+
+        async function removeEstimationReason(role, index) {
+            if (!hasPoPrivileges()) return;
+            
+            if (role === 'Dev' && state.currentSession.devEstimationReasons) {
+                state.currentSession.devEstimationReasons.splice(index, 1);
+            } else if (role === 'QA' && state.currentSession.qaEstimationReasons) {
+                state.currentSession.qaEstimationReasons.splice(index, 1);
+            }
             
             await updateSession(state.sessionId, state.currentSession);
             render();
@@ -401,17 +483,75 @@
         function render() {
             const container = document.getElementById('app-container');
             
+            let content = '';
             if (!state.user) {
-                container.innerHTML = renderLogin();
+                content = renderLogin();
             } else if (!state.currentSession) {
-                container.innerHTML = renderSessionSelection();
+                content = renderSessionSelection();
             } else {
-                container.innerHTML = renderMainApp();
+                content = renderMainApp();
             }
+            
+            // Add reason modal if shown
+            if (state.showReasonModal) {
+                content += renderReasonModal();
+            }
+            
+            container.innerHTML = content;
             
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
+        }
+
+        function renderReasonModal() {
+            const reasons = getEstimationReasons(state.user.role);
+            const roleLabel = state.user.role === 'Dev' ? 'Developer' : 'QA';
+            
+            return `
+                <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            ${roleLabel} Estimation Reason
+                        </h3>
+                        <p class="text-sm text-gray-600 mb-4">
+                            You estimated <span class="font-bold text-blue-600">${state.reasonModalPoints}</span> points. 
+                            Please select a reason (optional):
+                        </p>
+                        
+                        <div class="space-y-2 mb-4 max-h-60 overflow-y-auto">
+                            ${reasons.length > 0 ? reasons.map(reason => `
+                                <button 
+                                    onclick="selectReason('${reason.replace(/'/g, "\\'")}')" 
+                                    class="w-full text-left px-4 py-3 rounded-lg border-2 transition ${
+                                        state.selectedReason === reason 
+                                            ? 'border-blue-500 bg-blue-50' 
+                                            : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                                    }">
+                                    <span class="text-sm text-gray-700">${reason}</span>
+                                </button>
+                            `).join('') : `
+                                <p class="text-sm text-gray-500 text-center py-4">
+                                    No predefined reasons available. Ask your PO/Admin to add some.
+                                </p>
+                            `}
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <button 
+                                onclick="cancelEstimation()" 
+                                class="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                                Cancel
+                            </button>
+                            <button 
+                                onclick="confirmEstimation()" 
+                                class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function renderLogin() {
@@ -550,6 +690,68 @@
                         </div>
                     </div>
 
+                    <!-- Manage Estimation Reasons - PO/Admin Only -->
+                    ${hasPoPrivileges() ? `
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Manage Estimation Reasons</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Dev Reasons -->
+                                <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                                    <h4 class="text-md font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                                        <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                        Developer Reasons (${getEstimationReasons('Dev').length})
+                                    </h4>
+                                    <div class="mb-3">
+                                        <div class="flex gap-2">
+                                            <input type="text" id="newDevReason" placeholder="Add new dev reason..." 
+                                                class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <button onclick="addDevReason()" class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-2">
+                                        ${getEstimationReasons('Dev').map((reason, index) => `
+                                            <div class="flex justify-between items-center bg-white px-3 py-2 rounded-md border border-gray-200">
+                                                <span class="text-sm text-gray-700">${reason}</span>
+                                                <button onclick="removeDevReason(${index})" class="text-red-500 hover:text-red-700 p-1">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                <!-- QA Reasons -->
+                                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                                    <h4 class="text-md font-semibold text-green-800 mb-3 flex items-center gap-2">
+                                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                        QA Reasons (${getEstimationReasons('QA').length})
+                                    </h4>
+                                    <div class="mb-3">
+                                        <div class="flex gap-2">
+                                            <input type="text" id="newQaReason" placeholder="Add new QA reason..." 
+                                                class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                            <button onclick="addQaReason()" class="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-2">
+                                        ${getEstimationReasons('QA').map((reason, index) => `
+                                            <div class="flex justify-between items-center bg-white px-3 py-2 rounded-md border border-gray-200">
+                                                <span class="text-sm text-gray-700">${reason}</span>
+                                                <button onclick="removeQaReason(${index})" class="text-red-500 hover:text-red-700 p-1">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
                     <!-- Add Story Form -->
                     <div class="bg-white rounded-lg shadow-sm p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Add New Story</h3>
@@ -650,6 +852,7 @@
                                 const shouldShow = hasPoPrivileges() || revealed || participantKey === userKey;
                                 
                                 if (est) {
+                                    const reason = est.devReason || est.qaReason || '';
                                     return `
                                         <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
                                             <div class="flex items-center justify-between mb-1">
@@ -661,9 +864,9 @@
                                                     ${shouldShow ? est.points : '***'}
                                                 </span>
                                             </div>
-                                            ${shouldShow && est.reason ? `
+                                            ${shouldShow && reason ? `
                                                 <div class="text-xs text-gray-600 mt-1 pl-2 border-l-2 border-blue-300">
-                                                    ${est.reason}
+                                                    ${reason}
                                                 </div>
                                             ` : ''}
                                         </div>
@@ -779,6 +982,25 @@
         window.markComplete = markComplete;
         window.logout = logout;
         window.toggleProfileDropdown = toggleProfileDropdown;
+        window.confirmEstimation = confirmEstimation;
+        window.cancelEstimation = cancelEstimation;
+        window.selectReason = (reason) => { state.selectedReason = reason; render(); };
+        window.addDevReason = () => {
+            const input = document.getElementById('newDevReason');
+            if (input && input.value.trim()) {
+                addEstimationReason('Dev', input.value.trim());
+                input.value = '';
+            }
+        };
+        window.addQaReason = () => {
+            const input = document.getElementById('newQaReason');
+            if (input && input.value.trim()) {
+                addEstimationReason('QA', input.value.trim());
+                input.value = '';
+            }
+        };
+        window.removeDevReason = (index) => removeEstimationReason('Dev', index);
+        window.removeQaReason = (index) => removeEstimationReason('QA', index);
 
         // ============================================
         // POLLING FOR REAL-TIME UPDATES
