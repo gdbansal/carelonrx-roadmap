@@ -737,6 +737,11 @@
                 return estimation ? (typeof estimation === 'object' ? estimation.points : estimation) : null;
             };
 
+            // Helper function to check if user has PO/Admin privileges
+            const hasPoPrivileges = () => {
+                return user && (user.role === 'PO' || user.role === 'Admin');
+            };
+
             const updateStoryPoints = (id, points, reason = null) => {
                 // Only track estimation by user, don't update shared story points
                 // Track estimation by user
@@ -770,8 +775,8 @@
             };
 
             const markStoryComplete = (storyId) => {
-                if (user.role !== 'PO') {
-                    alert('Only Product Owners can mark stories as complete.');
+                if (!hasPoPrivileges()) {
+                    alert('Only Product Owners and Admins can mark stories as complete.');
                     return;
                 }
                 
@@ -792,8 +797,8 @@
             };
 
             const markStoryIncomplete = (storyId) => {
-                if (user.role !== 'PO') {
-                    alert('Only Product Owners can modify story completion status.');
+                if (!hasPoPrivileges()) {
+                    alert('Only Product Owners and Admins can modify story completion status.');
                     return;
                 }
                 
@@ -811,8 +816,8 @@
             };
 
             const revealStoryEstimates = (storyId) => {
-                if (user.role !== 'PO') {
-                    alert('Only Product Owners can reveal estimates.');
+                if (!hasPoPrivileges()) {
+                    alert('Only Product Owners and Admins can reveal estimates.');
                     return;
                 }
                 
@@ -1373,8 +1378,8 @@
             };
 
             const closeSession = () => {
-                if (user.role !== 'PO') {
-                    alert('Only Product Owners can close sessions.');
+                if (!hasPoPrivileges()) {
+                    alert('Only Product Owners and Admins can close sessions.');
                     return;
                 }
 
@@ -1410,8 +1415,8 @@
             const getSessionTimeInfo = () => {
                 if (!currentSession || !currentSession.minimumActiveUntil) return null;
                 
-                // PO can always close sessions regardless of time restrictions
-                if (user && user.role === 'PO') {
+                // PO and Admin can always close sessions regardless of time restrictions
+                if (user && hasPoPrivileges()) {
                     return { canClose: true, message: 'Session can be closed' };
                 }
                 
@@ -1461,7 +1466,7 @@
                         .map(p => `${p.name}_${p.role}`)
                         .filter(userId => !estimatedBy.includes(userId));
                     
-                    // For non-PO users, hide OTHER users' estimation details until revealed
+                    // For non-PO/Admin users, hide OTHER users' estimation details until revealed
                     // But ALWAYS show the current user's own estimate
                     const isRevealed = isStoryRevealed(story.id);
                     const currentUserKey = `${user.name}_${user.role}`;
@@ -1473,8 +1478,8 @@
                             const estimation = storyEstimations[userId];
                             const points = typeof estimation === 'object' ? estimation.points : estimation;
                             
-                            // Show points if: PO, story is revealed, OR it's the current user's own estimate
-                            const shouldShowPoints = user.role === 'PO' || isRevealed || userId === currentUserKey;
+                            // Show points if: PO/Admin, story is revealed, OR it's the current user's own estimate
+                            const shouldShowPoints = hasPoPrivileges() || isRevealed || userId === currentUserKey;
                             
                             return { 
                                 userId, 
