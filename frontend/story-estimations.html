@@ -34,7 +34,7 @@
                         <p class="text-xs text-gray-600">Product 360</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div id="headerButtons" class="hidden items-center space-x-4">
                     <button onclick="window.location.href='dashboard.html'" 
                         class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
@@ -192,9 +192,16 @@
 
         function updateHeaderProfile() {
             if (state.user) {
+                const headerButtons = document.getElementById('headerButtons');
                 const userNameDisplay = document.getElementById('userNameDisplay');
                 const userInitials = document.getElementById('userInitials');
                 const adminLink = document.getElementById('adminDropdownLink');
+                
+                // Show header buttons when user is logged in
+                if (headerButtons) {
+                    headerButtons.classList.remove('hidden');
+                    headerButtons.classList.add('flex');
+                }
                 
                 if (userNameDisplay) {
                     userNameDisplay.textContent = state.user.name;
