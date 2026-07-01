@@ -504,12 +504,31 @@
 
             // Load user and session data from localStorage on component mount
             useEffect(() => {
-                const savedUser = localStorage.getItem('storyPointEstimatorUser');
-                if (savedUser) {
-                    const userData = safeJsonParse(savedUser, null);
-                    if (userData) {
-                        setUser(userData);
+                // First, check if user is logged in via Product 360 authentication
+                const product360User = localStorage.getItem('user');
+                if (product360User) {
+                    const userData = safeJsonParse(product360User, null);
+                    if (userData && userData.username) {
+                        // Auto-login with Product 360 user info
+                        const estimationUser = {
+                            name: userData.fullName || userData.username,
+                            role: userData.role || 'Dev' // Map role or default to Dev
+                        };
+                        setUser(estimationUser);
+                        setLoginName(estimationUser.name);
+                        setLoginRole(estimationUser.role);
+                        console.log('✅ Auto-logged in with Product 360 user:', estimationUser);
+                    } else {
+                        // Not logged in to Product 360, redirect to login
+                        console.warn('⚠️ No Product 360 authentication found, redirecting to login');
+                        window.location.href = 'login.html';
+                        return;
                     }
+                } else {
+                    // Not logged in to Product 360, redirect to login
+                    console.warn('⚠️ No Product 360 authentication found, redirecting to login');
+                    window.location.href = 'login.html';
+                    return;
                 }
                 
                 // Check for session ID in URL parameters first
@@ -1123,36 +1142,15 @@
             };
 
             const handleLogout = () => {
-                // Reset all user-related state to return to login screen
-                setUser(null);
-                setLoginName('');
-                setLoginRole('');
-                setSessionId('');
-                setCurrentSession(null);
-                setShowDashboard(false);
-                setStories([]);
-                setNewStoryNumber('');
-                setNewStorySummary('');
-                setEditingId(null);
-                setEditingNumber('');
-                setEditingSummary('');
-                setShowDevReason(null);
-                setSelectedDevReason('');
-                setShowQaReason(null);
-                setSelectedQaReason('');
-                setTempPoints(null);
-                setShowCreateSessionForm(false);
-                setTeamName('');
-                setSprintValue('');
-                setHasExplicitlyJoined(false);  // Reset explicit join flag
-                setShowManageReasons(false);
-                setNewDevReason('');
-                setNewQaReason('');
-                
-                // Clear localStorage
+                // Clear Product 360 session
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
                 localStorage.removeItem('storyPointEstimatorUser');
+                localStorage.removeItem('storyPointEstimatorSessionId');
                 
-                console.log('User logged out successfully - redirected to login screen');
+                // Redirect to Product 360 login page
+                console.log('User logged out - redirecting to login page');
+                window.location.href = 'login.html';
             };
 
             const getRoleColor = (role) => {
