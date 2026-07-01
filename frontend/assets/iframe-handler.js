@@ -18,10 +18,10 @@
         // Find the navigation bar
         const nav = document.querySelector('nav');
         if (nav) {
-            // Hide only the logo and title section, keep the navigation buttons
-            const logoSection = nav.querySelector('.flex.items-center.space-x-4:first-child');
-            if (logoSection) {
-                logoSection.style.display = 'none';
+            // Hide only the logo image, keep the title text
+            const logoImg = nav.querySelector('img[alt*="Logo"]');
+            if (logoImg) {
+                logoImg.style.display = 'none';
             }
 
             // Adjust navigation bar styling
