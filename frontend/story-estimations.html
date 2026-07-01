@@ -682,7 +682,34 @@
                 };
 
                 loadSessionData();
-            }, [user, sessionId]);
+                
+                // Set up polling to refresh session data every 5 seconds
+                const pollInterval = setInterval(async () => {
+                    if (user && sessionId && hasExplicitlyJoined && currentSession) {
+                        try {
+                            const session = await getSession(sessionId);
+                            if (session && session.status !== 'closed') {
+                                // Only update if there are actual changes to avoid unnecessary re-renders
+                                const currentEstimationsStr = JSON.stringify(currentSession.estimations || {});
+                                const newEstimationsStr = JSON.stringify(session.estimations || {});
+                                const currentStoriesStr = JSON.stringify(currentSession.stories || []);
+                                const newStoriesStr = JSON.stringify(session.stories || []);
+                                
+                                if (currentEstimationsStr !== newEstimationsStr || currentStoriesStr !== newStoriesStr) {
+                                    console.log('🔄 Session data updated from server');
+                                    setCurrentSession(session);
+                                    setStories(session.stories || []);
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Polling error:', error);
+                        }
+                    }
+                }, 5000); // Poll every 5 seconds
+                
+                // Cleanup interval on unmount
+                return () => clearInterval(pollInterval);
+            }, [user, sessionId, hasExplicitlyJoined, currentSession]);
 
             // Save session data whenever stories change
             useEffect(() => {
