@@ -1015,13 +1015,21 @@ app.post('/api/update-user-role', authMiddleware, async (req, res) => {
 // Create a new estimation session
 app.post('/api/sessions', async (req, res) => {
     try {
+        console.log('📥 Received create session request');
+        console.log('Request body keys:', Object.keys(req.body));
+        console.log('Request body:', JSON.stringify(req.body, null, 2));
+        
         // Support both formats: { sessionId, sessionData } and { sessionId, ...data }
         const { sessionId, sessionData, ...restData } = req.body;
         const dataToSave = sessionData || restData;
         
+        console.log('SessionId:', sessionId);
+        console.log('Data to save keys:', Object.keys(dataToSave));
+        
         // Check if session already exists
         const existingSession = await EstimationSession.findOne({ sessionId });
         if (existingSession) {
+            console.log('⚠️ Session already exists:', sessionId);
             return res.status(409).json({
                 success: false,
                 message: 'Session already exists'
@@ -1033,7 +1041,9 @@ app.post('/api/sessions', async (req, res) => {
             ...dataToSave
         });
         
+        console.log('💾 Saving session to database...');
         await session.save();
+        console.log('✅ Session saved successfully:', sessionId);
         
         res.status(201).json({
             success: true,
@@ -1041,7 +1051,8 @@ app.post('/api/sessions', async (req, res) => {
             session: session.toObject()
         });
     } catch (error) {
-        console.error('Create session error:', error);
+        console.error('❌ Create session error:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
             message: 'Failed to create session',
