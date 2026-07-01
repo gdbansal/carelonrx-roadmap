@@ -598,9 +598,16 @@
         }
 
         function getUserEstimation(storyId) {
+            if (!state.currentSession || !state.user) return null;
+            
             const userKey = `${state.user.name}_${state.user.role}`;
-            const estimation = state.currentSession?.estimations?.[storyId]?.[userKey];
-            return estimation?.points ?? null;
+            const storyEstimations = state.currentSession.estimations[storyId] || {};
+            const estimation = storyEstimations[userKey];
+            
+            if (!estimation) return null;
+            
+            // Handle both object format and direct value
+            return typeof estimation === 'object' ? estimation.points : estimation;
         }
 
         function isRevealed(storyId) {
