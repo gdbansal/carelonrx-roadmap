@@ -534,7 +534,7 @@
                                 <button onclick="updateEstimation('${story.id}', ${points})" 
                                     class="fibonacci-btn px-3 py-2 rounded-md font-semibold ${
                                         userEst === points 
-                                            ? 'selected bg-primary-600 text-white' 
+                                            ? 'selected bg-blue-600 text-white' 
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }">
                                     ${points}
@@ -544,26 +544,36 @@
                     </div>
 
                     <!-- Team Estimations -->
-                    ${Object.keys(estimations).length > 0 ? `
-                        <div class="border-t pt-3">
-                            <div class="text-sm font-medium text-gray-700 mb-2">Team Estimations:</div>
-                            <div class="flex flex-wrap gap-2">
-                                ${Object.entries(estimations).map(([userId, est]) => {
-                                    const [name, role] = userId.split('_');
-                                    const shouldShow = hasPoPrivileges() || revealed || userId === userKey;
+                    <div class="border-t pt-3">
+                        <div class="text-sm font-medium text-gray-700 mb-2">Team Estimations:</div>
+                        <div class="flex flex-wrap gap-2">
+                            ${state.currentSession.participants.map(participant => {
+                                const participantKey = `${participant.name}_${participant.role}`;
+                                const est = estimations[participantKey];
+                                const shouldShow = hasPoPrivileges() || revealed || participantKey === userKey;
+                                
+                                if (est) {
                                     return `
                                         <div class="px-3 py-1 bg-gray-100 rounded text-sm">
-                                            <span class="font-medium">${name}</span>
-                                            <span class="text-gray-500">(${role})</span>:
-                                            <span class="font-bold ${shouldShow ? 'text-primary-600' : 'text-gray-400'}">
+                                            <span class="font-medium">${participant.name}</span>
+                                            <span class="text-gray-500">(${participant.role})</span>:
+                                            <span class="font-bold ${shouldShow ? 'text-blue-600' : 'text-gray-400'}">
                                                 ${shouldShow ? est.points : '***'}
                                             </span>
                                         </div>
                                     `;
-                                }).join('')}
-                            </div>
+                                } else {
+                                    return `
+                                        <div class="px-3 py-1 bg-orange-50 border border-orange-200 rounded text-sm">
+                                            <span class="font-medium">${participant.name}</span>
+                                            <span class="text-gray-500">(${participant.role})</span>:
+                                            <span class="text-orange-600 font-medium">Waiting...</span>
+                                        </div>
+                                    `;
+                                }
+                            }).join('')}
                         </div>
-                    ` : ''}
+                    </div>
 
                     <!-- PO/Admin Actions -->
                     ${hasPoPrivileges() ? `
