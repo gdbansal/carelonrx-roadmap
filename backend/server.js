@@ -1075,7 +1075,23 @@ app.get('/api/sessions/:sessionId', async (req, res) => {
             });
         }
         
-        res.json(session.toObject());
+        // Convert to object and handle Map fields
+        const sessionObj = session.toObject();
+        
+        // Convert Map fields to plain objects
+        if (sessionObj.estimations instanceof Map) {
+            sessionObj.estimations = Object.fromEntries(sessionObj.estimations);
+        }
+        if (sessionObj.completedStories instanceof Map) {
+            sessionObj.completedStories = Object.fromEntries(sessionObj.completedStories);
+        }
+        if (sessionObj.revealedStories instanceof Map) {
+            sessionObj.revealedStories = Object.fromEntries(sessionObj.revealedStories);
+        }
+        
+        console.log('📤 Sending session with estimations:', JSON.stringify(sessionObj.estimations));
+        
+        res.json(sessionObj);
     } catch (error) {
         console.error('Get session error:', error);
         res.status(500).json({
@@ -1093,7 +1109,9 @@ app.put('/api/sessions/:sessionId', async (req, res) => {
         const { sessionData } = req.body;
         
         console.log('📝 Updating session:', sessionId);
-        console.log('📦 Received estimations:', JSON.stringify(sessionData.estimations));
+        console.log('📦 Request body keys:', Object.keys(req.body));
+        console.log('📦 SessionData keys:', sessionData ? Object.keys(sessionData) : 'undefined');
+        console.log('📦 Received estimations:', JSON.stringify(sessionData?.estimations));
         
         // Find the session first
         const session = await EstimationSession.findOne({ sessionId });

@@ -79,7 +79,7 @@
         // CONFIGURATION
         // ============================================
         const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://127.0.0.1:5000/api'
+            ? 'http://localhost:5000/api'
             : 'https://carelonrx-roadmap.onrender.com/api';
 
         const FIBONACCI = [0, 0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
@@ -155,11 +155,15 @@
         }
 
         async function updateSession(sessionId, sessionData) {
-            return await apiCall(`/sessions/${sessionId}`, {
+            console.log('🌐 Sending PUT request to:', `${API_BASE_URL}/sessions/${sessionId}`);
+            console.log('📤 Sending sessionData:', sessionData);
+            const result = await apiCall(`/sessions/${sessionId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sessionData })
             });
+            console.log('📥 Server response:', result);
+            return result;
         }
 
         // ============================================
