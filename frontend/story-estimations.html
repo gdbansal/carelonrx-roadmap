@@ -438,11 +438,15 @@
         async function saveEstimation(storyId, points, reason) {
             isUpdating = true; // Pause polling during update
             
+            console.log('💡 Current user:', state.user);
+            
             if (!state.currentSession.estimations[storyId]) {
                 state.currentSession.estimations[storyId] = {};
             }
 
             const userKey = `${state.user.name}_${state.user.role}`;
+            console.log('🔑 Generated userKey for save:', userKey);
+            
             const estimationData = {
                 points,
                 timestamp: new Date().toISOString()
@@ -612,7 +616,10 @@
                 return null;
             }
             
+            console.log('💡 Current user in getUserEstimation:', state.user);
             const userKey = `${state.user.name}_${state.user.role}`;
+            console.log('🔑 Generated userKey for get:', userKey);
+            
             const storyEstimations = state.currentSession.estimations[storyId] || {};
             const estimation = storyEstimations[userKey];
             
