@@ -869,6 +869,10 @@
         }
 
         function renderSessionSelection() {
+            // Pre-fill session ID if joining via URL
+            const sessionIdValue = state.joiningViaUrl && state.sessionId ? state.sessionId : '';
+            const showInfoMessage = state.joiningViaUrl && state.sessionId;
+            
             return `
                 <div class="max-w-2xl mx-auto">
                     <div class="bg-white rounded-lg shadow-lg p-8">
@@ -878,7 +882,17 @@
                             <p class="text-gray-600">${hasPoPrivileges() ? 'Create a new session or join existing' : 'Join an existing session'}</p>
                         </div>
                         
-                        ${hasPoPrivileges() ? `
+                        ${showInfoMessage ? `
+                            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p class="text-sm text-blue-800">
+                                    <i data-lucide="link" class="w-4 h-4 inline mr-1"></i>
+                                    <strong>Session ID detected from URL</strong><br>
+                                    You're joining session: <code class="bg-blue-100 px-2 py-1 rounded text-xs">${sessionIdValue}</code>
+                                </p>
+                            </div>
+                        ` : ''}
+                        
+                        ${hasPoPrivileges() && !state.joiningViaUrl ? `
                             <div class="mb-6 p-6 bg-gray-50 rounded-lg">
                                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Create New Session</h3>
                                 <div class="space-y-4">
@@ -900,8 +914,11 @@
                         
                         <div class="space-y-4">
                             <div>
-                                <input type="text" id="sessionIdInput" placeholder="Enter session ID" 
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Session ID</label>
+                                <input type="text" id="sessionIdInput" placeholder="Enter session ID" value="${sessionIdValue}"
+                                    ${state.joiningViaUrl ? 'readonly' : ''}
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${state.joiningViaUrl ? 'bg-gray-50' : ''}">
+                                ${state.joiningViaUrl ? '<p class="text-xs text-gray-500 mt-1">Session ID from shared URL (read-only)</p>' : ''}
                             </div>
                             <button onclick="handleJoinSessionClick()" class="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition">
                                 Join Session
