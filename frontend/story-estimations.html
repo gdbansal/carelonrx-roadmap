@@ -166,22 +166,12 @@
         // USER MANAGEMENT
         // ============================================
         function loadUser() {
-            const product360User = localStorage.getItem('user');
-            if (product360User) {
-                const userData = safeJsonParse(product360User, null);
-                if (userData && userData.username) {
-                    let mappedRole = userData.role || 'Dev';
-                    const normalizedRole = mappedRole.toLowerCase().replace(/\s+/g, '_');
-                    
-                    if (normalizedRole === 'admin') mappedRole = 'Admin';
-                    else if (normalizedRole === 'product_owner' || normalizedRole === 'product_manager') mappedRole = 'PO';
-                    else if (normalizedRole === 'scrum_master' || normalizedRole === 'rte') mappedRole = 'SM';
-                    else if (!['Admin', 'Dev', 'QA', 'PO', 'SM'].includes(mappedRole)) mappedRole = 'Dev';
-                    
-                    state.user = {
-                        name: userData.fullName || userData.username,
-                        role: mappedRole
-                    };
+            // Check for Story Estimations specific user (not Product360 user)
+            const estimatorUser = localStorage.getItem('storyEstimatorUser');
+            if (estimatorUser) {
+                const userData = safeJsonParse(estimatorUser, null);
+                if (userData && userData.name && userData.role) {
+                    state.user = userData;
                     
                     // Update header profile display
                     updateHeaderProfile();
@@ -241,8 +231,7 @@
 
         function logout() {
             stopPolling(); // Stop polling when logging out
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
+            localStorage.removeItem('storyEstimatorUser'); // Remove Story Estimations user
             localStorage.removeItem('storyPointEstimatorSessionId');
             state.user = null;
             state.sessionId = '';
@@ -1483,6 +1472,8 @@
             }
             
             state.user = { name, role };
+            // Save to Story Estimations specific storage
+            localStorage.setItem('storyEstimatorUser', JSON.stringify(state.user));
             render();
         };
 
