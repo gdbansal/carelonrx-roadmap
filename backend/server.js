@@ -1092,11 +1092,11 @@ app.put('/api/sessions/:sessionId', async (req, res) => {
         const { sessionId } = req.params;
         const { sessionData } = req.body;
         
-        const session = await EstimationSession.findOneAndUpdate(
-            { sessionId },
-            { ...sessionData, lastUpdated: new Date() },
-            { new: true, runValidators: true }
-        );
+        console.log('📝 Updating session:', sessionId);
+        console.log('📦 Received estimations:', JSON.stringify(sessionData.estimations));
+        
+        // Find the session first
+        const session = await EstimationSession.findOne({ sessionId });
         
         if (!session) {
             return res.status(404).json({
@@ -1105,13 +1105,29 @@ app.put('/api/sessions/:sessionId', async (req, res) => {
             });
         }
         
+        // Update fields manually to ensure Map types are handled correctly
+        Object.keys(sessionData).forEach(key => {
+            if (key === 'estimations' || key === 'completedStories' || key === 'revealedStories') {
+                // For Map fields, convert plain object to Map
+                session[key] = new Map(Object.entries(sessionData[key] || {}));
+            } else {
+                session[key] = sessionData[key];
+            }
+        });
+        
+        session.lastUpdated = new Date();
+        
+        await session.save();
+        
+        console.log('✅ Session updated, estimations:', JSON.stringify(Object.fromEntries(session.estimations)));
+        
         res.json({
             success: true,
             message: 'Session updated successfully',
             session: session.toObject()
         });
     } catch (error) {
-        console.error('Update session error:', error);
+        console.error('❌ Update session error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to update session',
