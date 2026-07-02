@@ -803,6 +803,28 @@
         }
 
         function renderLogin() {
+            // Try to get Product360 user data for pre-filling
+            let defaultName = '';
+            let defaultRole = '';
+            
+            const product360User = localStorage.getItem('user');
+            if (product360User) {
+                const userData = safeJsonParse(product360User, null);
+                if (userData) {
+                    defaultName = userData.fullName || userData.username || '';
+                    
+                    // Map Product360 role to Story Estimations role
+                    if (userData.role) {
+                        const normalizedRole = userData.role.toLowerCase().replace(/\s+/g, '_');
+                        if (normalizedRole === 'admin') defaultRole = 'Admin';
+                        else if (normalizedRole === 'product_owner' || normalizedRole === 'product_manager') defaultRole = 'PO';
+                        else if (normalizedRole === 'scrum_master' || normalizedRole === 'rte') defaultRole = 'SM';
+                        else if (normalizedRole === 'developer' || normalizedRole === 'dev') defaultRole = 'Dev';
+                        else if (normalizedRole === 'qa' || normalizedRole === 'tester') defaultRole = 'QA';
+                    }
+                }
+            }
+            
             return `
                 <div class="min-h-screen flex items-center justify-center">
                     <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
@@ -814,18 +836,18 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
-                                <input type="text" id="loginName" placeholder="Enter your name" 
+                                <input type="text" id="loginName" placeholder="Enter your name" value="${defaultName}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Your Role</label>
                                 <select id="loginRole" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="">Select your role</option>
-                                    <option value="Dev">Developer</option>
-                                    <option value="QA">QA</option>
-                                    <option value="PO">Product Owner</option>
-                                    <option value="SM">Scrum Master</option>
-                                    <option value="Admin">Admin</option>
+                                    <option value="Dev" ${defaultRole === 'Dev' ? 'selected' : ''}>Developer</option>
+                                    <option value="QA" ${defaultRole === 'QA' ? 'selected' : ''}>QA</option>
+                                    <option value="PO" ${defaultRole === 'PO' ? 'selected' : ''}>Product Owner</option>
+                                    <option value="SM" ${defaultRole === 'SM' ? 'selected' : ''}>Scrum Master</option>
+                                    <option value="Admin" ${defaultRole === 'Admin' ? 'selected' : ''}>Admin</option>
                                 </select>
                             </div>
                             <button onclick="handleLoginSubmit()" class="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition">
