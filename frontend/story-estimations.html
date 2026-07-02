@@ -10,6 +10,13 @@
     <script src="assets/product360-sidebar.js" defer></script>
     <link rel="stylesheet" href="assets/carelon-theme.css">
     <style>
+        /* CarelonRx Brand Colors */
+        :root {
+            --carelon-purple: #5009B5;
+            --carelon-purple-dark: #3d0789;
+            --carelon-purple-light: #6b1fd4;
+        }
+        
         .fibonacci-btn {
             transition: all 0.2s;
         }
@@ -18,31 +25,69 @@
         }
         .fibonacci-btn.selected {
             transform: scale(1.1);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(80, 9, 181, 0.3);
+            background-color: var(--carelon-purple) !important;
+            color: white !important;
+            border-color: var(--carelon-purple) !important;
+        }
+        
+        /* Primary button styling */
+        .btn-primary {
+            background-color: var(--carelon-purple);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: var(--carelon-purple-dark);
+        }
+        
+        /* Checkbox styling */
+        .checkbox-purple:checked {
+            background-color: var(--carelon-purple);
+            border-color: var(--carelon-purple);
+        }
+        
+        /* Card sections */
+        .dev-section {
+            background-color: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+        }
+        
+        .qa-section {
+            background-color: #dcfce7;
+            border-left: 4px solid #10b981;
+        }
+        
+        /* Icon colors */
+        .icon-dev {
+            color: #0284c7;
+        }
+        
+        .icon-qa {
+            color: #059669;
         }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- Top Navigation Bar -->
-    <nav class="bg-white shadow-lg">
+    <nav style="background-color: #5009B5;" class="shadow-lg">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
                     <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="h-10 w-auto">
                     <div>
-                        <h1 class="text-lg font-bold text-gray-800">Story Estimations</h1>
-                        <p class="text-xs text-gray-600">Product 360</p>
+                        <h1 class="text-lg font-bold text-white">Story Estimations</h1>
+                        <p class="text-xs text-gray-200">Product 360</p>
                     </div>
                 </div>
                 <div id="headerButtons" class="hidden items-center space-x-4">
                     <!-- Profile Dropdown -->
                     <div class="relative">
-                        <button onclick="toggleProfileDropdown()" id="profileButton" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
-                            <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                        <button onclick="toggleProfileDropdown()" id="profileButton" class="flex items-center space-x-3 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg px-3 py-2 transition">
+                            <div id="userProfileImage" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-purple-700 text-sm font-bold overflow-hidden">
                                 <span id="userInitials">U</span>
                             </div>
-                            <span id="userNameDisplay" class="font-semibold text-gray-700"></span>
-                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                            <span id="userNameDisplay" class="font-semibold text-white"></span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-white"></i>
                         </button>
                         
                         <!-- Dropdown Menu -->
@@ -859,7 +904,7 @@
                                     ${!state.joiningViaUrl ? `<option value="Admin" ${defaultRole === 'Admin' ? 'selected' : ''}>Admin</option>` : ''}
                                 </select>
                             </div>
-                            <button onclick="handleLoginSubmit()" class="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition">
+                            <button onclick="handleLoginSubmit()" class="w-full px-4 py-3 btn-primary rounded-md font-medium transition">
                                 Continue
                             </button>
                         </div>
@@ -904,7 +949,7 @@
                                         <input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)" 
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
-                                    <button onclick="handleCreateSessionClick()" class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition">
+                                    <button onclick="handleCreateSessionClick()" class="w-full px-4 py-3 btn-primary rounded-lg font-medium transition">
                                         Create Session
                                     </button>
                                 </div>
@@ -920,7 +965,7 @@
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${state.joiningViaUrl ? 'bg-gray-50' : ''}">
                                 ${state.joiningViaUrl ? '<p class="text-xs text-gray-500 mt-1">Session ID from shared URL (read-only)</p>' : ''}
                             </div>
-                            <button onclick="handleJoinSessionClick()" class="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition">
+                            <button onclick="handleJoinSessionClick()" class="w-full px-4 py-3 btn-primary rounded-lg font-medium transition">
                                 Join Session
                             </button>
                         </div>
@@ -1268,7 +1313,7 @@
                                 <span>QA Only</span>
                             </button>
                             
-                            <button onclick="handleAddStory()" class="btn-carelon-primary px-4 py-2 text-white rounded-lg transition flex items-center space-x-2">
+                            <button onclick="handleAddStory()" class="btn-primary px-4 py-2 text-white rounded-lg transition flex items-center space-x-2">
                                 <i data-lucide="plus" class="w-4 h-4"></i>
                                 <span>Add</span>
                             </button>
