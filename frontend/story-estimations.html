@@ -99,7 +99,8 @@
             showDashboard: false,
             editingStoryId: null,
             devOnlyToggle: false,
-            qaOnlyToggle: false
+            qaOnlyToggle: false,
+            joiningViaUrl: false // Track if user is joining via shared URL
         };
 
         // ============================================
@@ -811,8 +812,9 @@
                     // Map Product360 role to Story Estimations role
                     if (userData.role) {
                         const normalizedRole = userData.role.toLowerCase().replace(/\s+/g, '_');
-                        if (normalizedRole === 'admin') defaultRole = 'Admin';
-                        else if (normalizedRole === 'product_owner' || normalizedRole === 'product_manager') defaultRole = 'PO';
+                        // If joining via URL, don't default to PO or Admin
+                        if (!state.joiningViaUrl && normalizedRole === 'admin') defaultRole = 'Admin';
+                        else if (!state.joiningViaUrl && (normalizedRole === 'product_owner' || normalizedRole === 'product_manager')) defaultRole = 'PO';
                         else if (normalizedRole === 'scrum_master' || normalizedRole === 'rte') defaultRole = 'SM';
                         else if (normalizedRole === 'developer' || normalizedRole === 'dev') defaultRole = 'Dev';
                         else if (normalizedRole === 'qa' || normalizedRole === 'tester') defaultRole = 'QA';
@@ -820,14 +822,26 @@
                 }
             }
             
+            // Show info message if joining via shared URL
+            const joiningMessage = state.joiningViaUrl ? `
+                <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
+                        <strong>Joining existing session</strong><br>
+                        Only Dev, QA, and Scrum Master roles are available for participants.
+                    </p>
+                </div>
+            ` : '';
+            
             return `
                 <div class="min-h-screen flex items-center justify-center">
                     <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
                         <div class="text-center mb-6">
                             <i data-lucide="users" class="w-16 h-16 mx-auto text-gray-700 mb-4"></i>
                             <h2 class="text-2xl font-bold text-gray-900">Story Point Estimator</h2>
-                            <p class="text-gray-600 mt-2">Enter your details to begin</p>
+                            <p class="text-gray-600 mt-2">${state.joiningViaUrl ? 'Join the estimation session' : 'Enter your details to begin'}</p>
                         </div>
+                        ${joiningMessage}
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
@@ -840,9 +854,9 @@
                                     <option value="">Select your role</option>
                                     <option value="Dev" ${defaultRole === 'Dev' ? 'selected' : ''}>Developer</option>
                                     <option value="QA" ${defaultRole === 'QA' ? 'selected' : ''}>QA</option>
-                                    <option value="PO" ${defaultRole === 'PO' ? 'selected' : ''}>Product Owner</option>
+                                    ${!state.joiningViaUrl ? `<option value="PO" ${defaultRole === 'PO' ? 'selected' : ''}>Product Owner</option>` : ''}
                                     <option value="SM" ${defaultRole === 'SM' ? 'selected' : ''}>Scrum Master</option>
-                                    <option value="Admin" ${defaultRole === 'Admin' ? 'selected' : ''}>Admin</option>
+                                    ${!state.joiningViaUrl ? `<option value="Admin" ${defaultRole === 'Admin' ? 'selected' : ''}>Admin</option>` : ''}
                                 </select>
                             </div>
                             <button onclick="handleLoginSubmit()" class="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition">
@@ -1662,21 +1676,48 @@
         async function init() {
             // Story Estimations initialized
             
+            // Check if there's a session ID in the URL (shared link)
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlSessionId = urlParams.get('session');
+            
+            if (urlSessionId) {
+                // User is joining via shared URL
+                state.joiningViaUrl = true;
+                state.sessionId = urlSessionId;
+            }
+            
             const userLoaded = loadUser();
             
             if (userLoaded) {
-                const savedSessionId = localStorage.getItem('storyPointEstimatorSessionId');
-                if (savedSessionId) {
+                // If joining via URL, try to load that session
+                if (urlSessionId) {
                     try {
-                        const session = await getSession(savedSessionId);
+                        const session = await getSession(urlSessionId);
                         if (session) {
-                            state.sessionId = savedSessionId;
                             state.currentSession = session;
                             state.stories = session.stories || [];
+                            localStorage.setItem('storyPointEstimatorSessionId', urlSessionId);
                             startPolling(); // Start polling for updates
                         }
                     } catch (error) {
-                        console.error('Failed to load saved session:', error);
+                        console.error('Failed to load session from URL:', error);
+                        alert('Session not found. Please check the URL or create a new session.');
+                    }
+                } else {
+                    // Try to load saved session from localStorage
+                    const savedSessionId = localStorage.getItem('storyPointEstimatorSessionId');
+                    if (savedSessionId) {
+                        try {
+                            const session = await getSession(savedSessionId);
+                            if (session) {
+                                state.sessionId = savedSessionId;
+                                state.currentSession = session;
+                                state.stories = session.stories || [];
+                                startPolling(); // Start polling for updates
+                            }
+                        } catch (error) {
+                            console.error('Failed to load saved session:', error);
+                        }
                     }
                 }
             }
