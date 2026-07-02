@@ -155,15 +155,11 @@
         }
 
         async function updateSession(sessionId, sessionData) {
-            console.log('🌐 Sending PUT request to:', `${API_BASE_URL}/sessions/${sessionId}`);
-            console.log('📤 Sending sessionData:', sessionData);
-            const result = await apiCall(`/sessions/${sessionId}`, {
+            return await apiCall(`/sessions/${sessionId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sessionData })
             });
-            console.log('📥 Server response:', result);
-            return result;
         }
 
         // ============================================
@@ -180,7 +176,7 @@
                     // Update header profile display
                     updateHeaderProfile();
                     
-                    console.log('✅ Auto-logged in:', state.user);
+                    // Auto-logged in
                     return true;
                 }
             }
@@ -442,21 +438,15 @@
         async function saveEstimation(storyId, points, reason) {
             isUpdating = true; // Pause polling during update
             
-            console.log('💡 Current user:', state.user);
-            console.log('📦 Current session estimations:', state.currentSession.estimations);
-            
             if (!state.currentSession.estimations) {
-                console.warn('⚠️ estimations object does not exist, creating it');
                 state.currentSession.estimations = {};
             }
             
             if (!state.currentSession.estimations[storyId]) {
-                console.log('📝 Creating estimations object for story:', storyId);
                 state.currentSession.estimations[storyId] = {};
             }
 
             const userKey = `${state.user.name}_${state.user.role}`;
-            console.log('🔑 Generated userKey for save:', userKey);
             
             const estimationData = {
                 points,
@@ -471,22 +461,6 @@
             }
             
             state.currentSession.estimations[storyId][userKey] = estimationData;
-
-            console.log('💾 Estimation saved to state:', { 
-                storyId, 
-                userKey, 
-                points, 
-                reason,
-                estimationData,
-                currentEstimations: state.currentSession.estimations[storyId],
-                allEstimationKeys: Object.keys(state.currentSession.estimations[storyId])
-            });
-            
-            // Verify it was saved
-            console.log('✔️ Verification - estimation exists:', 
-                state.currentSession.estimations[storyId][userKey] !== undefined,
-                'Value:', state.currentSession.estimations[storyId][userKey]
-            );
             
             // Render immediately with local state
             render();
@@ -494,15 +468,13 @@
             // Then sync to server
             try {
                 await updateSession(state.sessionId, state.currentSession);
-                console.log('✅ Estimation synced to server');
                 
                 // Wait a bit before resuming polling to ensure server has processed the update
                 setTimeout(() => {
                     isUpdating = false;
-                    console.log('🔓 Polling resumed');
                 }, 1000); // Wait 1 second
             } catch (error) {
-                console.error('❌ Failed to sync estimation:', error);
+                console.error('Failed to sync estimation:', error);
                 isUpdating = false; // Resume polling immediately on error
             }
         }
@@ -638,30 +610,16 @@
                 return null;
             }
             
-            console.log('💡 Current user in getUserEstimation:', state.user);
             const userKey = `${state.user.name}_${state.user.role}`;
-            console.log('🔑 Generated userKey for get:', userKey);
-            
             const storyEstimations = state.currentSession.estimations[storyId] || {};
             const estimation = storyEstimations[userKey];
             
-            console.log('🔍 getUserEstimation:', {
-                storyId,
-                userKey,
-                estimation,
-                estimationType: typeof estimation,
-                allEstimations: state.currentSession.estimations[storyId],
-                allKeys: Object.keys(storyEstimations)
-            });
-            
             if (!estimation) {
-                console.log('⚠️ No estimation found for', userKey);
                 return null;
             }
             
             // Handle both object format and direct value
             const points = typeof estimation === 'object' ? estimation.points : estimation;
-            console.log('✅ Returning points:', points);
             return points;
         }
 
@@ -1358,16 +1316,7 @@
             const estimations = state.currentSession.estimations[story.id] || {};
             const userKey = `${state.user.name}_${state.user.role}`;
             
-            console.log('🎨 Rendering story:', {
-                storyId: story.id,
-                storyNumber: story.number,
-                userEst,
-                userEstType: typeof userEst,
-                userKey,
-                revealed,
-                estimationsCount: Object.keys(estimations).length,
-                estimations
-            });
+            // Render story with current estimation state
 
             return `
                 <div class="border rounded-lg p-4 ${complete ? 'bg-green-50 border-green-200' : 'bg-white'}">
@@ -1683,14 +1632,9 @@
                     });
                     
                     if (currentData !== newData) {
-                        console.log('🔄 Session updated from server');
-                        console.log('📥 Server estimations:', session.estimations);
-                        console.log('📤 Local estimations before update:', state.currentSession.estimations);
                         state.currentSession = session;
                         state.stories = session.stories || [];
                         render();
-                    } else {
-                        console.log('✓ No changes from server, keeping local state');
                     }
                 }
             } catch (error) {
@@ -1701,7 +1645,7 @@
         function startPolling() {
             if (pollInterval) clearInterval(pollInterval);
             pollInterval = setInterval(refreshSession, 3000); // Poll every 3 seconds
-            console.log('✅ Started polling for real-time updates');
+            // Started polling for real-time updates
         }
 
         function stopPolling() {
@@ -1716,7 +1660,7 @@
         // INITIALIZATION
         // ============================================
         async function init() {
-            console.log('🚀 Story Estimations - Vanilla JS');
+            // Story Estimations initialized
             
             const userLoaded = loadUser();
             

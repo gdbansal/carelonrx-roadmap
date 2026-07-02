@@ -11,10 +11,11 @@
 8. [Managing Initiatives](#managing-initiatives)
 9. [Roadmap View](#roadmap-view)
 10. [Analytics Dashboard](#analytics-dashboard)
-11. [Admin Panel](#admin-panel)
-12. [Session Management](#session-management)
-13. [Data Persistence](#data-persistence)
-14. [Troubleshooting](#troubleshooting)
+11. [Story Estimations](#story-estimations)
+12. [Admin Panel](#admin-panel)
+13. [Session Management](#session-management)
+14. [Data Persistence](#data-persistence)
+15. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -671,6 +672,295 @@ Click "Stay Logged In" to continue your session.
 - **Got the warning?** Click "Stay Logged In" to continue
 - **Stepped away?** You'll need to login again after 30 minutes
 - **Multiple tabs?** Activity in any tab resets the timer
+
+---
+
+## Story Estimations
+
+The Story Estimations module is a collaborative tool for agile teams to estimate story points using Planning Poker methodology.
+
+### Overview
+
+**Purpose**: Enable distributed teams to estimate user stories collaboratively in real-time using Fibonacci sequence (Planning Poker).
+
+**Key Features**:
+- ✅ **Real-time collaboration** - Multiple users can estimate simultaneously
+- ✅ **Planning Poker** - Fibonacci sequence (0, 0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89)
+- ✅ **Role-based access** - Dev, QA, PO, SM, Admin roles
+- ✅ **Persistent estimations** - All estimations saved to MongoDB
+- ✅ **Session management** - Create and join estimation sessions
+- ✅ **Story tracking** - Add multiple stories per session
+- ✅ **Reveal/Hide** - PO/Admin can reveal all estimations
+- ✅ **Complete stories** - Mark stories as estimated
+- ✅ **Custom reasons** - Add estimation reasoning for Dev/QA
+
+### Accessing Story Estimations
+
+1. Navigate to: `https://carelonrx-roadmap1.onrender.com/story-estimations.html`
+2. Login with your name and role
+3. Create a new session or join an existing one
+
+### User Roles
+
+| Role | Permissions |
+|------|-------------|
+| **Dev** | Estimate stories, view own estimations |
+| **QA** | Estimate stories, view own estimations |
+| **PO (Product Owner)** | All Dev/QA permissions + Reveal estimations, Complete stories, Manage session |
+| **SM (Scrum Master)** | Same as PO |
+| **Admin** | Full access to all features |
+
+### Creating an Estimation Session
+
+**Step 1: Login**
+1. Enter your **Name** (e.g., "John Doe")
+2. Select your **Role** (Dev, QA, PO, SM, Admin)
+3. Click **"Continue"**
+
+**Step 2: Create Session**
+1. Click **"Create New Session"**
+2. Fill in session details:
+   - **Team Name**: Your team or project name
+   - **Sprint Value**: Sprint number or identifier (e.g., "Sprint 24")
+3. Click **"Create Session"**
+4. **Share the session URL** with your team members
+
+**Session URL Format**:
+```
+https://carelonrx-roadmap1.onrender.com/story-estimations.html?session=session_XXXXX
+```
+
+### Joining an Estimation Session
+
+**Method 1: Via URL**
+1. Click the session URL shared by session creator
+2. Login with your name and role
+3. You'll automatically join the session
+
+**Method 2: Manual Join**
+1. Login to Story Estimations
+2. Click **"Join Existing Session"**
+3. Enter the **Session ID** (e.g., `session_1782993492476_97cf8smq7`)
+4. Click **"Join Session"**
+
+### Adding Stories to Estimate
+
+**Who Can Add**: All users (Dev, QA, PO, SM, Admin)
+
+**Steps**:
+1. In an active session, find **"Add New Story"** section
+2. Enter **Story Number/ID** (e.g., "JIRA-123" or ticket number)
+3. Enter **Story Title/Description**
+4. **(Optional)** Check restrictions:
+   - **Dev Only**: Only Dev role can estimate
+   - **QA Only**: Only QA role can estimate
+5. Click **"Add Story"**
+6. Story appears in the estimation list
+
+### Estimating Stories
+
+**Step 1: Select Your Estimation**
+1. Find the story in the list
+2. Click on a **Fibonacci number** button (0, 0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89)
+3. Button turns **blue** when selected
+4. Your estimation is **saved automatically**
+
+**Step 2: Add Reasoning (Optional)**
+- Dev and QA can add reasons for their estimates
+- Select from predefined reasons or add custom ones
+- Helps team understand estimation rationale
+
+**Visual Feedback**:
+- ✅ **Blue button**: Your selected estimation
+- ✅ **Gray buttons**: Available options
+- ✅ **Saved indicator**: Confirmation message
+
+**Estimation Persistence**:
+- Estimations are saved to MongoDB in real-time
+- Persist across page refreshes
+- Visible to PO/Admin when revealed
+- Cannot be seen by other team members until revealed
+
+### Revealing Estimations (PO/Admin Only)
+
+**Purpose**: Show all team members' estimations for discussion
+
+**Steps**:
+1. Wait for all team members to estimate
+2. Click **"Reveal"** button next to the story
+3. All estimations become visible to everyone
+4. Team can discuss differences and reach consensus
+
+**What Gets Revealed**:
+- Each team member's name and role
+- Their selected estimation number
+- Any reasoning they provided
+- Average estimation (if applicable)
+
+**To Hide Again**:
+- Click **"Hide"** button
+- Estimations become hidden again
+- Useful for re-estimation rounds
+
+### Completing Stories (PO/Admin Only)
+
+**When to Complete**:
+- After team reaches consensus
+- Final estimation is agreed upon
+- Story is ready for sprint planning
+
+**Steps**:
+1. Click **"Complete"** button next to the story
+2. Story is marked as completed
+3. Story moves to completed section (if implemented)
+4. Cannot be re-estimated unless reopened
+
+**To Reopen**:
+- Click **"Reopen"** button
+- Story becomes active again
+- Team can re-estimate if needed
+
+### Custom Estimation Reasons
+
+**For Dev Role**:
+- Add custom reasons for development estimates
+- Examples: "Complex integration", "New technology", "Technical debt"
+
+**For QA Role**:
+- Add custom reasons for QA estimates
+- Examples: "Extensive test scenarios", "Automation required", "Regression impact"
+
+**How to Add**:
+1. PO/Admin can add custom reasons
+2. Go to session settings or reasons section
+3. Enter new reason text
+4. Reason becomes available for all team members
+
+### Session Management
+
+**Session Information**:
+- Team Name
+- Sprint Value
+- Created By
+- Created Date
+- Number of Participants
+- Number of Stories
+
+**Session Actions (PO/Admin)**:
+- **End Session**: Close session (stories remain saved)
+- **Export Results**: Download estimation summary
+- **Share Link**: Copy session URL to clipboard
+
+**Participant List**:
+- See all active participants
+- View their roles
+- See who has estimated each story
+
+### Real-Time Updates
+
+**Automatic Polling**:
+- System checks for updates every 3 seconds
+- New estimations appear automatically
+- Participant list updates in real-time
+- No manual refresh needed
+
+**What Updates Automatically**:
+- ✅ New participants joining
+- ✅ New stories added
+- ✅ Estimations submitted
+- ✅ Stories revealed/hidden
+- ✅ Stories completed/reopened
+
+### Best Practices
+
+**Before the Session**:
+1. ✅ Prepare story list in advance
+2. ✅ Share session URL with all participants
+3. ✅ Ensure everyone understands Fibonacci scale
+4. ✅ Agree on estimation criteria (complexity, effort, risk)
+
+**During Estimation**:
+1. ✅ Read story description carefully
+2. ✅ Ask clarifying questions before estimating
+3. ✅ Estimate independently (don't see others' estimates)
+4. ✅ Add reasoning for unusual estimates
+5. ✅ Discuss differences after reveal
+
+**After Reveal**:
+1. ✅ Discuss outlier estimates
+2. ✅ Listen to different perspectives
+3. ✅ Re-estimate if needed
+4. ✅ Reach team consensus
+5. ✅ Complete story when agreed
+
+### Fibonacci Scale Guide
+
+| Points | Complexity | Typical Duration |
+|--------|-----------|------------------|
+| **0** | Trivial | Minutes |
+| **0.5** | Minimal | < 1 hour |
+| **1** | Very Simple | 1-2 hours |
+| **2** | Simple | Half day |
+| **3** | Moderate | 1 day |
+| **5** | Medium | 2-3 days |
+| **8** | Complex | 1 week |
+| **13** | Very Complex | 1-2 weeks |
+| **21** | Highly Complex | 2-3 weeks |
+| **34** | Extremely Complex | 3-4 weeks |
+| **55** | Epic-level | 1-2 months |
+| **89** | Too Large | Break down into smaller stories |
+
+### Troubleshooting
+
+**Estimation Not Saving**:
+- ✅ Check internet connection
+- ✅ Ensure you're logged into the session
+- ✅ Verify button turned blue after clicking
+- ✅ Check browser console for errors
+- ✅ Refresh page and try again
+
+**Cannot See Others' Estimations**:
+- ✅ Estimations are hidden until PO/Admin reveals them
+- ✅ This is by design (Planning Poker methodology)
+- ✅ Wait for reveal before discussing
+
+**Session Not Found**:
+- ✅ Verify session ID is correct
+- ✅ Check if session URL is complete
+- ✅ Session may have been deleted
+- ✅ Create a new session if needed
+
+**Estimation Disappeared After Refresh**:
+- ✅ This issue has been fixed in the latest version
+- ✅ Estimations now persist to MongoDB
+- ✅ Should remain after page refresh
+- ✅ If still occurring, report to admin
+
+**Cannot Add Story**:
+- ✅ Ensure both Story Number and Title are filled
+- ✅ Check if you're in an active session
+- ✅ Verify internet connection
+- ✅ Try refreshing the page
+
+### Technical Details
+
+**Data Persistence**:
+- All estimations stored in MongoDB Atlas
+- Real-time synchronization every 3 seconds
+- Automatic conflict resolution
+- 1-second delay before polling resumes after save
+
+**Security**:
+- Session-based access control
+- Role-based permissions
+- No authentication required (team-based trust)
+- Sessions expire after inactivity
+
+**Browser Requirements**:
+- Modern browser (Chrome, Firefox, Edge, Safari)
+- JavaScript enabled
+- Cookies enabled
+- Stable internet connection
 
 ---
 
