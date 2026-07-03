@@ -298,13 +298,37 @@
             render();
         }
 
-        function leaveSession() {
-            stopPolling();
-            state.currentSession = null;
-            state.sessionId = '';
-            state.stories = [];
-            localStorage.removeItem('storyPointEstimatorSessionId');
-            render();
+        async function leaveSession() {
+            if (!confirm('Are you sure you want to leave this session?')) {
+                return;
+            }
+
+            try {
+                // Remove current user from participants list
+                const userKey = `${state.user.name}_${state.user.role}`;
+                const updatedParticipants = state.currentSession.participants.filter(
+                    p => `${p.name}_${p.role}` !== userKey
+                );
+                
+                const updatedSession = {
+                    ...state.currentSession,
+                    participants: updatedParticipants
+                };
+                
+                // Update session on server
+                await updateSession(state.sessionId, updatedSession);
+                
+                // Clear local state
+                stopPolling();
+                state.currentSession = null;
+                state.sessionId = '';
+                state.stories = [];
+                localStorage.removeItem('storyPointEstimatorSessionId');
+                render();
+            } catch (error) {
+                console.error('Error leaving session:', error);
+                alert('Failed to leave session. Please try again.');
+            }
         }
 
         async function endSession() {
