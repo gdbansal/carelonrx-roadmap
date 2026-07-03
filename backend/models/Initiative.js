@@ -28,6 +28,10 @@ const initiativeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    businessUnit: {
+        type: String,
+        required: true
+    },
     program: {
         type: String,
         required: true
