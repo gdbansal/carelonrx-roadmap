@@ -15,14 +15,7 @@
         <!-- Left Side Panel -->
         <div id="sidePanel" class="side-panel">
             <div class="side-panel-header">
-                <div class="flex items-center space-x-3 mb-3">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
-                        <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="w-full h-full object-contain">
-                    </div>
-                    <div>
-                        <h2 class="text-white font-bold text-xl leading-tight">Product 360</h2>
-                    </div>
-                </div>
+                <h2 class="text-white font-bold text-xl leading-tight mb-2">Product 360</h2>
                 <p class="text-white text-opacity-70 text-sm">Integrated Product Suite</p>
             </div>
             <nav class="mt-6">
@@ -44,8 +37,8 @@
             
             <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-white border-opacity-20">
                 <div class="text-white text-opacity-60 text-xs">
-                    <p class="font-semibold mb-1">Version 2.0</p>
-                    <p>© 2026 CarelonRx</p>
+                    <p class="font-semibold mb-1">Version 2.1</p>
+                    <p>© 2026 Product 360</p>
                 </div>
             </div>
         </div>
