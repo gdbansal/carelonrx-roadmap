@@ -704,11 +704,12 @@ The Story Estimations module is a collaborative tool for agile teams to estimate
 
 | Role | Permissions |
 |------|-------------|
-| **Dev** | Estimate stories, view own estimations |
-| **QA** | Estimate stories, view own estimations |
-| **PO (Product Owner)** | All Dev/QA permissions + Reveal estimations, Complete stories, Manage session |
+| **Dev** | Estimate stories, view own estimations, add stories |
+| **QA** | Estimate stories, view own estimations, add stories |
+| **PO (Product Owner)** | All Dev/QA permissions + Reveal estimations, Complete stories, End session |
 | **SM (Scrum Master)** | Same as PO |
-| **Admin** | Full access to all features |
+| **Admin** | Same as PO + Full access to all features |
+| **Session Creator** | Only the session creator can edit/delete stories (regardless of role) |
 
 ### Creating an Estimation Session
 
@@ -745,17 +746,24 @@ https://carelonrx-roadmap1.onrender.com/story-estimations.html?session=session_X
 
 ### Adding Stories to Estimate
 
-**Who Can Add**: All users (Dev, QA, PO, SM, Admin)
+**Who Can Add**: All users (Dev, QA, PO, SM, Admin)  
+**Who Can Edit/Delete**: Only the session creator
 
 **Steps**:
 1. In an active session, find **"Add New Story"** section
-2. Enter **Story Number/ID** (e.g., "JIRA-123" or ticket number)
+2. Enter **Story Number/ID** (e.g., "JIRA-123" or JIRA URL)
 3. Enter **Story Title/Description**
-4. **(Optional)** Check restrictions:
-   - **Dev Only**: Only Dev role can estimate
-   - **QA Only**: Only QA role can estimate
-5. Click **"Add Story"**
+4. **(Optional)** Toggle restrictions:
+   - **Dev Only**: Only Dev role can estimate this story
+   - **QA Only**: Only QA role can estimate this story
+5. Click **"Add"** button
 6. Story appears in the estimation list
+
+**Editing Stories**:
+- Only the **session creator** sees edit/delete buttons
+- Click **edit icon** to modify story details
+- Click **delete icon** to remove story
+- Other users (including PO/SM/Admin) cannot edit/delete stories they didn't create
 
 ### Estimating Stories
 
@@ -781,26 +789,33 @@ https://carelonrx-roadmap1.onrender.com/story-estimations.html?session=session_X
 - Visible to PO/Admin when revealed
 - Cannot be seen by other team members until revealed
 
-### Revealing Estimations (PO/Admin Only)
+### Revealing Estimations (PO/SM/Admin Only)
 
 **Purpose**: Show all team members' estimations for discussion
 
+**Important**: 
+- ❌ **PO/SM/Admin CANNOT see estimations until revealed**
+- ✅ **Each user can only see their own estimation**
+- ✅ **PO/SM/Admin see a status summary** (e.g., "✅ 3 estimated ⏳ 2 waiting 🔒 Hidden")
+- ✅ **This ensures unbiased estimation** (Planning Poker methodology)
+
 **Steps**:
 1. Wait for all team members to estimate
-2. Click **"Reveal"** button next to the story
-3. All estimations become visible to everyone
-4. Team can discuss differences and reach consensus
+2. PO/SM/Admin sees status: "✅ X estimated ⏳ Y waiting"
+3. Click **"Reveal Estimates"** button
+4. All estimations become visible to everyone
+5. Team can discuss differences and reach consensus
 
 **What Gets Revealed**:
 - Each team member's name and role
-- Their selected estimation number
-- Any reasoning they provided
-- Average estimation (if applicable)
+- Their selected estimation number (previously shown as ***)
+- Any reasoning they provided (Dev/QA reasons)
+- All participants can now see all estimations
 
-**To Hide Again**:
-- Click **"Hide"** button
-- Estimations become hidden again
-- Useful for re-estimation rounds
+**After Reveal**:
+- Button changes to **"Estimates Revealed"** badge
+- Status badge changes from 🔒 Hidden to 👁️ Revealed
+- Cannot hide again (permanent reveal for transparency)
 
 ### Completing Stories (PO/Admin Only)
 
@@ -845,16 +860,37 @@ https://carelonrx-roadmap1.onrender.com/story-estimations.html?session=session_X
 - Created Date
 - Number of Participants
 - Number of Stories
+- Session ID (for sharing)
 
-**Session Actions (PO/Admin)**:
-- **End Session**: Close session (stories remain saved)
-- **Export Results**: Download estimation summary
-- **Share Link**: Copy session URL to clipboard
+**Session Actions**:
+
+**For All Users**:
+- **Leave Session**: Remove yourself from the session
+  - Click **"Leave Session"** button
+  - Confirm you want to leave
+  - You're removed from participants list
+  - Other users see the update in real-time (within 3 seconds)
+  - Can rejoin later if needed
+
+**For PO/SM/Admin**:
+- **End Session**: Close session for all participants
+  - Click **"End Session"** button
+  - Confirm action
+  - Session marked as closed
+  - All participants notified
+  - Stories and estimations remain saved
+
+**For Session Creator Only**:
+- **Edit Stories**: Modify story details
+- **Delete Stories**: Remove stories from session
+- Other PO/SM/Admin cannot edit/delete stories they didn't create
 
 **Participant List**:
-- See all active participants
-- View their roles
+- See all active participants in real-time
+- View their roles (Dev, QA, PO, SM, Admin)
 - See who has estimated each story
+- Updates automatically when users join/leave
+- Session creator indicated
 
 ### Real-Time Updates
 
@@ -866,10 +902,13 @@ https://carelonrx-roadmap1.onrender.com/story-estimations.html?session=session_X
 
 **What Updates Automatically**:
 - ✅ New participants joining
+- ✅ Participants leaving (real-time removal)
 - ✅ New stories added
+- ✅ Stories edited/deleted (by creator)
 - ✅ Estimations submitted
-- ✅ Stories revealed/hidden
+- ✅ Stories revealed
 - ✅ Stories completed/reopened
+- ✅ Estimation reasons added
 
 ### Best Practices
 
@@ -942,6 +981,39 @@ https://carelonrx-roadmap1.onrender.com/story-estimations.html?session=session_X
 - ✅ Verify internet connection
 - ✅ Try refreshing the page
 
+### Audit Log (PO/SM/Admin Only)
+
+**Purpose**: Track all estimation session activities for compliance and analytics
+
+**Accessing Audit Log**:
+1. Click on your **Profile Dropdown** (top right)
+2. Select **"View Audit Log"** (only visible to PO/SM/Admin)
+3. View comprehensive event tracking
+
+**What Gets Logged**:
+- ✅ **Session Events**: Created, Joined, Left, Ended
+- ✅ **Estimation Events**: Provided, Updated
+- ✅ **Story Events**: Created, Updated, Deleted, Completed, Reopened
+- ✅ **User Events**: Login, Logout
+- ✅ **Reveal Events**: Estimates revealed
+- ✅ **Reason Events**: Added, Removed
+
+**Audit Log Features**:
+- **Filters**: Date range, session ID, user ID, event type
+- **Statistics**: Total logs, unique sessions, unique users
+- **Event Distribution**: Visual charts showing activity patterns
+- **Export**: Download audit logs as CSV
+- **Deviation Analysis**: Export estimation variance data
+- **IP Tracking**: See where actions originated
+- **User Agent**: Track device/browser information
+
+**Use Cases**:
+- Track team participation and engagement
+- Identify estimation patterns
+- Compliance and audit requirements
+- Session analytics and insights
+- Troubleshooting session issues
+
 ### Technical Details
 
 **Data Persistence**:
@@ -949,17 +1021,20 @@ https://carelonrx-roadmap1.onrender.com/story-estimations.html?session=session_X
 - Real-time synchronization every 3 seconds
 - Automatic conflict resolution
 - 1-second delay before polling resumes after save
+- Complete audit trail for all actions
 
 **Security**:
 - Session-based access control
 - Role-based permissions
-- No authentication required (team-based trust)
-- Sessions expire after inactivity
+- IP address tracking (behind proxy support)
+- User agent logging
+- Sessions persist in database
+- Token-based authentication (backend)
 
 **Browser Requirements**:
 - Modern browser (Chrome, Firefox, Edge, Safari)
 - JavaScript enabled
-- Cookies enabled
+- Cookies enabled for localStorage
 - Stable internet connection
 
 ---
@@ -1234,12 +1309,25 @@ Every initiative update is tracked with:
 
 ## Version Information
 
-**Version**: 2.0  
-**Last Updated**: June 29, 2026  
+**Version**: 2.1  
+**Last Updated**: July 3, 2026  
 **Application URL**: https://carelonrx-roadmap1.onrender.com  
 **API URL**: https://carelonrx-roadmap.onrender.com  
 
-**Recent Updates (v2.0 - June 2026)**:
+**Recent Updates (v2.1 - July 2026)**:
+- ✅ **Story Estimations Enhancements**:
+  - **Reveal Logic Fixed** - PO/SM/Admin cannot see estimations until revealed
+  - **Session Creator Privileges** - Only creator can edit/delete stories
+  - **Leave Session** - Real-time participant removal when leaving
+  - **Audit Logging** - Comprehensive event tracking for all actions
+  - **IP Address Tracking** - Correct client IP capture behind proxies
+  - **Header Styling** - White background matching Roadmap consistency
+  - **PO Status Summary** - Shows estimation counts without revealing values
+  - **User Authentication Backend** - JWT-based token authentication (prepared)
+  - **Estimation Reasons** - Dev/QA can add custom reasons for estimates
+  - **Real-time Updates** - Participant list updates when users join/leave
+
+**Previous Updates (v2.0 - June 2026)**:
 - ✅ **Rebranded to "Product 360"** - New application name
 - ✅ **CarelonRx Brand Theme** - Official purple color (#5009B5) throughout
 - ✅ **Hold Reason Display** - Prominent yellow box in roadmap modal
