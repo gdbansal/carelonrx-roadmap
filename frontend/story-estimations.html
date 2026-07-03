@@ -332,7 +332,7 @@
         }
 
         function hasPoPrivileges() {
-            return state.user && (state.user.role === 'PO' || state.user.role === 'Admin');
+            return state.user && (state.user.role === 'PO' || state.user.role === 'SM' || state.user.role === 'Admin');
         }
 
         // ============================================
@@ -1015,10 +1015,12 @@
                                 </div>
                             </div>
                             <div class="flex items-center space-x-3">
-                                <button onclick="toggleDashboard()" class="btn-carelon-${state.showDashboard ? 'primary' : 'secondary'} px-4 py-2 text-white rounded-lg transition flex items-center space-x-2">
-                                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
-                                    <span>${state.showDashboard ? 'Hide' : 'Show'} Dashboard</span>
-                                </button>
+                                ${hasPoPrivileges() ? `
+                                    <button onclick="toggleDashboard()" class="btn-carelon-${state.showDashboard ? 'primary' : 'secondary'} px-4 py-2 text-white rounded-lg transition flex items-center space-x-2">
+                                        <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                                        <span>${state.showDashboard ? 'Hide' : 'Show'} Dashboard</span>
+                                    </button>
+                                ` : ''}
                                 <div class="text-right bg-gradient-to-br from-purple-50 to-blue-50 px-4 py-2 rounded-lg border border-purple-200">
                                     <div class="text-xs text-gray-600 font-medium">Your Points</div>
                                     <div class="text-2xl font-bold text-carelon-purple">${totalPoints}</div>
