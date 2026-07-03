@@ -486,8 +486,20 @@
                         </div>
                         <div>
                             <p class="text-sm font-semibold text-gray-600">Timeline</p>
-                            <p class="text-gray-800">${initiative.startDate || 'N/A'} → ${initiative.deliveryDate || 'N/A'}</p>
+                            <p class="text-gray-800">${initiative.startDate || 'N/A'} → ${initiative.businessCommitmentDate || initiative.deliveryDate || 'N/A'}</p>
                         </div>
+                        ${initiative.businessCommitmentDate ? `
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600">Business Commitment Date</p>
+                            <p class="text-gray-800 font-bold text-blue-600">${initiative.businessCommitmentDate}</p>
+                        </div>
+                        ` : ''}
+                        ${initiative.deliveryDate && initiative.businessCommitmentDate ? `
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600">Delivery Date</p>
+                            <p class="text-gray-800">${initiative.deliveryDate}</p>
+                        </div>
+                        ` : ''}
                     </div>
 
                     <!-- Description -->

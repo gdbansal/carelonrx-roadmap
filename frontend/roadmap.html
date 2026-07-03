@@ -634,8 +634,11 @@
                 startDay = daysInMonths.slice(0, startMonth).reduce((a, b) => a + b, 0);
             }
             
-            if (initiative.deliveryDate) {
-                const endDate = new Date(initiative.deliveryDate);
+            // Use Business Commitment Date if available, otherwise use Delivery Date
+            const effectiveEndDate = initiative.businessCommitmentDate || initiative.deliveryDate;
+            
+            if (effectiveEndDate) {
+                const endDate = new Date(effectiveEndDate);
                 if (endDate.getFullYear() === year) {
                     const month = endDate.getMonth();
                     const day = endDate.getDate();
@@ -775,9 +778,15 @@
                             <p class="font-semibold">${new Date(initiative.startDate).toLocaleDateString()}</p>
                         </div>
                         ` : ''}
+                        ${initiative.businessCommitmentDate ? `
+                        <div>
+                            <p class="text-sm text-gray-500">Business Commitment Date</p>
+                            <p class="font-semibold text-blue-600">${new Date(initiative.businessCommitmentDate).toLocaleDateString()}</p>
+                        </div>
+                        ` : ''}
                         ${initiative.deliveryDate ? `
                         <div>
-                            <p class="text-sm text-gray-500">Delivery Date</p>
+                            <p class="text-sm text-gray-500">${initiative.businessCommitmentDate ? 'Delivery Date (Fallback)' : 'Delivery Date'}</p>
                             <p class="font-semibold">${new Date(initiative.deliveryDate).toLocaleDateString()}</p>
                         </div>
                         ` : ''}

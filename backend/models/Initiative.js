@@ -48,6 +48,10 @@ const initiativeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    businessCommitmentDate: {
+        type: String,
+        default: null
+    },
     budgetApproved: {
         type: Boolean,
         default: false
