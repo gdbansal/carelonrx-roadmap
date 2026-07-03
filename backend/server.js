@@ -1197,12 +1197,13 @@ app.post('/api/sessions/:sessionId/participants', async (req, res) => {
     }
 });
 
-// Get all active sessions (optional - for admin/dashboard)
+// Get all sessions (for admin/audit log - includes both active and closed)
 app.get('/api/sessions', async (req, res) => {
     try {
-        const sessions = await EstimationSession.find({ status: 'active' })
+        // Get all sessions, not just active ones
+        const sessions = await EstimationSession.find({})
             .sort({ createdAt: -1 })
-            .limit(50);
+            .limit(100); // Increased limit for audit log
         
         res.json({
             success: true,
