@@ -28,6 +28,26 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: '10mb' }));
 
+// Trust proxy to get correct IP addresses (for Render, Heroku, etc.)
+app.set('trust proxy', true);
+
+// Helper function to get client IP address
+function getClientIp(req) {
+    // Check X-Forwarded-For header first (for proxies/load balancers)
+    const forwarded = req.headers['x-forwarded-for'];
+    if (forwarded) {
+        // X-Forwarded-For can contain multiple IPs, get the first one
+        return forwarded.split(',')[0].trim();
+    }
+    
+    // Fallback to other headers and connection
+    return req.headers['x-real-ip'] || 
+           req.connection?.remoteAddress || 
+           req.socket?.remoteAddress ||
+           req.ip ||
+           'unknown';
+}
+
 function generateToken(user) {
     return Buffer.from(JSON.stringify({ id: user._id || user.id, username: user.username })).toString('base64');
 }
@@ -1052,7 +1072,7 @@ app.post('/api/estimation-auth/login', async (req, res) => {
             userId: user._id,
             token,
             expiresAt,
-            ipAddress: req.ip || req.connection?.remoteAddress,
+            ipAddress: getClientIp(req),
             userAgent: req.headers['user-agent']
         });
         
