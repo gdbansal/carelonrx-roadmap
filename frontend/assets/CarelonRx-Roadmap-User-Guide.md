@@ -1,4 +1,4 @@
-# CarelonRx Product 360 - User Guide
+# Product 360 - User Guide
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -21,10 +21,10 @@
 
 ## Introduction
 
-**CarelonRx Product 360** is a comprehensive product initiative management system designed to help teams plan, track, and visualize product initiatives across quarters and years.
+**Product 360** is a comprehensive product initiative management system designed to help teams plan, track, and visualize product initiatives across quarters and years.
 
 ### Key Features
-- ✅ **CarelonRx Brand Identity** - Official purple theme (#5009B5) throughout
+- ✅ **Modern Brand Identity** - Official purple theme (#5009B5) throughout
 - ✅ **Initiative intake and tracking** - Comprehensive form with validation
 - ✅ **WSJF (Weighted Shortest Job First) prioritization** - Auto-calculated scoring
 - ✅ **Visual roadmap timeline** - Interactive timeline with color-coded priorities
@@ -49,7 +49,7 @@
 ### System Requirements
 - Modern web browser (Chrome, Firefox, Edge, Safari)
 - Internet connection
-- Valid CarelonRx or Elevance Health email address
+- Valid corporate email address
 
 ### Accessing the Application
 1. Navigate to: `https://carelonrx-roadmap1.onrender.com`
@@ -295,6 +295,7 @@ To change your password:
 2. Fill in the **Basic Information**:
    - **Initiative Name** (required)
    - **Description** (required)
+   - **Line of Business** (required): Enter or select from existing values
    - **Program** (required)
    - **Year** (required): Auto-populated with current year (2026), can be changed
    - **Quarter** (required): Q1-Q4
@@ -1315,6 +1316,10 @@ Every initiative update is tracked with:
 **API URL**: https://carelonrx-roadmap.onrender.com  
 
 **Recent Updates (v2.1 - July 2026)**:
+- ✅ **Initiative Enhancements**:
+  - **Line of Business Field** - New required field with autocomplete functionality
+  - **Business Commitment Date** - Optional date field prioritized over Delivery Date
+  - **Branding Update** - Removed CarelonRx name and logo, kept Product 360
 - ✅ **Story Estimations Enhancements**:
   - **Reveal Logic Fixed** - PO/SM/Admin cannot see estimations until revealed
   - **Session Creator Privileges** - Only creator can edit/delete stories
@@ -1329,7 +1334,7 @@ Every initiative update is tracked with:
 
 **Previous Updates (v2.0 - June 2026)**:
 - ✅ **Rebranded to "Product 360"** - New application name
-- ✅ **CarelonRx Brand Theme** - Official purple color (#5009B5) throughout
+- ✅ **Brand Theme** - Official purple color (#5009B5) throughout
 - ✅ **Hold Reason Display** - Prominent yellow box in roadmap modal
 - ✅ **Navigation Reorganization** - Analytics and Admin moved to profile dropdown
 - ✅ **Enhanced Button Styling** - Modern shadows and hover effects
@@ -1367,4 +1372,4 @@ Use these values for WSJF scoring:
 
 ---
 
-**© 2026 CarelonRx. All rights reserved.**
+**© 2026 Product 360. All rights reserved.**
