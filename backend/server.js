@@ -6,6 +6,8 @@ const connectDB = require('./config/database');
 const User = require('./models/User');
 const Initiative = require('./models/Initiative');
 const EstimationSession = require('./models/EstimationSession');
+const AuditLog = require('./models/AuditLog');
+const { logAuditEvent } = require('./middleware/auditLogger');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -1045,6 +1047,19 @@ app.post('/api/sessions', async (req, res) => {
         await session.save();
         console.log('✅ Session saved successfully:', sessionId);
         
+        // Log audit event
+        await logAuditEvent(
+            'SESSION_CREATED',
+            sessionData.createdBy || 'Unknown',
+            sessionId,
+            {
+                action: 'Created new estimation session',
+                teamName: sessionData.teamName,
+                sprintValue: sessionData.sprintValue
+            },
+            req
+        );
+        
         res.status(201).json({
             success: true,
             message: 'Session created successfully',
@@ -1180,6 +1195,19 @@ app.post('/api/sessions/:sessionId/participants', async (req, res) => {
                 joinedAt: new Date()
             });
             await session.save();
+            
+            // Log audit event
+            await logAuditEvent(
+                'SESSION_JOINED',
+                `${participant.name}_${participant.role}`,
+                sessionId,
+                {
+                    action: 'Joined estimation session',
+                    participantName: participant.name,
+                    participantRole: participant.role
+                },
+                req
+            );
         }
         
         res.json({
@@ -1242,6 +1270,20 @@ app.delete('/api/sessions/:sessionId', async (req, res) => {
             });
         }
         
+        // Log audit event
+        await logAuditEvent(
+            'SESSION_ENDED',
+            closedBy || 'Unknown',
+            sessionId,
+            {
+                action: 'Ended estimation session',
+                teamName: session.teamName,
+                totalStories: session.stories?.length || 0,
+                totalParticipants: session.participants?.length || 0
+            },
+            req
+        );
+        
         res.json({
             success: true,
             message: 'Session closed successfully',
@@ -1252,6 +1294,218 @@ app.delete('/api/sessions/:sessionId', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to close session',
+            error: error.message
+        });
+    }
+});
+
+// ========== AUDIT LOGS ==========
+
+// Get audit logs with filters
+app.get('/api/audit-logs', async (req, res) => {
+    try {
+        const { sessionId, userId, eventType, dateFrom, dateTo, limit = 100 } = req.query;
+        
+        const query = {};
+        
+        if (sessionId) query.session_id = sessionId;
+        if (userId) query.user_id = new RegExp(userId, 'i');
+        if (eventType) query.event_type = eventType;
+        
+        if (dateFrom || dateTo) {
+            query.timestamp = {};
+            if (dateFrom) query.timestamp.$gte = new Date(dateFrom);
+            if (dateTo) {
+                const endDate = new Date(dateTo);
+                endDate.setHours(23, 59, 59, 999);
+                query.timestamp.$lte = endDate;
+            }
+        }
+        
+        const logs = await AuditLog.find(query)
+            .sort({ timestamp: -1 })
+            .limit(parseInt(limit));
+        
+        res.json(logs);
+    } catch (error) {
+        console.error('Get audit logs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve audit logs',
+            error: error.message
+        });
+    }
+});
+
+// Get audit log statistics
+app.get('/api/audit-logs/stats', async (req, res) => {
+    try {
+        const totalLogs = await AuditLog.countDocuments();
+        
+        const uniqueSessions = await AuditLog.distinct('session_id', { session_id: { $ne: null } });
+        const uniqueUsers = await AuditLog.distinct('user_id');
+        
+        const eventTypeStats = await AuditLog.aggregate([
+            { $group: { _id: '$event_type', count: { $sum: 1 } } },
+            { $project: { event_type: '$_id', count: 1, _id: 0 } },
+            { $sort: { count: -1 } }
+        ]);
+        
+        res.json({
+            totalLogs,
+            totalSessions: uniqueSessions.length,
+            totalUsers: uniqueUsers.length,
+            eventTypeStats
+        });
+    } catch (error) {
+        console.error('Get audit stats error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve audit statistics',
+            error: error.message
+        });
+    }
+});
+
+// Get session IDs for filter dropdown
+app.get('/api/audit-logs/session-ids', async (req, res) => {
+    try {
+        const { dateFrom, dateTo } = req.query;
+        
+        const query = { session_id: { $ne: null } };
+        
+        if (dateFrom || dateTo) {
+            query.timestamp = {};
+            if (dateFrom) query.timestamp.$gte = new Date(dateFrom);
+            if (dateTo) {
+                const endDate = new Date(dateTo);
+                endDate.setHours(23, 59, 59, 999);
+                query.timestamp.$lte = endDate;
+            }
+        }
+        
+        const sessionIds = await AuditLog.distinct('session_id', query);
+        
+        res.json({ sessionIds: sessionIds.filter(id => id) });
+    } catch (error) {
+        console.error('Get session IDs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve session IDs',
+            error: error.message
+        });
+    }
+});
+
+// Export audit logs as CSV
+app.get('/api/audit-logs/export', async (req, res) => {
+    try {
+        const { sessionId, userId, eventType, dateFrom, dateTo } = req.query;
+        
+        const query = {};
+        
+        if (sessionId) query.session_id = sessionId;
+        if (userId) query.user_id = new RegExp(userId, 'i');
+        if (eventType) query.event_type = eventType;
+        
+        if (dateFrom || dateTo) {
+            query.timestamp = {};
+            if (dateFrom) query.timestamp.$gte = new Date(dateFrom);
+            if (dateTo) {
+                const endDate = new Date(dateTo);
+                endDate.setHours(23, 59, 59, 999);
+                query.timestamp.$lte = endDate;
+            }
+        }
+        
+        const logs = await AuditLog.find(query).sort({ timestamp: -1 });
+        
+        // Generate CSV
+        const csvHeader = 'Timestamp,Event Type,User ID,Session ID,IP Address,Details\n';
+        const csvRows = logs.map(log => {
+            const details = JSON.stringify(log.details).replace(/"/g, '""');
+            return `"${log.timestamp}","${log.event_type}","${log.user_id || ''}","${log.session_id || ''}","${log.ip_address || ''}","${details}"`;
+        }).join('\n');
+        
+        const csv = csvHeader + csvRows;
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename=audit-logs-${new Date().toISOString().split('T')[0]}.csv`);
+        res.send(csv);
+    } catch (error) {
+        console.error('Export audit logs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to export audit logs',
+            error: error.message
+        });
+    }
+});
+
+// Export estimation deviation analysis
+app.get('/api/estimation-analysis/export', async (req, res) => {
+    try {
+        const { sessionId } = req.query;
+        
+        if (!sessionId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Session ID is required'
+            });
+        }
+        
+        const session = await EstimationSession.findOne({ sessionId });
+        
+        if (!session) {
+            return res.status(404).json({
+                success: false,
+                message: 'Session not found'
+            });
+        }
+        
+        // Generate deviation analysis CSV
+        const csvHeader = 'Story Number,Story Summary,User,Role,Estimation,Dev Average,QA Average,Overall Average,Deviation from Average\n';
+        const csvRows = [];
+        
+        session.stories.forEach(story => {
+            const estimations = session.estimations.get(story.id) || {};
+            const allEstimations = Object.values(estimations).map(e => typeof e === 'object' ? e.points : e).filter(p => p !== null);
+            
+            if (allEstimations.length === 0) return;
+            
+            const overallAvg = allEstimations.reduce((a, b) => a + b, 0) / allEstimations.length;
+            
+            const devEstimations = Object.entries(estimations)
+                .filter(([key]) => key.includes('_Dev'))
+                .map(([, e]) => typeof e === 'object' ? e.points : e)
+                .filter(p => p !== null);
+            const devAvg = devEstimations.length > 0 ? devEstimations.reduce((a, b) => a + b, 0) / devEstimations.length : 0;
+            
+            const qaEstimations = Object.entries(estimations)
+                .filter(([key]) => key.includes('_QA'))
+                .map(([, e]) => typeof e === 'object' ? e.points : e)
+                .filter(p => p !== null);
+            const qaAvg = qaEstimations.length > 0 ? qaEstimations.reduce((a, b) => a + b, 0) / qaEstimations.length : 0;
+            
+            Object.entries(estimations).forEach(([userKey, estimation]) => {
+                const [name, role] = userKey.split('_');
+                const points = typeof estimation === 'object' ? estimation.points : estimation;
+                const deviation = points - overallAvg;
+                
+                csvRows.push(`"${story.number}","${story.summary}","${name}","${role}","${points}","${devAvg.toFixed(1)}","${qaAvg.toFixed(1)}","${overallAvg.toFixed(1)}","${deviation.toFixed(1)}"`);
+            });
+        });
+        
+        const csv = csvHeader + csvRows.join('\n');
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename=estimation-analysis-${sessionId}-${new Date().toISOString().split('T')[0]}.csv`);
+        res.send(csv);
+    } catch (error) {
+        console.error('Export estimation analysis error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to export estimation analysis',
             error: error.message
         });
     }
@@ -1295,6 +1549,12 @@ app.listen(PORT, () => {
     console.log(`   PUT    /api/sessions/:sessionId`);
     console.log(`   DELETE /api/sessions/:sessionId`);
     console.log(`   POST   /api/sessions/:sessionId/participants`);
+    console.log(`\n   📊 AUDIT LOGS MODULE:`);
+    console.log(`   GET    /api/audit-logs`);
+    console.log(`   GET    /api/audit-logs/stats`);
+    console.log(`   GET    /api/audit-logs/session-ids`);
+    console.log(`   GET    /api/audit-logs/export`);
+    console.log(`   GET    /api/estimation-analysis/export`);
     console.log(`\n   ❤️  HEALTH:`);
     console.log(`   GET    /api/health`);
     console.log(`\n✅ Ready to accept requests!\n`);
