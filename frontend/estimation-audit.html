@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarelonRx Product 360 - Estimation Audit Log</title>
+    <title>CarelonRx Product 360 - Audit Log Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="assets/carelon-theme.css">
@@ -22,14 +22,18 @@
             background-color: var(--carelon-purple-dark);
         }
         
-        .status-active {
-            background-color: #10b981;
-            color: white;
+        .log-entry {
+            transition: all 0.2s ease;
+        }
+        .log-entry:hover {
+            background-color: #f9fafb;
         }
         
-        .status-closed {
-            background-color: #6b7280;
-            color: white;
+        .json-details {
+            max-height: 100px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -41,8 +45,8 @@
                 <div class="flex items-center space-x-4">
                     <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="h-10 w-auto">
                     <div>
-                        <h1 class="text-lg font-bold text-white">Estimation Audit Log</h1>
-                        <p class="text-xs text-gray-200">Product 360 - Admin Panel</p>
+                        <h1 class="text-lg font-bold text-white">📊 Audit Log Dashboard</h1>
+                        <p class="text-xs text-gray-200">Product 360 - Monitor and analyze estimation activities</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -51,7 +55,7 @@
                         <i data-lucide="arrow-left" class="w-4 h-4"></i>
                         <span>Back to Estimations</span>
                     </button>
-                    <button onclick="refreshAuditLog()" 
+                    <button onclick="refreshLogs()" 
                         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                         <span>Refresh</span>
@@ -62,134 +66,164 @@
     </nav>
 
     <div class="container mx-auto px-6 py-8">
-        <!-- Summary Cards -->
+        <!-- Statistics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-600">
+            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-600">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 font-medium">Total Sessions</p>
-                        <p id="totalSessions" class="text-3xl font-bold text-purple-600">0</p>
+                        <p class="text-sm text-gray-600 font-medium">Total Log Entries</p>
+                        <p id="totalLogs" class="text-3xl font-bold text-blue-600">0</p>
                     </div>
-                    <i data-lucide="layers" class="w-12 h-12 text-purple-600 opacity-20"></i>
+                    <i data-lucide="file-text" class="w-12 h-12 text-blue-600 opacity-20"></i>
                 </div>
             </div>
             
             <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-600">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 font-medium">Active Sessions</p>
-                        <p id="activeSessions" class="text-3xl font-bold text-green-600">0</p>
+                        <p class="text-sm text-gray-600 font-medium">Total Sessions</p>
+                        <p id="totalSessions" class="text-3xl font-bold text-green-600">0</p>
                     </div>
-                    <i data-lucide="play-circle" class="w-12 h-12 text-green-600 opacity-20"></i>
+                    <i data-lucide="layers" class="w-12 h-12 text-green-600 opacity-20"></i>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-gray-600">
+            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-600">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 font-medium">Closed Sessions</p>
-                        <p id="closedSessions" class="text-3xl font-bold text-gray-600">0</p>
+                        <p class="text-sm text-gray-600 font-medium">Unique Users</p>
+                        <p id="totalUsers" class="text-3xl font-bold text-purple-600">0</p>
                     </div>
-                    <i data-lucide="check-circle" class="w-12 h-12 text-gray-600 opacity-20"></i>
+                    <i data-lucide="users" class="w-12 h-12 text-purple-600 opacity-20"></i>
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-600">
+            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-orange-600">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-600 font-medium">Total Stories</p>
-                        <p id="totalStories" class="text-3xl font-bold text-blue-600">0</p>
+                        <p class="text-sm text-gray-600 font-medium">Last Activity</p>
+                        <p id="lastActivity" class="text-lg font-bold text-orange-600">-</p>
                     </div>
-                    <i data-lucide="file-text" class="w-12 h-12 text-blue-600 opacity-20"></i>
+                    <i data-lucide="clock" class="w-12 h-12 text-orange-600 opacity-20"></i>
                 </div>
             </div>
         </div>
 
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <h2 class="text-xl font-semibold mb-4 flex items-center space-x-2">
+                <i data-lucide="filter" class="w-5 h-5 text-purple-600"></i>
+                <span>Filters</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select id="statusFilter" onchange="filterSessions()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                        <option value="all">All Sessions</option>
-                        <option value="active">Active Only</option>
-                        <option value="closed">Closed Only</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+                    <input type="date" id="filterDateFrom" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" onchange="loadSessionIds()">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+                    <input type="date" id="filterDateTo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" onchange="loadSessionIds()">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Session ID</label>
+                    <select id="filterSessionId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
+                        <option value="">All Sessions</option>
                     </select>
                 </div>
-                
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-                    <input type="text" id="searchInput" onkeyup="filterSessions()" placeholder="Search team name..." 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">User ID</label>
+                    <input type="text" id="filterUserId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" placeholder="John_PO">
                 </div>
-                
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                    <select id="sortBy" onchange="filterSessions()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                        <option value="newest">Newest First</option>
-                        <option value="oldest">Oldest First</option>
-                        <option value="team">Team Name</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+                    <select id="filterEventType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
+                        <option value="">All Events</option>
+                        <option value="SESSION_CREATED">Session Created</option>
+                        <option value="SESSION_JOINED">Session Joined</option>
+                        <option value="ESTIMATION_PROVIDED">Estimation Provided</option>
+                        <option value="STORY_CREATED">Story Created</option>
+                        <option value="STORY_UPDATED">Story Updated</option>
+                        <option value="STORY_DELETED">Story Deleted</option>
+                        <option value="USER_LOGIN">User Login</option>
+                        <option value="USER_LOGOUT">User Logout</option>
                     </select>
                 </div>
-                
                 <div class="flex items-end">
-                    <button onclick="exportToCSV()" class="w-full btn-primary px-4 py-2 rounded-lg transition flex items-center justify-center space-x-2">
-                        <i data-lucide="download" class="w-4 h-4"></i>
-                        <span>Export CSV</span>
+                    <button onclick="applyFilters()" class="w-full btn-primary px-4 py-2 rounded-lg transition text-sm font-medium">
+                        Apply Filters
                     </button>
                 </div>
             </div>
+            <div class="mt-4 flex gap-2 flex-wrap">
+                <button onclick="clearFilters()" class="bg-gray-500 text-white px-3 py-2 rounded-lg hover:bg-gray-600 text-sm flex items-center space-x-1">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                    <span>Clear Filters</span>
+                </button>
+                <button onclick="exportLogs()" class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm flex items-center space-x-1">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>Export Audit CSV</span>
+                </button>
+                <button onclick="exportEstimationAnalysis()" class="bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 text-sm flex items-center space-x-1">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                    <span>Export Deviation Analysis</span>
+                </button>
+                <button onclick="exportSessionsSummary()" class="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 text-sm flex items-center space-x-1">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    <span>Export Sessions Summary</span>
+                </button>
+            </div>
         </div>
 
-        <!-- Sessions Table -->
+        <!-- Event Type Statistics -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center space-x-2">
+                <i data-lucide="pie-chart" class="w-5 h-5 text-purple-600"></i>
+                <span>Event Distribution</span>
+            </h2>
+            <div id="eventStats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Audit Logs Table -->
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-800 flex items-center space-x-2">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
                     <i data-lucide="list" class="w-5 h-5 text-purple-600"></i>
-                    <span>Session Audit Log</span>
+                    <span>Audit Logs</span>
                 </h2>
+                <p class="text-sm text-gray-600 mt-1">Showing last <span id="logCount">0</span> entries</p>
             </div>
             
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Session ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Team Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Sprint</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Created By</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Created At</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Participants</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Stories</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Timestamp</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Event Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">User</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Session</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Details</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">IP Address</th>
                         </tr>
                     </thead>
-                    <tbody id="sessionsTableBody" class="bg-white divide-y divide-gray-200">
-                        <!-- Sessions will be populated here -->
+                    <tbody id="logsTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Populated by JavaScript -->
                     </tbody>
                 </table>
             </div>
             
-            <div id="noSessions" class="hidden text-center py-12">
-                <i data-lucide="inbox" class="w-16 h-16 mx-auto text-gray-400 mb-4"></i>
-                <p class="text-gray-500 text-lg">No sessions found</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Session Details Modal -->
-    <div id="sessionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                <h3 class="text-xl font-bold text-gray-900">Session Details</h3>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
+            <!-- Loading state -->
+            <div id="loadingState" class="p-8 text-center text-gray-500">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <p class="mt-2">Loading audit logs...</p>
             </div>
             
-            <div id="modalContent" class="p-6">
-                <!-- Content will be populated dynamically -->
+            <!-- No logs state -->
+            <div id="noLogsState" class="p-8 text-center text-gray-500 hidden">
+                <i data-lucide="inbox" class="w-16 h-16 mx-auto text-gray-400 mb-4"></i>
+                <p>No audit logs found matching the current filters.</p>
+                <p class="text-sm mt-2 text-gray-400">Note: Audit logging is currently being implemented.</p>
             </div>
         </div>
     </div>
@@ -199,8 +233,7 @@
             ? 'http://127.0.0.1:5000/api'
             : 'https://carelonrx-roadmap.onrender.com/api';
 
-        let allSessions = [];
-        let filteredSessions = [];
+        let currentLogs = [];
 
         // Check admin access
         function checkAdminAccess() {
@@ -221,270 +254,358 @@
             return true;
         }
 
-        // Load all sessions
-        async function loadSessions() {
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAdminAccess()) return;
+            
+            loadStats();
+            loadLogs();
+            loadSessionIds();
+            
+            // Set default date filter (today)
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filterDateFrom').value = today;
+            
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                // Try to load from audit logs API (when implemented)
+                const response = await fetch(`${API_BASE_URL}/audit-logs/stats`);
+                if (response.ok) {
+                    const stats = await response.json();
+                    
+                    document.getElementById('totalLogs').textContent = stats.totalLogs || 0;
+                    document.getElementById('totalSessions').textContent = stats.totalSessions || 0;
+                    document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+                    
+                    // Display event type statistics
+                    const eventStatsContainer = document.getElementById('eventStats');
+                    if (stats.eventTypeStats && stats.eventTypeStats.length > 0) {
+                        eventStatsContainer.innerHTML = stats.eventTypeStats.map(stat => `
+                            <div class="text-center p-3 border border-gray-200 rounded-lg">
+                                <div class="text-lg font-bold text-purple-600">${stat.count}</div>
+                                <div class="text-xs text-gray-600">${stat.event_type.replace(/_/g, ' ')}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        eventStatsContainer.innerHTML = '<p class="col-span-4 text-center text-gray-500 text-sm">No event data available</p>';
+                    }
+                } else {
+                    // Fallback: Load from sessions API
+                    await loadStatsFromSessions();
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                // Fallback: Load from sessions API
+                await loadStatsFromSessions();
+            }
+        }
+
+        // Fallback: Load stats from sessions
+        async function loadStatsFromSessions() {
             try {
                 const response = await fetch(`${API_BASE_URL}/sessions`);
                 const data = await response.json();
                 
                 if (data.success) {
-                    allSessions = data.sessions || [];
-                    filteredSessions = [...allSessions];
-                    updateSummaryCards();
-                    filterSessions();
+                    const sessions = data.sessions || [];
+                    const uniqueUsers = new Set();
+                    
+                    sessions.forEach(session => {
+                        if (session.participants) {
+                            session.participants.forEach(p => {
+                                uniqueUsers.add(`${p.name}_${p.role}`);
+                            });
+                        }
+                    });
+                    
+                    document.getElementById('totalLogs').textContent = '-';
+                    document.getElementById('totalSessions').textContent = sessions.length;
+                    document.getElementById('totalUsers').textContent = uniqueUsers.size;
+                    
+                    if (sessions.length > 0) {
+                        const lastSession = sessions[0];
+                        const lastActivity = new Date(lastSession.createdAt);
+                        document.getElementById('lastActivity').textContent = lastActivity.toLocaleTimeString();
+                    }
+                    
+                    // Show placeholder for event stats
+                    const eventStatsContainer = document.getElementById('eventStats');
+                    eventStatsContainer.innerHTML = '<p class="col-span-4 text-center text-gray-500 text-sm">Event tracking will be available soon</p>';
                 }
             } catch (error) {
-                console.error('Error loading sessions:', error);
-                alert('Failed to load sessions');
+                console.error('Error loading session stats:', error);
             }
         }
 
-        // Update summary cards
-        function updateSummaryCards() {
-            const active = allSessions.filter(s => s.status === 'active').length;
-            const closed = allSessions.filter(s => s.status === 'closed').length;
-            const totalStoriesCount = allSessions.reduce((sum, s) => sum + (s.stories?.length || 0), 0);
-            
-            document.getElementById('totalSessions').textContent = allSessions.length;
-            document.getElementById('activeSessions').textContent = active;
-            document.getElementById('closedSessions').textContent = closed;
-            document.getElementById('totalStories').textContent = totalStoriesCount;
-        }
-
-        // Filter sessions
-        function filterSessions() {
-            const statusFilter = document.getElementById('statusFilter').value;
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const sortBy = document.getElementById('sortBy').value;
-            
-            // Filter
-            filteredSessions = allSessions.filter(session => {
-                const matchesStatus = statusFilter === 'all' || session.status === statusFilter;
-                const matchesSearch = !searchTerm || 
-                    session.teamName?.toLowerCase().includes(searchTerm) ||
-                    session.sprintValue?.toLowerCase().includes(searchTerm) ||
-                    session.sessionId?.toLowerCase().includes(searchTerm);
-                return matchesStatus && matchesSearch;
-            });
-            
-            // Sort
-            filteredSessions.sort((a, b) => {
-                if (sortBy === 'newest') {
-                    return new Date(b.createdAt) - new Date(a.createdAt);
-                } else if (sortBy === 'oldest') {
-                    return new Date(a.createdAt) - new Date(b.createdAt);
-                } else if (sortBy === 'team') {
-                    return (a.teamName || '').localeCompare(b.teamName || '');
-                }
-                return 0;
-            });
-            
-            renderSessions();
-        }
-
-        // Render sessions table
-        function renderSessions() {
-            const tbody = document.getElementById('sessionsTableBody');
-            const noSessions = document.getElementById('noSessions');
-            
-            if (filteredSessions.length === 0) {
-                tbody.innerHTML = '';
-                noSessions.classList.remove('hidden');
-                return;
-            }
-            
-            noSessions.classList.add('hidden');
-            
-            tbody.innerHTML = filteredSessions.map(session => {
-                const createdDate = new Date(session.createdAt).toLocaleString();
-                const statusClass = session.status === 'active' ? 'status-active' : 'status-closed';
-                const participantCount = session.participants?.length || 0;
-                const storyCount = session.stories?.length || 0;
-                
-                return `
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4">
-                            <code class="text-xs bg-gray-100 px-2 py-1 rounded">${session.sessionId}</code>
-                        </td>
-                        <td class="px-6 py-4 font-medium text-gray-900">${session.teamName || 'N/A'}</td>
-                        <td class="px-6 py-4 text-gray-600">${session.sprintValue || 'N/A'}</td>
-                        <td class="px-6 py-4 text-gray-600">${session.createdBy || 'Unknown'}</td>
-                        <td class="px-6 py-4 text-gray-600 text-sm">${createdDate}</td>
-                        <td class="px-6 py-4">
-                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
-                                ${participantCount} ${participantCount === 1 ? 'user' : 'users'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm font-medium">
-                                ${storyCount} ${storyCount === 1 ? 'story' : 'stories'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="${statusClass} px-3 py-1 rounded-full text-xs font-semibold uppercase">
-                                ${session.status}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <button onclick='viewSessionDetails(${JSON.stringify(session.sessionId)})' 
-                                class="text-purple-600 hover:text-purple-800 font-medium text-sm flex items-center space-x-1">
-                                <i data-lucide="eye" class="w-4 h-4"></i>
-                                <span>View</span>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-            
-            // Re-initialize Lucide icons
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        }
-
-        // View session details
-        async function viewSessionDetails(sessionId) {
+        // Load session IDs based on date filters
+        async function loadSessionIds() {
             try {
-                const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}`);
-                const session = await response.json();
+                const queryParams = new URLSearchParams();
                 
-                const modalContent = document.getElementById('modalContent');
-                const participants = session.participants || [];
-                const stories = session.stories || [];
-                const estimations = session.estimations || {};
+                const dateFrom = document.getElementById('filterDateFrom').value;
+                const dateTo = document.getElementById('filterDateTo').value;
                 
-                modalContent.innerHTML = `
-                    <div class="space-y-6">
-                        <!-- Session Info -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-sm font-semibold text-gray-600">Session ID</label>
-                                <p class="text-gray-900"><code class="bg-gray-100 px-2 py-1 rounded text-sm">${session.sessionId}</code></p>
-                            </div>
-                            <div>
-                                <label class="text-sm font-semibold text-gray-600">Status</label>
-                                <p><span class="${session.status === 'active' ? 'status-active' : 'status-closed'} px-3 py-1 rounded-full text-xs font-semibold uppercase">${session.status}</span></p>
-                            </div>
-                            <div>
-                                <label class="text-sm font-semibold text-gray-600">Team Name</label>
-                                <p class="text-gray-900">${session.teamName || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <label class="text-sm font-semibold text-gray-600">Sprint Value</label>
-                                <p class="text-gray-900">${session.sprintValue || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <label class="text-sm font-semibold text-gray-600">Created By</label>
-                                <p class="text-gray-900">${session.createdBy || 'Unknown'}</p>
-                            </div>
-                            <div>
-                                <label class="text-sm font-semibold text-gray-600">Created At</label>
-                                <p class="text-gray-900">${new Date(session.createdAt).toLocaleString()}</p>
-                            </div>
-                        </div>
+                if (dateFrom) queryParams.append('dateFrom', dateFrom);
+                if (dateTo) queryParams.append('dateTo', dateTo);
+                
+                // Try audit logs API first
+                let response = await fetch(`${API_BASE_URL}/audit-logs/session-ids?${queryParams}`);
+                
+                if (!response.ok) {
+                    // Fallback: Load from sessions API
+                    response = await fetch(`${API_BASE_URL}/sessions`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const sessionSelect = document.getElementById('filterSessionId');
+                        sessionSelect.innerHTML = '<option value="">All Sessions</option>';
+                        
+                        data.sessions.forEach(session => {
+                            const option = document.createElement('option');
+                            option.value = session.sessionId;
+                            option.textContent = `${session.sessionId} - ${session.teamName}`;
+                            sessionSelect.appendChild(option);
+                        });
+                    }
+                    return;
+                }
+                
+                const data = await response.json();
+                const sessionSelect = document.getElementById('filterSessionId');
+                const currentValue = sessionSelect.value;
+                
+                sessionSelect.innerHTML = '<option value="">All Sessions</option>';
+                
+                data.sessionIds.forEach(sessionId => {
+                    const option = document.createElement('option');
+                    option.value = sessionId;
+                    option.textContent = sessionId;
+                    if (sessionId === currentValue) {
+                        option.selected = true;
+                    }
+                    sessionSelect.appendChild(option);
+                });
+                
+            } catch (error) {
+                console.error('Error loading session IDs:', error);
+            }
+        }
 
-                        <!-- Participants -->
-                        <div>
-                            <h4 class="text-lg font-semibold text-gray-900 mb-3">Participants (${participants.length})</h4>
-                            <div class="flex flex-wrap gap-2">
-                                ${participants.map(p => `
-                                    <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-                                        ${p.name} <span class="text-gray-500">(${p.role})</span>
-                                    </span>
-                                `).join('')}
-                            </div>
-                        </div>
+        // Load audit logs
+        async function loadLogs(filters = {}) {
+            const loadingState = document.getElementById('loadingState');
+            const noLogsState = document.getElementById('noLogsState');
+            const tableBody = document.getElementById('logsTableBody');
+            
+            loadingState.classList.remove('hidden');
+            noLogsState.classList.add('hidden');
+            tableBody.innerHTML = '';
 
-                        <!-- Stories -->
-                        <div>
-                            <h4 class="text-lg font-semibold text-gray-900 mb-3">Stories (${stories.length})</h4>
-                            <div class="space-y-3">
-                                ${stories.length === 0 ? '<p class="text-gray-500">No stories added yet</p>' : stories.map(story => {
-                                    const storyEstimations = estimations[story.id] || {};
-                                    const estimationCount = Object.keys(storyEstimations).length;
-                                    
-                                    return `
-                                        <div class="border border-gray-200 rounded-lg p-4">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <div class="flex items-center space-x-2">
-                                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">${story.number}</span>
-                                                    <span class="font-medium text-gray-900">${story.summary}</span>
-                                                </div>
-                                                <span class="text-sm text-gray-500">${estimationCount} ${estimationCount === 1 ? 'estimation' : 'estimations'}</span>
-                                            </div>
-                                            ${estimationCount > 0 ? `
-                                                <div class="mt-2 flex flex-wrap gap-2">
-                                                    ${Object.entries(storyEstimations).map(([userKey, est]) => {
-                                                        const points = typeof est === 'object' ? est.points : est;
-                                                        return `
-                                                            <span class="bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs">
-                                                                ${userKey}: <strong>${points}</strong>
-                                                            </span>
-                                                        `;
-                                                    }).join('')}
-                                                </div>
-                                            ` : ''}
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `;
+            try {
+                const queryParams = new URLSearchParams();
+                Object.entries(filters).forEach(([key, value]) => {
+                    if (value) queryParams.append(key, value);
+                });
+
+                const response = await fetch(`${API_BASE_URL}/audit-logs?${queryParams}`);
                 
-                document.getElementById('sessionModal').classList.remove('hidden');
+                if (!response.ok) {
+                    throw new Error('Audit logs API not available yet');
+                }
                 
-                // Re-initialize Lucide icons
+                const logs = await response.json();
+                
+                currentLogs = logs;
+                loadingState.classList.add('hidden');
+                
+                if (logs.length === 0) {
+                    noLogsState.classList.remove('hidden');
+                    document.getElementById('logCount').textContent = '0';
+                    return;
+                }
+
+                document.getElementById('logCount').textContent = logs.length;
+
+                if (logs.length > 0) {
+                    const lastActivity = new Date(logs[0].timestamp);
+                    document.getElementById('lastActivity').textContent = lastActivity.toLocaleString();
+                }
+
+                tableBody.innerHTML = logs.map(log => {
+                    const eventTypeColor = getEventTypeColor(log.event_type);
+                    return `
+                        <tr class="log-entry">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ${new Date(log.timestamp).toLocaleString()}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs rounded-full ${eventTypeColor}">
+                                    ${log.event_type}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ${log.user_id || '-'}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600 font-mono">
+                                ${log.session_id ? log.session_id.substring(0, 15) + '...' : '-'}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-700">
+                                <div class="json-details">
+                                    <strong>${log.details.action || 'N/A'}</strong>
+                                    ${Object.entries(log.details).filter(([k,v]) => k !== 'action').map(([k,v]) => 
+                                        `<br><span class="text-gray-500">${k}:</span> ${JSON.stringify(v)}`
+                                    ).join('')}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                                ${log.ip_address || '-'}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
                 if (typeof lucide !== 'undefined') {
                     lucide.createIcons();
                 }
+
             } catch (error) {
-                console.error('Error loading session details:', error);
-                alert('Failed to load session details');
+                console.error('Error loading logs:', error);
+                loadingState.classList.add('hidden');
+                noLogsState.classList.remove('hidden');
             }
         }
 
-        // Close modal
-        function closeModal() {
-            document.getElementById('sessionModal').classList.add('hidden');
+        // Get color class for event type
+        function getEventTypeColor(eventType) {
+            const colors = {
+                'SESSION_CREATED': 'bg-green-100 text-green-800',
+                'SESSION_JOINED': 'bg-blue-100 text-blue-800',
+                'ESTIMATION_PROVIDED': 'bg-purple-100 text-purple-800',
+                'STORY_CREATED': 'bg-indigo-100 text-indigo-800',
+                'STORY_UPDATED': 'bg-orange-100 text-orange-800',
+                'STORY_DELETED': 'bg-red-100 text-red-800',
+                'USER_LOGIN': 'bg-emerald-100 text-emerald-800',
+                'USER_LOGOUT': 'bg-gray-100 text-gray-800'
+            };
+            return colors[eventType] || 'bg-gray-100 text-gray-800';
         }
 
-        // Refresh audit log
-        function refreshAuditLog() {
-            loadSessions();
-        }
-
-        // Export to CSV
-        function exportToCSV() {
-            const csv = [
-                ['Session ID', 'Team Name', 'Sprint', 'Created By', 'Created At', 'Participants', 'Stories', 'Status'].join(','),
-                ...filteredSessions.map(s => [
-                    s.sessionId,
-                    s.teamName || 'N/A',
-                    s.sprintValue || 'N/A',
-                    s.createdBy || 'Unknown',
-                    new Date(s.createdAt).toLocaleString(),
-                    s.participants?.length || 0,
-                    s.stories?.length || 0,
-                    s.status
-                ].join(','))
-            ].join('\n');
+        // Apply filters
+        function applyFilters() {
+            const filters = {
+                sessionId: document.getElementById('filterSessionId').value,
+                userId: document.getElementById('filterUserId').value,
+                eventType: document.getElementById('filterEventType').value,
+                dateFrom: document.getElementById('filterDateFrom').value,
+                dateTo: document.getElementById('filterDateTo').value
+            };
             
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `estimation-audit-log-${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            loadLogs(filters);
         }
 
-        // Initialize
-        if (checkAdminAccess()) {
-            loadSessions();
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('filterSessionId').value = '';
+            document.getElementById('filterUserId').value = '';
+            document.getElementById('filterEventType').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            
+            loadSessionIds();
+            loadLogs();
         }
+
+        // Export logs as CSV
+        function exportLogs() {
+            const filters = {
+                sessionId: document.getElementById('filterSessionId').value,
+                userId: document.getElementById('filterUserId').value,
+                eventType: document.getElementById('filterEventType').value,
+                dateFrom: document.getElementById('filterDateFrom').value,
+                dateTo: document.getElementById('filterDateTo').value
+            };
+
+            const queryParams = new URLSearchParams();
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value) queryParams.append(key, value);
+            });
+
+            window.open(`${API_BASE_URL}/audit-logs/export?${queryParams}`, '_blank');
+        }
+
+        // Export estimation deviation analysis CSV
+        function exportEstimationAnalysis() {
+            const sessionId = document.getElementById('filterSessionId').value;
+            
+            if (!sessionId) {
+                alert('Please select a specific session to export estimation deviation analysis.');
+                return;
+            }
+
+            const queryParams = new URLSearchParams();
+            queryParams.append('sessionId', sessionId);
+
+            window.open(`${API_BASE_URL}/estimation-analysis/export?${queryParams}`, '_blank');
+        }
+
+        // Export sessions summary
+        async function exportSessionsSummary() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/sessions`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const sessions = data.sessions || [];
+                    const csv = [
+                        ['Session ID', 'Team Name', 'Sprint', 'Created By', 'Created At', 'Participants', 'Stories', 'Status'].join(','),
+                        ...sessions.map(s => [
+                            s.sessionId,
+                            s.teamName || 'N/A',
+                            s.sprintValue || 'N/A',
+                            s.createdBy || 'Unknown',
+                            new Date(s.createdAt).toLocaleString(),
+                            s.participants?.length || 0,
+                            s.stories?.length || 0,
+                            s.status
+                        ].join(','))
+                    ].join('\n');
+                    
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `sessions-summary-${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }
+            } catch (error) {
+                console.error('Error exporting sessions:', error);
+                alert('Failed to export sessions summary');
+            }
+        }
+
+        // Refresh logs
+        function refreshLogs() {
+            loadStats();
+            applyFilters();
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                loadStats();
+                applyFilters();
+            }
+        }, 30000);
 
         // Initialize Lucide icons
         if (typeof lucide !== 'undefined') {
