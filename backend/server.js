@@ -7,7 +7,10 @@ const User = require('./models/User');
 const Initiative = require('./models/Initiative');
 const EstimationSession = require('./models/EstimationSession');
 const AuditLog = require('./models/AuditLog');
+const EstimationUser = require('./models/EstimationUser');
+const UserSession = require('./models/UserSession');
 const { logAuditEvent } = require('./middleware/auditLogger');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -1012,6 +1015,247 @@ app.post('/api/update-user-role', authMiddleware, async (req, res) => {
     }
 });
 
+// ========== ESTIMATION USER AUTHENTICATION ==========
+
+// Login or create estimation user (simple name + role based)
+app.post('/api/estimation-auth/login', async (req, res) => {
+    try {
+        const { name, role } = req.body;
+        
+        if (!name || !role) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name and role are required'
+            });
+        }
+        
+        // Find or create user
+        let user = await EstimationUser.findOne({ name, role });
+        
+        if (!user) {
+            user = new EstimationUser({
+                name,
+                role,
+                loginCount: 0
+            });
+        }
+        
+        // Record login
+        await user.recordLogin();
+        
+        // Generate session token
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+        
+        // Create user session
+        const userSession = new UserSession({
+            userId: user._id,
+            token,
+            expiresAt,
+            ipAddress: req.ip || req.connection?.remoteAddress,
+            userAgent: req.headers['user-agent']
+        });
+        
+        await userSession.save();
+        
+        // Log audit event
+        await logAuditEvent(
+            'USER_LOGIN',
+            `${name}_${role}`,
+            null,
+            {
+                action: 'User logged in',
+                loginCount: user.loginCount
+            },
+            req
+        );
+        
+        res.json({
+            success: true,
+            message: 'Login successful',
+            user: {
+                id: user._id,
+                name: user.name,
+                role: user.role,
+                lastActiveSessionId: user.lastActiveSessionId
+            },
+            token,
+            expiresAt
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Login failed',
+            error: error.message
+        });
+    }
+});
+
+// Get current user info
+app.get('/api/estimation-auth/me', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: 'No token provided'
+            });
+        }
+        
+        const userSession = await UserSession.findOne({ token }).populate('userId');
+        
+        if (!userSession || !userSession.isValid()) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid or expired token'
+            });
+        }
+        
+        // Extend session
+        await userSession.extend();
+        
+        const user = userSession.userId;
+        
+        res.json({
+            success: true,
+            user: {
+                id: user._id,
+                name: user.name,
+                role: user.role,
+                lastActiveSessionId: user.lastActiveSessionId,
+                lastActiveSessionAt: user.lastActiveSessionAt
+            }
+        });
+    } catch (error) {
+        console.error('Get user error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get user info',
+            error: error.message
+        });
+    }
+});
+
+// Logout
+app.post('/api/estimation-auth/logout', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        
+        if (token) {
+            const userSession = await UserSession.findOne({ token }).populate('userId');
+            
+            if (userSession) {
+                const user = userSession.userId;
+                
+                // Log audit event
+                await logAuditEvent(
+                    'USER_LOGOUT',
+                    `${user.name}_${user.role}`,
+                    null,
+                    {
+                        action: 'User logged out'
+                    },
+                    req
+                );
+                
+                // Delete session
+                await UserSession.deleteOne({ token });
+            }
+        }
+        
+        res.json({
+            success: true,
+            message: 'Logout successful'
+        });
+    } catch (error) {
+        console.error('Logout error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Logout failed',
+            error: error.message
+        });
+    }
+});
+
+// Update user's last active session
+app.put('/api/estimation-auth/last-session', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        const { sessionId, sessionName } = req.body;
+        
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: 'No token provided'
+            });
+        }
+        
+        const userSession = await UserSession.findOne({ token }).populate('userId');
+        
+        if (!userSession || !userSession.isValid()) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid or expired token'
+            });
+        }
+        
+        const user = userSession.userId;
+        await user.updateLastSession(sessionId, sessionName);
+        
+        res.json({
+            success: true,
+            message: 'Last session updated',
+            lastActiveSessionId: user.lastActiveSessionId
+        });
+    } catch (error) {
+        console.error('Update last session error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update last session',
+            error: error.message
+        });
+    }
+});
+
+// Get user's session history
+app.get('/api/estimation-auth/session-history', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: 'No token provided'
+            });
+        }
+        
+        const userSession = await UserSession.findOne({ token }).populate('userId');
+        
+        if (!userSession || !userSession.isValid()) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid or expired token'
+            });
+        }
+        
+        const user = userSession.userId;
+        
+        res.json({
+            success: true,
+            sessionHistory: user.sessionHistory || []
+        });
+    } catch (error) {
+        console.error('Get session history error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get session history',
+            error: error.message
+        });
+    }
+});
+
 // ========== STORY ESTIMATIONS API ==========
 
 // Create a new estimation session
@@ -1543,6 +1787,11 @@ app.listen(PORT, () => {
     console.log(`   PUT    /api/profile`);
     console.log(`   GET    /api/stats`);
     console.log(`\n   🧮 STORY ESTIMATIONS MODULE:`);
+    console.log(`   POST   /api/estimation-auth/login`);
+    console.log(`   POST   /api/estimation-auth/logout`);
+    console.log(`   GET    /api/estimation-auth/me`);
+    console.log(`   PUT    /api/estimation-auth/last-session`);
+    console.log(`   GET    /api/estimation-auth/session-history`);
     console.log(`   POST   /api/sessions`);
     console.log(`   GET    /api/sessions`);
     console.log(`   GET    /api/sessions/:sessionId`);
