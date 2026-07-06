@@ -28,6 +28,7 @@
 - ✅ **Initiative intake and tracking** - Comprehensive form with validation
 - ✅ **WSJF (Weighted Shortest Job First) prioritization** - Auto-calculated scoring
 - ✅ **Visual roadmap timeline** - Interactive timeline with color-coded priorities
+- ✅ **Story Estimations** - Planning Poker with real-time collaboration (Available Now)
 - ✅ **Hold reason display** - Prominent yellow box for On Hold initiatives
 - ✅ **Role-based access control** - Admin, creator, and viewer permissions
 - ✅ **User profile management** - Profile image upload and customization
@@ -41,6 +42,7 @@
 - ✅ **PDF and Excel export** - Export roadmap for presentations
 - ✅ **Multi-select system filtering** - Filter roadmap by multiple systems
 - ✅ **Unsaved changes warning** - Prevents accidental data loss
+- ✅ **Audit logging** - Comprehensive tracking for estimation sessions
 
 ---
 
