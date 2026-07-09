@@ -1816,7 +1816,7 @@ app.get('/api/jira/issue/:issueKey', authMiddleware, async (req, res) => {
         }
 
         const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
-        const url = `${process.env.JIRA_BASE_URL}/rest/api/3/issue/${issueKey}?fields=summary,status,assignee,priority,issuetype`;
+        const url = `${process.env.JIRA_BASE_URL}/rest/api/2/issue/${issueKey}?fields=summary,status,assignee,priority,issuetype`;
 
         const { status, body } = await jiraRequest(url, base64Auth);
 
