@@ -616,18 +616,19 @@
 
         function renderRoadmap() {
             const selectedYear = document.getElementById('yearFilter').value;
-            console.log('Selected year:', selectedYear, 'Type:', typeof selectedYear);
-            console.log('Total initiatives:', allInitiatives.length);
-            let initiatives = allInitiatives.filter(i => {
-                console.log('Initiative year:', i.year, 'Type:', typeof i.year, 'Match:', String(i.year) === String(selectedYear));
-                return String(i.year) === String(selectedYear);
-            });
+            console.log('=== RENDER ROADMAP ===');
+            console.log('Selected year:', selectedYear);
+            console.log('All initiatives:', allInitiatives.map(i => ({name: i.name, year: i.year})));
+            
+            let initiatives = allInitiatives.filter(i => String(i.year) === String(selectedYear));
+            console.log('After year filter:', initiatives.length, 'initiatives');
             
             // Filter by selected LOBs
             if (selectedLobs.length > 0) {
                 initiatives = initiatives.filter(initiative => 
                     selectedLobs.includes(initiative.businessUnit)
                 );
+                console.log('After LOB filter:', initiatives.length, 'initiatives');
             }
             
             // Filter by selected systems
@@ -641,14 +642,20 @@
                         selectedSystems.includes(dep.system)
                     );
                 });
+                console.log('After system filter:', initiatives.length, 'initiatives');
             }
             
+            console.log('Final initiatives to render:', initiatives.length);
+            
             if (initiatives.length === 0) {
+                console.log('No initiatives - showing no data message');
                 document.getElementById('roadmapGrid').parentElement.classList.add('hidden');
                 document.getElementById('noData').classList.remove('hidden');
                 lucide.createIcons();
                 return;
             }
+            
+            console.log('Rendering roadmap grid...');
 
             document.getElementById('roadmapGrid').parentElement.classList.remove('hidden');
             document.getElementById('noData').classList.add('hidden');
