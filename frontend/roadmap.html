@@ -741,27 +741,33 @@
             return 'bg-yellow-100 text-yellow-800';
         }
 
+        const JIRA_BASE_URL = 'https://jira.carelonrx.com';
+
         async function fetchJiraStatus(issueKey, containerId) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
             try {
-                const response = await fetch(`https://carelonrx-roadmap.onrender.com/api/jira/issue/${issueKey}`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                });
-                const data = await response.json();
-                const el = document.getElementById(containerId);
-                if (!el) return;
-                if (data.success) {
-                    el.innerHTML = `
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${getStatusBadgeClass(data.issue.statusCategory)}">
-                            ${data.issue.status}
-                        </span>
-                        <span class="text-xs text-gray-500 ml-1">${data.issue.assignee}</span>
-                    `;
-                } else {
-                    el.innerHTML = `<span class="text-xs text-gray-400">Status unavailable</span>`;
+                const response = await fetch(
+                    `${JIRA_BASE_URL}/rest/api/2/issue/${issueKey}?fields=summary,status,assignee,priority,issuetype`,
+                    { credentials: 'include', headers: { 'Accept': 'application/json' } }
+                );
+                if (!response.ok) {
+                    el.innerHTML = `<span class="text-xs text-gray-400">Status unavailable (${response.status})</span>`;
+                    return;
                 }
+                const data = await response.json();
+                const status = data.fields?.status?.name;
+                const statusCategory = data.fields?.status?.statusCategory?.name;
+                const assignee = data.fields?.assignee?.displayName || 'Unassigned';
+                el.innerHTML = `
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${getStatusBadgeClass(statusCategory)}">
+                        ${status}
+                    </span>
+                    <span class="text-xs text-gray-500 ml-1">${assignee}</span>
+                `;
             } catch (e) {
-                const el = document.getElementById(containerId);
-                if (el) el.innerHTML = `<span class="text-xs text-gray-400">Status unavailable</span>`;
+                console.warn('JIRA fetch error for', issueKey, e.message);
+                el.innerHTML = `<span class="text-xs text-gray-400">JIRA unreachable</span>`;
             }
         }
 
