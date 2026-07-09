@@ -1777,6 +1777,36 @@ app.get('/api/estimation-analysis/export', async (req, res) => {
 
 // ========== JIRA INTEGRATION ==========
 
+const https = require('https');
+
+function jiraRequest(url, auth) {
+    return new Promise((resolve, reject) => {
+        const parsedUrl = new URL(url);
+        const options = {
+            hostname: parsedUrl.hostname,
+            path: parsedUrl.pathname + parsedUrl.search,
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${auth}`,
+                'Accept': 'application/json'
+            }
+        };
+        const req = https.request(options, (resp) => {
+            let data = '';
+            resp.on('data', chunk => data += chunk);
+            resp.on('end', () => {
+                try {
+                    resolve({ status: resp.statusCode, body: JSON.parse(data) });
+                } catch (e) {
+                    reject(new Error('Invalid JSON from JIRA'));
+                }
+            });
+        });
+        req.on('error', reject);
+        req.end();
+    });
+}
+
 app.get('/api/jira/issue/:issueKey', authMiddleware, async (req, res) => {
     try {
         const { issueKey } = req.params;
@@ -1786,28 +1816,24 @@ app.get('/api/jira/issue/:issueKey', authMiddleware, async (req, res) => {
         }
 
         const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
-        const response = await fetch(`${process.env.JIRA_BASE_URL}/rest/api/3/issue/${issueKey}?fields=summary,status,assignee,priority,issuetype`, {
-            headers: {
-                'Authorization': `Basic ${base64Auth}`,
-                'Accept': 'application/json'
-            }
-        });
+        const url = `${process.env.JIRA_BASE_URL}/rest/api/3/issue/${issueKey}?fields=summary,status,assignee,priority,issuetype`;
 
-        if (!response.ok) {
-            return res.status(response.status).json({ success: false, message: `JIRA returned ${response.status}` });
+        const { status, body } = await jiraRequest(url, base64Auth);
+
+        if (status !== 200) {
+            return res.status(status).json({ success: false, message: `JIRA returned ${status}: ${body.errorMessages || body.message || ''}` });
         }
 
-        const data = await response.json();
         res.json({
             success: true,
             issue: {
-                key: data.key,
-                summary: data.fields.summary,
-                status: data.fields.status?.name,
-                statusCategory: data.fields.status?.statusCategory?.name,
-                assignee: data.fields.assignee?.displayName || 'Unassigned',
-                priority: data.fields.priority?.name,
-                issueType: data.fields.issuetype?.name
+                key: body.key,
+                summary: body.fields.summary,
+                status: body.fields.status?.name,
+                statusCategory: body.fields.status?.statusCategory?.name,
+                assignee: body.fields.assignee?.displayName || 'Unassigned',
+                priority: body.fields.priority?.name,
+                issueType: body.fields.issuetype?.name
             }
         });
     } catch (error) {
