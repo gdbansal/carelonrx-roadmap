@@ -270,9 +270,15 @@
                 
                 if (data.success) {
                     currentInitiatives = data.initiatives;
+                    console.log('Loaded initiatives:', currentInitiatives.length);
+                    if (currentInitiatives.length > 0) {
+                        console.log('Sample initiative year value:', currentInitiatives[0].year, 'type:', typeof currentInitiatives[0].year);
+                    }
                     updateStats(currentInitiatives);
                     // Sort by WSJF descending by default
                     sortTable('wsjf');
+                } else {
+                    console.error('API returned failure:', data);
                 }
             } catch (error) {
                 console.error('Error loading dashboard:', error);
@@ -315,42 +321,34 @@
 
             // Sort filtered initiatives
             if (sortColumn) {
+                const quarterOrder = {'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 4};
+                const priorityOrder = {'Critical': 5, 'High': 4, 'Medium': 3, 'Low': 2, 'On Hold': 1};
                 filtered.sort((a, b) => {
                     let aVal, bVal;
 
-                    switch(sortColumn) {
-                        case 'name':
-                            aVal = (a.name || '').toLowerCase();
-                            bVal = (b.name || '').toLowerCase();
-                            break;
-                        case 'year':
-                            aVal = parseInt(a.year) || 0;
-                            bVal = parseInt(b.year) || 0;
-                            break;
-                        case 'quarter':
-                            const quarterOrder = {'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 4};
-                            aVal = quarterOrder[a.quarter] || 0;
-                            bVal = quarterOrder[b.quarter] || 0;
-                            break;
-                        case 'budget':
-                            aVal = a.budgetApproved ? 1 : 0;
-                            bVal = b.budgetApproved ? 1 : 0;
-                            break;
-                        case 'priority':
-                            const priorityOrder = {'Critical': 5, 'High': 4, 'Medium': 3, 'Low': 2, 'On Hold': 1};
-                            aVal = priorityOrder[a.priority] || 0;
-                            bVal = priorityOrder[b.priority] || 0;
-                            break;
-                        case 'wsjf':
-                            aVal = parseFloat(a.wsjf) || 0;
-                            bVal = parseFloat(b.wsjf) || 0;
-                            break;
-                        case 'deliveryDate':
-                            aVal = a.deliveryDate ? new Date(a.deliveryDate).getTime() : 0;
-                            bVal = b.deliveryDate ? new Date(b.deliveryDate).getTime() : 0;
-                            break;
-                        default:
-                            return 0;
+                    if (sortColumn === 'name') {
+                        aVal = (a.name || '').toLowerCase();
+                        bVal = (b.name || '').toLowerCase();
+                    } else if (sortColumn === 'year') {
+                        aVal = parseInt(a.year) || 0;
+                        bVal = parseInt(b.year) || 0;
+                    } else if (sortColumn === 'quarter') {
+                        aVal = quarterOrder[a.quarter] || 0;
+                        bVal = quarterOrder[b.quarter] || 0;
+                    } else if (sortColumn === 'budget') {
+                        aVal = a.budgetApproved ? 1 : 0;
+                        bVal = b.budgetApproved ? 1 : 0;
+                    } else if (sortColumn === 'priority') {
+                        aVal = priorityOrder[a.priority] || 0;
+                        bVal = priorityOrder[b.priority] || 0;
+                    } else if (sortColumn === 'wsjf') {
+                        aVal = parseFloat(a.wsjf) || 0;
+                        bVal = parseFloat(b.wsjf) || 0;
+                    } else if (sortColumn === 'deliveryDate') {
+                        aVal = a.deliveryDate ? new Date(a.deliveryDate).getTime() : 0;
+                        bVal = b.deliveryDate ? new Date(b.deliveryDate).getTime() : 0;
+                    } else {
+                        return 0;
                     }
 
                     if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
