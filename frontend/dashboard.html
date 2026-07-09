@@ -203,21 +203,10 @@
     </div>
 
     <script>
-        lucide.createIcons();
-
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!user.username) {
-            window.location.href = 'login.html';
-        }
-        document.getElementById('userName').textContent = user.name || user.username;
-        
-        if (user.role === 'admin') {
-            document.getElementById('adminDropdownLink').classList.remove('hidden');
-        }
-
         let currentInitiatives = [];
         let sortColumn = null;
         let sortDirection = 'asc';
+        let user = {};
 
         function logout() {
             localStorage.removeItem('user');
@@ -638,11 +627,25 @@
             }
         }
 
-        document.getElementById('searchInput').addEventListener('input', filterAndRenderTable);
-        document.getElementById('filterYear').addEventListener('change', filterAndRenderTable);
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
 
-        loadDashboard();
-        loadUserProfile();
+            user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.username) {
+                window.location.href = 'login.html';
+            }
+            document.getElementById('userName').textContent = user.name || user.username;
+
+            if (user.role === 'admin') {
+                document.getElementById('adminDropdownLink').classList.remove('hidden');
+            }
+
+            document.getElementById('searchInput').addEventListener('input', filterAndRenderTable);
+            document.getElementById('filterYear').addEventListener('change', filterAndRenderTable);
+
+            loadDashboard();
+            loadUserProfile();
+        });
     </script>
 </body>
 </html>
