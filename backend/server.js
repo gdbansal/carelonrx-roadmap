@@ -1775,6 +1775,47 @@ app.get('/api/estimation-analysis/export', async (req, res) => {
     }
 });
 
+// ========== JIRA INTEGRATION ==========
+
+app.get('/api/jira/issue/:issueKey', authMiddleware, async (req, res) => {
+    try {
+        const { issueKey } = req.params;
+
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA integration not configured' });
+        }
+
+        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
+        const response = await fetch(`${process.env.JIRA_BASE_URL}/rest/api/3/issue/${issueKey}?fields=summary,status,assignee,priority,issuetype`, {
+            headers: {
+                'Authorization': `Basic ${base64Auth}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            return res.status(response.status).json({ success: false, message: `JIRA returned ${response.status}` });
+        }
+
+        const data = await response.json();
+        res.json({
+            success: true,
+            issue: {
+                key: data.key,
+                summary: data.fields.summary,
+                status: data.fields.status?.name,
+                statusCategory: data.fields.status?.statusCategory?.name,
+                assignee: data.fields.assignee?.displayName || 'Unassigned',
+                priority: data.fields.priority?.name,
+                issueType: data.fields.issuetype?.name
+            }
+        });
+    } catch (error) {
+        console.error('JIRA fetch error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch JIRA issue' });
+    }
+});
+
 // ========== HEALTH CHECK ==========
 
 app.get('/api/health', (req, res) => {
