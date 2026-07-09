@@ -934,29 +934,37 @@
         
         loadAllInitiatives();
         
-        document.getElementById('wsjf').addEventListener('blur', function() {
-            const wsjfValue = parseFloat(this.value);
-            if (!wsjfValue) return;
-            
-            const duplicate = allInitiatives.find(i => {
-                // Exclude current initiative if editing
-                if (initiativeId && i.id === initiativeId) return false;
-                return parseFloat(i.wsjf) === wsjfValue;
+        // Wait for DOM to be ready before attaching event listeners
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', attachEventListeners);
+        } else {
+            attachEventListeners();
+        }
+
+        function attachEventListeners() {
+            document.getElementById('wsjf').addEventListener('blur', function() {
+                const wsjfValue = parseFloat(this.value);
+                if (!wsjfValue) return;
+                
+                const duplicate = allInitiatives.find(i => {
+                    // Exclude current initiative if editing
+                    if (initiativeId && i.id === initiativeId) return false;
+                    return parseFloat(i.wsjf) === wsjfValue;
+                });
+                
+                if (duplicate) {
+                    this.setCustomValidity(`WSJF value ${wsjfValue.toFixed(2)} is already used by "${duplicate.name}"`);
+                    this.reportValidity();
+                } else {
+                    this.setCustomValidity('');
+                }
             });
             
-            if (duplicate) {
-                this.setCustomValidity(`WSJF value ${wsjfValue.toFixed(2)} is already used by "${duplicate.name}"`);
-                this.reportValidity();
-            } else {
+            document.getElementById('wsjf').addEventListener('input', function() {
                 this.setCustomValidity('');
-            }
-        });
-        
-        document.getElementById('wsjf').addEventListener('input', function() {
-            this.setCustomValidity('');
-        });
+            });
 
-        document.getElementById('intakeForm').addEventListener('submit', async (e) => {
+            document.getElementById('intakeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const dependentSystemsData = [];
@@ -1034,6 +1042,7 @@
                 showError('Unable to connect to server. Please ensure the backend is running.');
             }
         });
+        }
 
         function showSuccess() {
             document.getElementById('successMessage').classList.remove('hidden');
