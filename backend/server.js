@@ -418,12 +418,22 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
                                'businessValue', 'risks', 'dependencies'];
         
         fieldsToTrack.forEach(field => {
-            if (req.body[field] !== undefined && req.body[field] !== initiative[field]) {
-                fieldChanges.push({
-                    field: field,
-                    oldValue: initiative[field],
-                    newValue: req.body[field]
-                });
+            if (req.body[field] !== undefined) {
+                const oldValue = initiative[field];
+                const newValue = req.body[field];
+                
+                // Convert to strings for comparison to handle type differences
+                const oldStr = oldValue === null || oldValue === undefined ? '' : String(oldValue);
+                const newStr = newValue === null || newValue === undefined ? '' : String(newValue);
+                
+                if (oldStr !== newStr) {
+                    console.log(`Field ${field} changed: "${oldValue}" -> "${newValue}"`);
+                    fieldChanges.push({
+                        field: field,
+                        oldValue: oldValue,
+                        newValue: newValue
+                    });
+                }
             }
         });
         
