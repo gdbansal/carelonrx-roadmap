@@ -1842,6 +1842,20 @@ app.get('/api/jira/issue/:issueKey', authMiddleware, async (req, res) => {
     }
 });
 
+app.get('/api/jira/test', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+            return res.json({ success: false, message: 'Env vars missing', vars: { JIRA_BASE_URL: !!process.env.JIRA_BASE_URL, JIRA_EMAIL: !!process.env.JIRA_EMAIL, JIRA_API_TOKEN: !!process.env.JIRA_API_TOKEN } });
+        }
+        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
+        const url = `${process.env.JIRA_BASE_URL}/rest/api/2/myself`;
+        const { status, body } = await jiraRequest(url, base64Auth);
+        res.json({ success: status === 200, httpStatus: status, jiraUser: body.displayName || body.name, jiraEmail: body.emailAddress, error: status !== 200 ? body : undefined });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
 // ========== HEALTH CHECK ==========
 
 app.get('/api/health', (req, res) => {
