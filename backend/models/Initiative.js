@@ -52,6 +52,22 @@ const initiativeSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    sitStartDate: {
+        type: String,
+        default: null
+    },
+    sitEndDate: {
+        type: String,
+        default: null
+    },
+    uatStartDate: {
+        type: String,
+        default: null
+    },
+    uatEndDate: {
+        type: String,
+        default: null
+    },
     businessCommitmentDate: {
         type: String,
         default: null

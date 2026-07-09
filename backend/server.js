@@ -445,13 +445,14 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
         
         // Update initiative - only assign known safe fields
         const allowedFields = ['name', 'description', 'businessUnit', 'program', 'year', 'quarter',
-            'startDate', 'deliveryDate', 'businessCommitmentDate', 'budgetApproved', 'priority',
-            'holdReason', 'wsjf', 'userBusinessValue', 'timeCriticality', 'riskReduction', 'jobSize',
+            'startDate', 'deliveryDate', 'sitStartDate', 'sitEndDate', 'uatStartDate', 'uatEndDate',
+            'businessCommitmentDate', 'budgetApproved', 'priority', 'holdReason', 'wsjf', 
+            'userBusinessValue', 'timeCriticality', 'riskReduction', 'jobSize',
             'owner', 'dependentSystems', 'businessValue', 'risks', 'dependencies'];
         allowedFields.forEach(field => {
             if (req.body[field] !== undefined) {
                 // Convert empty string to null for optional date fields
-                if (['startDate', 'deliveryDate', 'businessCommitmentDate'].includes(field)) {
+                if (['startDate', 'deliveryDate', 'sitStartDate', 'sitEndDate', 'uatStartDate', 'uatEndDate', 'businessCommitmentDate'].includes(field)) {
                     initiative[field] = req.body[field] || null;
                 } else {
                     initiative[field] = req.body[field];
