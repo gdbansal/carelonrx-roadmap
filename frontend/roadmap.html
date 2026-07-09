@@ -616,7 +616,12 @@
 
         function renderRoadmap() {
             const selectedYear = document.getElementById('yearFilter').value;
-            let initiatives = allInitiatives.filter(i => i.year === selectedYear);
+            console.log('Selected year:', selectedYear, 'Type:', typeof selectedYear);
+            console.log('Total initiatives:', allInitiatives.length);
+            let initiatives = allInitiatives.filter(i => {
+                console.log('Initiative year:', i.year, 'Type:', typeof i.year, 'Match:', String(i.year) === String(selectedYear));
+                return String(i.year) === String(selectedYear);
+            });
             
             // Filter by selected LOBs
             if (selectedLobs.length > 0) {
