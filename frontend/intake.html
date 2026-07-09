@@ -424,12 +424,14 @@
     </div>
 
     <script>
-        lucide.createIcons();
-
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!user.username) {
-            window.location.href = 'login.html';
-        }
+        let user = {};
+        let hasUnsavedChanges = false;
+        let formSubmitted = false;
+        let isEditMode = false;
+        let initiativeId = null;
+        let systemCounter = 0;
+        let pmSpocNames = new Set();
+        let businessUnits = new Set();
 
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
@@ -470,7 +472,6 @@
             }
         }
 
-        loadUserProfile();
 
         // Toggle Hold Reason field based on priority selection
         function toggleHoldReason() {
@@ -536,9 +537,6 @@
             'Self Service Portal'
         ];
 
-        let systemCounter = 0;
-        let pmSpocNames = new Set();
-        let businessUnits = new Set();
 
         function addDependentSystem() {
             const container = document.getElementById('dependentSystemsList');
@@ -625,24 +623,44 @@
             document.getElementById(id).remove();
         }
 
-        addDependentSystem();
-        
-        // Load PM SPOC names from existing initiatives
-        loadPmSpocNames();
-
-        // Track unsaved changes
-        let hasUnsavedChanges = false;
-        let formSubmitted = false;
-
         // Mark form as changed when any input is modified
         function markFormAsChanged() {
             hasUnsavedChanges = true;
         }
 
-        // Add change listeners to all form inputs
-        document.querySelectorAll('#intakeForm input, #intakeForm select, #intakeForm textarea').forEach(element => {
-            element.addEventListener('change', markFormAsChanged);
-            element.addEventListener('input', markFormAsChanged);
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+
+            user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.username) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            loadUserProfile();
+            addDependentSystem();
+            loadPmSpocNames();
+
+            // Add change listeners to all form inputs
+            document.querySelectorAll('#intakeForm input, #intakeForm select, #intakeForm textarea').forEach(element => {
+                element.addEventListener('change', markFormAsChanged);
+                element.addEventListener('input', markFormAsChanged);
+            });
+
+            // Check if editing
+            const urlParams = new URLSearchParams(window.location.search);
+            initiativeId = urlParams.get('id');
+            if (initiativeId) {
+                isEditMode = true;
+                loadInitiativeData(initiativeId);
+            } else {
+                const currentYear = new Date().getFullYear().toString();
+                const yearSelect = document.getElementById('year');
+                if (yearSelect) {
+                    const yearOption = yearSelect.querySelector(`option[value="${currentYear}"]`);
+                    if (yearOption) yearSelect.value = currentYear;
+                }
+            }
         });
 
         // Warn user before leaving page with unsaved changes
@@ -668,25 +686,6 @@
             });
         });
 
-        // Check if we're editing an existing initiative
-        const urlParams = new URLSearchParams(window.location.search);
-        const initiativeId = urlParams.get('id');
-        let isEditMode = false;
-
-        if (initiativeId) {
-            isEditMode = true;
-            loadInitiativeData(initiativeId);
-        } else {
-            // Set current year as default for new initiatives
-            const currentYear = new Date().getFullYear().toString();
-            const yearSelect = document.getElementById('year');
-            if (yearSelect) {
-                const yearOption = yearSelect.querySelector(`option[value="${currentYear}"]`);
-                if (yearOption) {
-                    yearSelect.value = currentYear;
-                }
-            }
-        }
 
         async function loadInitiativeData(id) {
             try {
