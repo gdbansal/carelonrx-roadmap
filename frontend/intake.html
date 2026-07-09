@@ -550,9 +550,9 @@
                         <option value="">Select System</option>
                         ${dependentSystems.map(sys => `<option value="${sys}">${sys}</option>`).join('')}
                     </select>
-                    <input type="text" placeholder="PM/SPOC Name *" list="pmSpocList" required
+                    <input type="text" placeholder="PM/SPOC Name" list="pmSpocList"
                         class="system-pm-spoc px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                    <input type="url" placeholder="JIRA URL (e.g., https://jira.company.com/browse/PROJ-123)" 
+                    <input type="text" placeholder="JIRA URL (e.g., https://jira.company.com/browse/PROJ-123)" 
                         class="system-jira-url px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
                 <button type="button" onclick="removeSystem('${id}')" 
