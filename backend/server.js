@@ -443,8 +443,14 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
             fieldChanges: fieldChanges
         };
         
-        // Update initiative
-        Object.assign(initiative, req.body);
+        // Update initiative - only assign known safe fields
+        const allowedFields = ['name', 'description', 'businessUnit', 'program', 'year', 'quarter',
+            'startDate', 'deliveryDate', 'businessCommitmentDate', 'budgetApproved', 'priority',
+            'holdReason', 'wsjf', 'userBusinessValue', 'timeCriticality', 'riskReduction', 'jobSize',
+            'owner', 'dependentSystems', 'businessValue', 'risks', 'dependencies'];
+        allowedFields.forEach(field => {
+            if (req.body[field] !== undefined) initiative[field] = req.body[field];
+        });
         initiative.updatedAt = timestamp;
         initiative.updatedBy = req.user.username;
         initiative.changeLog.push(changeLogEntry);
@@ -463,7 +469,8 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
         console.error('Error updating initiative:', error);
         res.status(500).json({
             success: false,
-            message: 'Error updating initiative'
+            message: 'Error updating initiative',
+            error: error.message
         });
     }
 });
