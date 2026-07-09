@@ -960,6 +960,8 @@
 
         document.getElementById('intakeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            formSubmitted = true;
+            hasUnsavedChanges = false;
             
             const dependentSystemsData = [];
             document.querySelectorAll('#dependentSystemsList > div').forEach(div => {
