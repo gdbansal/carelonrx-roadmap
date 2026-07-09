@@ -461,14 +461,24 @@
             const modal = document.getElementById('initiativeModal');
             const modalContent = document.getElementById('modalContent');
             
+            // Helper function to extract JIRA issue key from URL
+            function extractJiraKey(url) {
+                if (!url) return null;
+                const match = url.match(/[A-Z]+-\d+/);
+                return match ? match[0] : null;
+            }
+
             const dependentSystemsHTML = initiative.dependentSystems && initiative.dependentSystems.length > 0
-                ? initiative.dependentSystems.map(sys => `
+                ? initiative.dependentSystems.map(sys => {
+                    const jiraKey = extractJiraKey(sys.jiraUrl);
+                    return `
                     <div class="bg-gray-50 p-3 rounded-lg">
                         <p class="font-semibold text-gray-800">${sys.system}</p>
                         ${sys.pmSpoc ? `<p class="text-sm text-gray-600">PM/SPOC: ${sys.pmSpoc}</p>` : ''}
-                        ${sys.jiraUrl ? `<p class="text-sm"><a href="${sys.jiraUrl}" target="_blank" class="text-blue-600 hover:underline">JIRA Link</a></p>` : ''}
+                        ${jiraKey ? `<p class="text-sm"><a href="${sys.jiraUrl}" target="_blank" class="text-blue-600 hover:underline font-semibold">${jiraKey}</a></p>` : ''}
                     </div>
-                `).join('')
+                `;
+                }).join('')
                 : '<p class="text-gray-500">No dependent systems</p>';
             
             modalContent.innerHTML = `
