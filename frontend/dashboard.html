@@ -134,6 +134,7 @@
                         <option value="2024">2024</option>
                         <option value="2025">2025</option>
                         <option value="2026">2026</option>
+                        <option value="2027">2027</option>
                     </select>
                 </div>
             </div>
@@ -638,6 +639,12 @@
 
             if (user.role === 'admin') {
                 document.getElementById('adminDropdownLink').classList.remove('hidden');
+            }
+
+            const currentYear = new Date().getFullYear().toString();
+            const yearSelect = document.getElementById('filterYear');
+            if ([...yearSelect.options].some(o => o.value === currentYear)) {
+                yearSelect.value = currentYear;
             }
 
             document.getElementById('searchInput').addEventListener('input', filterAndRenderTable);
