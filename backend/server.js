@@ -462,20 +462,30 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
             'userBusinessValue', 'timeCriticality', 'riskReduction', 'jobSize',
             'owner', 'dependentSystems', 'businessValue', 'risks', 'dependencies'];
         
-        console.log('Updating initiative - businessUnit from request:', req.body.businessUnit);
+        console.log('=== UPDATE INITIATIVE DEBUG ===');
+        console.log('Initiative ID:', req.params.id);
+        console.log('Current businessUnit in DB:', initiative.businessUnit);
+        console.log('New businessUnit from request:', req.body.businessUnit);
+        console.log('Request body keys:', Object.keys(req.body));
         
         allowedFields.forEach(field => {
             if (req.body[field] !== undefined) {
+                const oldValue = initiative[field];
                 // Convert empty string to null for optional date fields
                 if (['startDate', 'deliveryDate', 'sitStartDate', 'sitEndDate', 'uatStartDate', 'uatEndDate', 'businessCommitmentDate'].includes(field)) {
                     initiative[field] = req.body[field] || null;
                 } else {
                     initiative[field] = req.body[field];
                 }
+                if (field === 'businessUnit') {
+                    console.log(`businessUnit assignment: ${oldValue} -> ${initiative[field]}`);
+                }
             }
         });
         
-        console.log('After update - businessUnit value:', initiative.businessUnit);
+        console.log('After assignment - businessUnit value:', initiative.businessUnit);
+        console.log('Field changes detected:', fieldChanges.length);
+        console.log('=== END DEBUG ===');
         initiative.updatedAt = timestamp;
         initiative.updatedBy = req.user.username;
         initiative.changeLog.push(changeLogEntry);
