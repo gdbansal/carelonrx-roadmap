@@ -46,11 +46,11 @@ const initiativeSchema = new mongoose.Schema({
     },
     startDate: {
         type: String,
-        required: true
+        default: null
     },
     deliveryDate: {
         type: String,
-        required: true
+        default: null
     },
     businessCommitmentDate: {
         type: String,

@@ -449,7 +449,14 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
             'holdReason', 'wsjf', 'userBusinessValue', 'timeCriticality', 'riskReduction', 'jobSize',
             'owner', 'dependentSystems', 'businessValue', 'risks', 'dependencies'];
         allowedFields.forEach(field => {
-            if (req.body[field] !== undefined) initiative[field] = req.body[field];
+            if (req.body[field] !== undefined) {
+                // Convert empty string to null for optional date fields
+                if (['startDate', 'deliveryDate', 'businessCommitmentDate'].includes(field)) {
+                    initiative[field] = req.body[field] || null;
+                } else {
+                    initiative[field] = req.body[field];
+                }
+            }
         });
         initiative.updatedAt = timestamp;
         initiative.updatedBy = req.user.username;
