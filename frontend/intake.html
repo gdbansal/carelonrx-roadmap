@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Product 360 - Initiative Intake</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -86,7 +83,7 @@
                     </div>
                 </div>
 
-                <form id="intakeForm" class="space-y-6" novalidate>
+                <form id="intakeForm" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
                             <label for="initiativeName" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -424,14 +421,12 @@
     </div>
 
     <script>
-        let user = {};
-        let hasUnsavedChanges = false;
-        let formSubmitted = false;
-        let isEditMode = false;
-        let initiativeId = null;
-        let systemCounter = 0;
-        let pmSpocNames = new Set();
-        let businessUnits = new Set();
+        lucide.createIcons();
+
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.username) {
+            window.location.href = 'login.html';
+        }
 
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
@@ -472,6 +467,7 @@
             }
         }
 
+        loadUserProfile();
 
         // Toggle Hold Reason field based on priority selection
         function toggleHoldReason() {
@@ -537,6 +533,9 @@
             'Self Service Portal'
         ];
 
+        let systemCounter = 0;
+        let pmSpocNames = new Set();
+        let businessUnits = new Set();
 
         function addDependentSystem() {
             const container = document.getElementById('dependentSystemsList');
@@ -551,9 +550,9 @@
                         <option value="">Select System</option>
                         ${dependentSystems.map(sys => `<option value="${sys}">${sys}</option>`).join('')}
                     </select>
-                    <input type="text" placeholder="PM/SPOC Name" list="pmSpocList"
+                    <input type="text" placeholder="PM/SPOC Name *" list="pmSpocList" required
                         class="system-pm-spoc px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                    <input type="text" placeholder="JIRA URL (e.g., https://jira.company.com/browse/PROJ-123)" 
+                    <input type="url" placeholder="JIRA URL (e.g., https://jira.company.com/browse/PROJ-123)" 
                         class="system-jira-url px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
                 <button type="button" onclick="removeSystem('${id}')" 
@@ -623,44 +622,24 @@
             document.getElementById(id).remove();
         }
 
+        addDependentSystem();
+        
+        // Load PM SPOC names from existing initiatives
+        loadPmSpocNames();
+
+        // Track unsaved changes
+        let hasUnsavedChanges = false;
+        let formSubmitted = false;
+
         // Mark form as changed when any input is modified
         function markFormAsChanged() {
             hasUnsavedChanges = true;
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-
-            user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (!user.username) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            loadUserProfile();
-            addDependentSystem();
-            loadPmSpocNames();
-
-            // Add change listeners to all form inputs
-            document.querySelectorAll('#intakeForm input, #intakeForm select, #intakeForm textarea').forEach(element => {
-                element.addEventListener('change', markFormAsChanged);
-                element.addEventListener('input', markFormAsChanged);
-            });
-
-            // Check if editing
-            const urlParams = new URLSearchParams(window.location.search);
-            initiativeId = urlParams.get('id');
-            if (initiativeId) {
-                isEditMode = true;
-                loadInitiativeData(initiativeId);
-            } else {
-                const currentYear = new Date().getFullYear().toString();
-                const yearSelect = document.getElementById('year');
-                if (yearSelect) {
-                    const yearOption = yearSelect.querySelector(`option[value="${currentYear}"]`);
-                    if (yearOption) yearSelect.value = currentYear;
-                }
-            }
+        // Add change listeners to all form inputs
+        document.querySelectorAll('#intakeForm input, #intakeForm select, #intakeForm textarea').forEach(element => {
+            element.addEventListener('change', markFormAsChanged);
+            element.addEventListener('input', markFormAsChanged);
         });
 
         // Warn user before leaving page with unsaved changes
@@ -686,6 +665,25 @@
             });
         });
 
+        // Check if we're editing an existing initiative
+        const urlParams = new URLSearchParams(window.location.search);
+        const initiativeId = urlParams.get('id');
+        let isEditMode = false;
+
+        if (initiativeId) {
+            isEditMode = true;
+            loadInitiativeData(initiativeId);
+        } else {
+            // Set current year as default for new initiatives
+            const currentYear = new Date().getFullYear().toString();
+            const yearSelect = document.getElementById('year');
+            if (yearSelect) {
+                const yearOption = yearSelect.querySelector(`option[value="${currentYear}"]`);
+                if (yearOption) {
+                    yearSelect.value = currentYear;
+                }
+            }
+        }
 
         async function loadInitiativeData(id) {
             try {
@@ -960,8 +958,6 @@
 
         document.getElementById('intakeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            formSubmitted = true;
-            hasUnsavedChanges = false;
             
             const dependentSystemsData = [];
             document.querySelectorAll('#dependentSystemsList > div').forEach(div => {
