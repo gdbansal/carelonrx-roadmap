@@ -532,7 +532,11 @@
             });
 
             initiatives.forEach(initiative => {
-                grid.innerHTML += `<div class="roadmap-project">${initiative.name}</div>`;
+                // Create project name label
+                const projectLabel = document.createElement('div');
+                projectLabel.className = 'roadmap-project';
+                projectLabel.textContent = initiative.name;
+                grid.appendChild(projectLabel);
                 
                 // Create a single container that spans all 12 months
                 const rowId = `row-${initiative.id}`;
