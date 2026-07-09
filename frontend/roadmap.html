@@ -561,7 +561,11 @@
                     bar.textContent = initiative.priority === 'On Hold' 
                         ? `${initiative.name} (On Hold)` 
                         : initiative.name;
-                    bar.onclick = () => showInitiativeDetails(initiative.id);
+                    bar.setAttribute('data-initiative-id', initiative.id);
+                    bar.onclick = (e) => {
+                        e.stopPropagation();
+                        showInitiativeDetails(initiative.id);
+                    };
                     
                     // Create tooltip with impacted systems
                     const tooltip = document.createElement('div');
