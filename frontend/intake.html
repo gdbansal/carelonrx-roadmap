@@ -948,6 +948,10 @@
                 'quarter': 'Quarter',
                 'startDate': 'Start Date',
                 'deliveryDate': 'Delivery Date',
+                'sitStartDate': 'SIT Start Date',
+                'sitEndDate': 'SIT End Date',
+                'uatStartDate': 'UAT Start Date',
+                'uatEndDate': 'UAT End Date',
                 'businessCommitmentDate': 'Business Commitment Date',
                 'budgetApproved': 'Budget Approved',
                 'priority': 'Priority',
@@ -970,7 +974,9 @@
                 return value ? 'Yes' : 'No';
             }
             
-            if (field === 'startDate' || field === 'deliveryDate' || field === 'businessCommitmentDate') {
+            if (field === 'startDate' || field === 'deliveryDate' || field === 'sitStartDate' || 
+                field === 'sitEndDate' || field === 'uatStartDate' || field === 'uatEndDate' || 
+                field === 'businessCommitmentDate') {
                 return new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
             }
             
