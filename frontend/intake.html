@@ -791,9 +791,12 @@
                     }
                     
                     // Populate form fields
+                    console.log('Loading initiative data:', initiative);
+                    console.log('businessUnit from API:', initiative.businessUnit);
                     document.getElementById('initiativeName').value = initiative.name || '';
                     document.getElementById('description').value = initiative.description || '';
                     document.getElementById('businessUnit').value = initiative.businessUnit || '';
+                    console.log('businessUnit field value after setting:', document.getElementById('businessUnit').value);
                     document.getElementById('program').value = initiative.program || '';
                     document.getElementById('year').value = initiative.year || '';
                     document.getElementById('quarter').value = initiative.quarter || '';
