@@ -449,6 +449,9 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
             'businessCommitmentDate', 'budgetApproved', 'priority', 'holdReason', 'wsjf', 
             'userBusinessValue', 'timeCriticality', 'riskReduction', 'jobSize',
             'owner', 'dependentSystems', 'businessValue', 'risks', 'dependencies'];
+        
+        console.log('Updating initiative - businessUnit from request:', req.body.businessUnit);
+        
         allowedFields.forEach(field => {
             if (req.body[field] !== undefined) {
                 // Convert empty string to null for optional date fields
@@ -459,6 +462,8 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
                 }
             }
         });
+        
+        console.log('After update - businessUnit value:', initiative.businessUnit);
         initiative.updatedAt = timestamp;
         initiative.updatedBy = req.user.username;
         initiative.changeLog.push(changeLogEntry);
