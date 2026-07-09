@@ -6,9 +6,10 @@
     <title>Product 360 - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="assets/session-manager.js"></script>
-    <script src="assets/product360-sidebar.js" defer></script>
-    <link rel="stylesheet" href="assets/carelon-theme.css">
+    <script src="assets/session-manager.js?v=2.1"></script>
+    <script src="assets/product360-sidebar.js?v=2.1" defer></script>
+    <link rel="stylesheet" href="assets/carelon-theme.css?v=2.1">
+    <!-- Dashboard v2.1 - Filter Fix -->
 </head>
 <body class="bg-gray-50">
     <nav class="bg-white shadow-lg">
@@ -291,6 +292,9 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const yearFilter = document.getElementById('filterYear').value;
             
+            console.log('Filtering - Search:', searchTerm, 'Year:', yearFilter);
+            console.log('Total initiatives:', currentInitiatives.length);
+            
             // Filter initiatives
             let filtered = currentInitiatives.filter(initiative => {
                 const matchesSearch = !searchTerm || 
@@ -299,10 +303,12 @@
                     (initiative.program || '').toLowerCase().includes(searchTerm) ||
                     (initiative.owner || '').toLowerCase().includes(searchTerm);
                 
-                const matchesYear = yearFilter === 'all' || initiative.year === yearFilter;
+                const matchesYear = yearFilter === 'all' || String(initiative.year) === yearFilter;
                 
                 return matchesSearch && matchesYear;
             });
+            
+            console.log('Filtered initiatives:', filtered.length);
 
             // Sort filtered initiatives
             if (sortColumn) {
