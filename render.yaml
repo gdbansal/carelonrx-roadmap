@@ -17,6 +17,16 @@ services:
     env: static
     buildCommand: echo "No build needed for static site"
     staticPublishPath: ./frontend
+    headers:
+      - path: /*.html
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+      - path: /*.html
+        name: Pragma
+        value: no-cache
+      - path: /*.html
+        name: Expires
+        value: "0"
     routes:
       - type: rewrite
         source: /*
