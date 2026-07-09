@@ -501,6 +501,40 @@
 
         loadUserProfile();
 
+        // Calculate next working day (skip weekends)
+        function getNextWorkingDay(date) {
+            const nextDay = new Date(date);
+            nextDay.setDate(nextDay.getDate() + 1);
+            
+            // If Saturday (6), add 2 days to get to Monday
+            // If Sunday (0), add 1 day to get to Monday
+            const dayOfWeek = nextDay.getDay();
+            if (dayOfWeek === 6) { // Saturday
+                nextDay.setDate(nextDay.getDate() + 2);
+            } else if (dayOfWeek === 0) { // Sunday
+                nextDay.setDate(nextDay.getDate() + 1);
+            }
+            
+            return nextDay;
+        }
+
+        // Auto-populate UAT Start Date when SIT End Date is selected
+        function handleSitEndDateChange() {
+            const sitEndDate = document.getElementById('sitEndDate').value;
+            const uatStartDateField = document.getElementById('uatStartDate');
+            
+            if (sitEndDate && !uatStartDateField.value) {
+                const sitEnd = new Date(sitEndDate);
+                const uatStart = getNextWorkingDay(sitEnd);
+                
+                // Format date as YYYY-MM-DD for input field
+                const year = uatStart.getFullYear();
+                const month = String(uatStart.getMonth() + 1).padStart(2, '0');
+                const day = String(uatStart.getDate()).padStart(2, '0');
+                uatStartDateField.value = `${year}-${month}-${day}`;
+            }
+        }
+
         // Toggle Hold Reason field based on priority selection
         function toggleHoldReason() {
             const priority = document.getElementById('priority').value;
@@ -978,6 +1012,9 @@
         }
 
         function attachEventListeners() {
+            // Auto-populate UAT Start Date when SIT End Date changes
+            document.getElementById('sitEndDate').addEventListener('change', handleSitEndDateChange);
+            
             document.getElementById('wsjf').addEventListener('blur', function() {
                 const wsjfValue = parseFloat(this.value);
                 if (!wsjfValue) return;
