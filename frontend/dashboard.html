@@ -284,50 +284,73 @@
                 sortDirection = column === 'wsjf' ? 'desc' : 'asc';
             }
 
-            const sorted = [...currentInitiatives].sort((a, b) => {
-                let aVal, bVal;
+            filterAndRenderTable();
+        }
 
-                switch(column) {
-                    case 'name':
-                        aVal = (a.name || '').toLowerCase();
-                        bVal = (b.name || '').toLowerCase();
-                        break;
-                    case 'year':
-                        aVal = parseInt(a.year) || 0;
-                        bVal = parseInt(b.year) || 0;
-                        break;
-                    case 'quarter':
-                        const quarterOrder = {'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 4};
-                        aVal = quarterOrder[a.quarter] || 0;
-                        bVal = quarterOrder[b.quarter] || 0;
-                        break;
-                    case 'budget':
-                        aVal = a.budgetApproved ? 1 : 0;
-                        bVal = b.budgetApproved ? 1 : 0;
-                        break;
-                    case 'priority':
-                        const priorityOrder = {'Critical': 5, 'High': 4, 'Medium': 3, 'Low': 2, 'On Hold': 1};
-                        aVal = priorityOrder[a.priority] || 0;
-                        bVal = priorityOrder[b.priority] || 0;
-                        break;
-                    case 'wsjf':
-                        aVal = parseFloat(a.wsjf) || 0;
-                        bVal = parseFloat(b.wsjf) || 0;
-                        break;
-                    case 'deliveryDate':
-                        aVal = a.deliveryDate ? new Date(a.deliveryDate).getTime() : 0;
-                        bVal = b.deliveryDate ? new Date(b.deliveryDate).getTime() : 0;
-                        break;
-                    default:
-                        return 0;
-                }
-
-                if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-                if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
-                return 0;
+        function filterAndRenderTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const yearFilter = document.getElementById('filterYear').value;
+            
+            // Filter initiatives
+            let filtered = currentInitiatives.filter(initiative => {
+                const matchesSearch = !searchTerm || 
+                    (initiative.name || '').toLowerCase().includes(searchTerm) ||
+                    (initiative.description || '').toLowerCase().includes(searchTerm) ||
+                    (initiative.program || '').toLowerCase().includes(searchTerm) ||
+                    (initiative.owner || '').toLowerCase().includes(searchTerm);
+                
+                const matchesYear = yearFilter === 'all' || initiative.year === yearFilter;
+                
+                return matchesSearch && matchesYear;
             });
 
-            renderTable(sorted);
+            // Sort filtered initiatives
+            if (sortColumn) {
+                filtered.sort((a, b) => {
+                    let aVal, bVal;
+
+                    switch(sortColumn) {
+                        case 'name':
+                            aVal = (a.name || '').toLowerCase();
+                            bVal = (b.name || '').toLowerCase();
+                            break;
+                        case 'year':
+                            aVal = parseInt(a.year) || 0;
+                            bVal = parseInt(b.year) || 0;
+                            break;
+                        case 'quarter':
+                            const quarterOrder = {'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 4};
+                            aVal = quarterOrder[a.quarter] || 0;
+                            bVal = quarterOrder[b.quarter] || 0;
+                            break;
+                        case 'budget':
+                            aVal = a.budgetApproved ? 1 : 0;
+                            bVal = b.budgetApproved ? 1 : 0;
+                            break;
+                        case 'priority':
+                            const priorityOrder = {'Critical': 5, 'High': 4, 'Medium': 3, 'Low': 2, 'On Hold': 1};
+                            aVal = priorityOrder[a.priority] || 0;
+                            bVal = priorityOrder[b.priority] || 0;
+                            break;
+                        case 'wsjf':
+                            aVal = parseFloat(a.wsjf) || 0;
+                            bVal = parseFloat(b.wsjf) || 0;
+                            break;
+                        case 'deliveryDate':
+                            aVal = a.deliveryDate ? new Date(a.deliveryDate).getTime() : 0;
+                            bVal = b.deliveryDate ? new Date(b.deliveryDate).getTime() : 0;
+                            break;
+                        default:
+                            return 0;
+                    }
+
+                    if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            renderTable(filtered);
         }
 
         function updateStats(initiatives) {
@@ -608,24 +631,8 @@
             }
         }
 
-        document.getElementById('searchInput').addEventListener('input', filterTable);
-        document.getElementById('filterYear').addEventListener('change', filterTable);
-
-        function filterTable() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const yearFilter = document.getElementById('filterYear').value;
-            
-            const rows = document.querySelectorAll('#initiativesTable tr');
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                const year = row.children[1]?.textContent;
-                
-                const matchesSearch = text.includes(searchTerm);
-                const matchesYear = yearFilter === 'all' || year === yearFilter;
-                
-                row.style.display = matchesSearch && matchesYear ? '' : 'none';
-            });
-        }
+        document.getElementById('searchInput').addEventListener('input', filterAndRenderTable);
+        document.getElementById('filterYear').addEventListener('change', filterAndRenderTable);
 
         loadDashboard();
         loadUserProfile();
