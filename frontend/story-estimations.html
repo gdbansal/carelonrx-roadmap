@@ -1824,6 +1824,21 @@
             try {
                 const session = await getSession(state.sessionId);
                 if (session) {
+                    console.log('🔄 Polling - Session status:', session.status);
+                    
+                    // Check if session has been closed
+                    if (session.status === 'closed') {
+                        console.log('🛑 Session closed detected!');
+                        stopPolling();
+                        state.currentSession = null;
+                        state.sessionId = '';
+                        state.stories = [];
+                        localStorage.removeItem('storyPointEstimatorSessionId');
+                        alert(`Session has been ended by ${session.closedBy || 'the session creator'}. You will need to join a new session.`);
+                        render();
+                        return;
+                    }
+                    
                     // Check if there are actual changes
                     const currentData = JSON.stringify({
                         participants: state.currentSession.participants,
