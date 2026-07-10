@@ -1935,6 +1935,7 @@ app.get('/api/jira/projects', async (req, res) => {
         // Fetch projects from JIRA REST API using existing jiraRequest helper
         const url = `${process.env.JIRA_BASE_URL}/rest/api/2/project`;
         console.log('Fetching JIRA projects from:', url);
+        console.log('JIRA_BASE_URL:', process.env.JIRA_BASE_URL);
         
         const { status, body } = await jiraRequest(url, base64Auth);
         
@@ -1972,10 +1973,21 @@ app.get('/api/jira/projects', async (req, res) => {
         }
     } catch (error) {
         console.error('Error fetching JIRA projects:', error);
-        res.status(500).json({
+        
+        // Provide helpful error messages based on error type
+        let errorMessage = 'Failed to fetch JIRA projects';
+        if (error.code === 'ENOTFOUND') {
+            errorMessage = `Cannot connect to JIRA server. Please verify JIRA_BASE_URL is correct. Current: ${process.env.JIRA_BASE_URL}. Should be like: https://yourcompany.atlassian.net`;
+        } else if (error.code === 'ECONNREFUSED') {
+            errorMessage = 'Connection refused by JIRA server';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        res.json({
             success: false,
-            message: 'Failed to fetch JIRA projects',
-            error: error.message
+            message: errorMessage,
+            error: error.code || error.message
         });
     }
 });
