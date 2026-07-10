@@ -1918,6 +1918,11 @@ app.get('/api/jira/projects', async (req, res) => {
     try {
         // Check if JIRA is configured
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+            console.log('JIRA env vars check:', {
+                JIRA_BASE_URL: !!process.env.JIRA_BASE_URL,
+                JIRA_EMAIL: !!process.env.JIRA_EMAIL,
+                JIRA_API_TOKEN: !!process.env.JIRA_API_TOKEN
+            });
             return res.json({
                 success: false,
                 message: 'JIRA integration not configured. Please set JIRA_BASE_URL, JIRA_EMAIL, and JIRA_API_TOKEN environment variables.'
@@ -1927,24 +1932,26 @@ app.get('/api/jira/projects', async (req, res) => {
         // Create base64 auth token
         const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
         
-        // Fetch projects from JIRA REST API
+        // Fetch projects from JIRA REST API using existing jiraRequest helper
         const url = `${process.env.JIRA_BASE_URL}/rest/api/2/project`;
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Basic ${base64Auth}`,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`JIRA API returned ${response.status}: ${response.statusText}`);
+        console.log('Fetching JIRA projects from:', url);
+        
+        const { status, body } = await jiraRequest(url, base64Auth);
+        
+        console.log('JIRA API response status:', status);
+        
+        if (status !== 200) {
+            console.error('JIRA API error:', body);
+            return res.json({
+                success: false,
+                message: `JIRA API returned ${status}: ${body.errorMessages || body.message || 'Unknown error'}`
+            });
         }
 
-        const projects = await response.json();
+        const projects = body;
         
-        if (projects && projects.length > 0) {
+        if (projects && Array.isArray(projects) && projects.length > 0) {
+            console.log(`Found ${projects.length} JIRA projects`);
             // Extract project names for team selection
             const teamNames = projects.map(p => ({
                 key: p.key,
@@ -1957,6 +1964,7 @@ app.get('/api/jira/projects', async (req, res) => {
                 projects: teamNames
             });
         } else {
+            console.log('No projects in response or invalid format');
             res.json({
                 success: false,
                 message: 'No JIRA projects found'
