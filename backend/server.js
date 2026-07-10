@@ -1912,6 +1912,41 @@ app.get('/api/jira/test', authMiddleware, async (req, res) => {
     }
 });
 
+// ========== JIRA MCP INTEGRATION ==========
+
+app.get('/api/jira/projects', async (req, res) => {
+    try {
+        // Use MCP to get JIRA projects
+        const projects = await mcp0_list_jira_projects();
+        
+        if (projects && projects.length > 0) {
+            // Extract project names for team selection
+            const teamNames = projects.map(p => ({
+                key: p.key,
+                name: p.name,
+                lead: p.lead?.displayName || 'Unknown'
+            }));
+            
+            res.json({
+                success: true,
+                projects: teamNames
+            });
+        } else {
+            res.json({
+                success: false,
+                message: 'No JIRA projects found'
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching JIRA projects:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch JIRA projects',
+            error: error.message
+        });
+    }
+});
+
 // ========== HEALTH CHECK ==========
 
 app.get('/api/health', (req, res) => {
