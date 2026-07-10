@@ -1912,12 +1912,37 @@ app.get('/api/jira/test', authMiddleware, async (req, res) => {
     }
 });
 
-// ========== JIRA MCP INTEGRATION ==========
+// ========== JIRA INTEGRATION ==========
 
 app.get('/api/jira/projects', async (req, res) => {
     try {
-        // Use MCP to get JIRA projects
-        const projects = await mcp0_list_jira_projects();
+        // Check if JIRA is configured
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+            return res.json({
+                success: false,
+                message: 'JIRA integration not configured. Please set JIRA_BASE_URL, JIRA_EMAIL, and JIRA_API_TOKEN environment variables.'
+            });
+        }
+
+        // Create base64 auth token
+        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
+        
+        // Fetch projects from JIRA REST API
+        const url = `${process.env.JIRA_BASE_URL}/rest/api/2/project`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${base64Auth}`,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`JIRA API returned ${response.status}: ${response.statusText}`);
+        }
+
+        const projects = await response.json();
         
         if (projects && projects.length > 0) {
             // Extract project names for team selection
