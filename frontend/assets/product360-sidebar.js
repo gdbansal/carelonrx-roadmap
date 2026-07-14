@@ -67,32 +67,7 @@
         </div>
     `;
 
-    // Add main-content-with-sidebar class to body
-    document.body.classList.add('has-sidebar');
-
-    // Wrap all existing body children in a main-content div (preserves event listeners)
-    const mainWrapper = document.createElement('div');
-    mainWrapper.className = 'main-content-with-sidebar';
-    // Move all current children into the wrapper
-    while (document.body.firstChild) {
-        mainWrapper.appendChild(document.body.firstChild);
-    }
-    // Now inject sidebar HTML, then append wrapper
-    document.body.insertAdjacentHTML('afterbegin', sidebarHTML);
-    document.body.appendChild(mainWrapper);
-
-    // Initialize Lucide icons
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-
-    // Set active link based on current page
-    setActiveLink();
-
-    // Enforce role-module visibility
-    applyRoleModuleVisibility();
-
-    // Add CSS styles if not already present
+    // Inject CSS FIRST before any DOM manipulation to prevent layout flash
     if (!document.getElementById('product360-styles')) {
         const styles = document.createElement('style');
         styles.id = 'product360-styles';
@@ -209,6 +184,30 @@
         `;
         document.head.appendChild(styles);
     }
+
+    // Add main-content-with-sidebar class to body
+    document.body.classList.add('has-sidebar');
+
+    // Wrap all existing body children in a main-content div (preserves event listeners)
+    const mainWrapper = document.createElement('div');
+    mainWrapper.className = 'main-content-with-sidebar';
+    while (document.body.firstChild) {
+        mainWrapper.appendChild(document.body.firstChild);
+    }
+    // Inject sidebar HTML first, then append content wrapper
+    document.body.insertAdjacentHTML('afterbegin', sidebarHTML);
+    document.body.appendChild(mainWrapper);
+
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    // Set active link based on current page
+    setActiveLink();
+
+    // Enforce role-module visibility
+    applyRoleModuleVisibility();
 })();
 
 // Toggle sidebar function
