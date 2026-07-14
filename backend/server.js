@@ -1913,9 +1913,10 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
         }
 
         const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
+        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
 
         // Step 1: find boards for this project
-        const boardsUrl = `${process.env.JIRA_BASE_URL}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=10`;
+        const boardsUrl = `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=10`;
         const { status: bs, body: boardsBody } = await jiraRequest(boardsUrl, base64Auth);
         console.log(`JIRA boards [${projectKey}] status=${bs} boards=${boardsBody?.values?.length}`);
 
@@ -1927,7 +1928,7 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
         let sprints = [];
         for (const board of boardsBody.values) {
             if (board.type === 'kanban') continue; // kanban boards don't have sprints
-            const sprintsUrl = `${process.env.JIRA_BASE_URL}/rest/agile/1.0/board/${board.id}/sprint?state=active,future&maxResults=20`;
+            const sprintsUrl = `${jiraBase}/rest/agile/1.0/board/${board.id}/sprint?state=active,future&maxResults=20`;
             const { status: ss, body: sprintsBody } = await jiraRequest(sprintsUrl, base64Auth);
             console.log(`JIRA sprints board=${board.id} type=${board.type} status=${ss} count=${sprintsBody?.values?.length}`);
 
