@@ -489,15 +489,18 @@
 
         function renderAvgPointsTable() {
             const tbody = document.getElementById('avgPointsBody');
-            const orangeBg = 'style="background-color:#c45c1a;" class="text-white"';
-            const grayBg = 'class="bg-gray-100"';
             const sprintCells = sprintColumns.map(s =>
                 `<th class="border border-gray-300 px-4 py-2 text-center font-bold" style="background-color:#c45c1a;" >${s.name}</th>`
             ).join('');
             const valueCells = sprintColumns.map((_, i) => {
                 const idx = i + 1;
+                // Preserve previously entered value if re-rendering
+                const prevVal = document.getElementById(`avgPts-${idx}`)?.value || AVG_POINTS_PER_DAY;
+                if (isViewMode) {
+                    return `<td class="border border-gray-300 px-4 py-2 text-center bg-gray-50 font-semibold" id="avgPts-${idx}-view">${prevVal}</td>`;
+                }
                 return `<td class="border border-gray-300 px-2 py-2 text-center bg-gray-50">
-                    <input type="number" min="1" max="100" step="1" value="${AVG_POINTS_PER_DAY}"
+                    <input type="number" min="1" max="100" step="1" value="${prevVal}"
                         id="avgPts-${idx}"
                         class="w-20 px-2 py-1 border rounded text-center font-semibold"
                         oninput="recalcAvailability(${idx})">
@@ -520,26 +523,51 @@
             const tfoot = document.getElementById('availabilityFoot');
             const resourceCount = teamMembers.filter(m => m.role.toLowerCase() !== 'dev lead').length;
 
+            // Preserve current values before re-render
+            const savedAvail = {};
+            sprintColumns.forEach((_, i) => {
+                const idx = i + 1;
+                savedAvail[idx] = {
+                    workingDays: parseFloat(document.querySelector(`.avail-input[data-sprint="${idx}"][data-field="workingDays"]`)?.value) || parseFloat(document.getElementById(`avgSprint${idx}`)?.textContent) || 0,
+                    adminPct:    parseFloat(document.querySelector(`.avail-input[data-sprint="${idx}"][data-field="adminPct"]`)?.value)    ?? (idx === 1 ? 5 : 10),
+                    contingency: parseFloat(document.querySelector(`.avail-input[data-sprint="${idx}"][data-field="contingencyPct"]`)?.value) ?? 5
+                };
+            });
+
             tbody.innerHTML = sprintColumns.map((s, i) => {
                 const idx = i + 1;
-                const avgDays = parseFloat(document.getElementById(`avgSprint${idx}`)?.textContent) || 0;
+                const v = savedAvail[idx];
+                const wd = v.workingDays.toFixed(1);
+                const ap = v.adminPct;
+                const cp = v.contingency;
+                if (isViewMode) {
+                    return `
+                <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                    <td class="border border-gray-300 px-4 py-2 text-center font-semibold">${s.name}</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="workingDays">${wd}</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="adminPct">${ap}%</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="contingencyPct">${cp}%</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">—</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">—</td>
+                </tr>`;
+                }
                 return `
                 <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold">${s.name}</td>
                     <td class="border border-gray-300 px-2 py-2 text-center">
-                        <input type="number" min="0" max="30" step="0.1" value="${avgDays.toFixed(1)}"
+                        <input type="number" min="0" max="30" step="0.1" value="${wd}"
                             class="w-20 px-2 py-1 border rounded text-center avail-input"
                             data-sprint="${idx}" data-field="workingDays"
                             oninput="recalcAvailability(${idx})">
                     </td>
                     <td class="border border-gray-300 px-2 py-2 text-center">
-                        <input type="number" min="0" max="100" step="1" value="${idx === 1 ? 5 : 10}"
+                        <input type="number" min="0" max="100" step="1" value="${ap}"
                             class="w-20 px-2 py-1 border rounded text-center avail-input"
                             data-sprint="${idx}" data-field="adminPct"
                             oninput="recalcAvailability(${idx})">
                     </td>
                     <td class="border border-gray-300 px-2 py-2 text-center">
-                        <input type="number" min="0" max="100" step="1" value="5"
+                        <input type="number" min="0" max="100" step="1" value="${cp}"
                             class="w-20 px-2 py-1 border rounded text-center avail-input"
                             data-sprint="${idx}" data-field="contingencyPct"
                             oninput="recalcAvailability(${idx})">
@@ -561,14 +589,17 @@
 
         function recalcAvailability(sprintIdx) {
             const get = (field) => {
-                const el = document.querySelector(`.avail-input[data-sprint="${sprintIdx}"][data-field="${field}"]`);
-                return parseFloat(el?.value) || 0;
+                const input = document.querySelector(`.avail-input[data-sprint="${sprintIdx}"][data-field="${field}"]`);
+                if (input) return parseFloat(input.value) || 0;
+                const viewCell = document.querySelector(`.avail-view[data-sprint="${sprintIdx}"][data-field="${field}"]`);
+                return parseFloat(viewCell?.textContent) || 0;
             };
             const workingDays   = get('workingDays');
             const adminPct      = get('adminPct');
             const contingency   = get('contingencyPct');
             const avgPtsInput   = document.getElementById(`avgPts-${sprintIdx}`);
-            const avgPts        = parseFloat(avgPtsInput?.value) || AVG_POINTS_PER_DAY;
+            const avgPtsView    = document.getElementById(`avgPts-${sprintIdx}-view`);
+            const avgPts        = parseFloat(avgPtsInput?.value || avgPtsView?.textContent) || AVG_POINTS_PER_DAY;
             const resourceCount = teamMembers.filter(m => m.role.toLowerCase() !== 'dev lead').length;
 
             const availability = workingDays * (1 - adminPct / 100) * (1 - contingency / 100);
