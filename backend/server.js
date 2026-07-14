@@ -2515,14 +2515,14 @@ app.delete('/api/team-members/:id', authMiddleware, async (req, res) => {
 // Get capacity plans with filters
 app.get('/api/capacity-plans', authMiddleware, async (req, res) => {
     try {
-        const { lineOfBusiness, program, project, team, sprint } = req.query;
+        const { lineOfBusiness, program, project, team, pi } = req.query;
         
         const query = {};
         if (lineOfBusiness) query.lineOfBusiness = lineOfBusiness;
         if (program) query.program = program;
         if (project) query.project = project;
         if (team) query.team = team;
-        if (sprint) query.sprint = sprint;
+        if (pi) query.pi = pi;
         
         const plans = await CapacityPlan.find(query)
             .populate('teamMemberId')
@@ -2545,9 +2545,9 @@ app.get('/api/capacity-plans', authMiddleware, async (req, res) => {
 // Create or update capacity plan
 app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
     try {
-        const { lineOfBusiness, program, project, team, sprint, capacities } = req.body;
+        const { lineOfBusiness, program, project, team, pi, capacities } = req.body;
         
-        if (!lineOfBusiness || !program || !project || !team || !sprint || !capacities) {
+        if (!lineOfBusiness || !program || !project || !team || !pi || !capacities) {
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required'
@@ -2566,7 +2566,7 @@ app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
                 program,
                 project,
                 team,
-                sprint,
+                pi,
                 teamMemberId
             });
             
@@ -2582,7 +2582,7 @@ app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
                     program,
                     project,
                     team,
-                    sprint,
+                    pi,
                     teamMemberId,
                     teamMemberName,
                     role,
