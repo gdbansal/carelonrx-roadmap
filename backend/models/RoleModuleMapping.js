@@ -7,6 +7,10 @@ const roleModuleMappingSchema = new mongoose.Schema({
         trim: true,
         unique: true
     },
+    label: {
+        type: String,
+        trim: true
+    },
     modules: {
         roadmap:          { type: Boolean, default: true },
         storyEstimations: { type: Boolean, default: false },

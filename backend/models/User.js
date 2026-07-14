@@ -66,7 +66,7 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         required: true,
-        enum: ['admin', 'product_owner', 'product_manager', 'business_owner', 'stakeholder', 'rte', 'scrum_master']
+        trim: true
     },
     profileImage: {
         type: String,

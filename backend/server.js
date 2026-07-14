@@ -2703,27 +2703,12 @@ app.delete('/api/capacity-plans/:id', authMiddleware, async (req, res) => {
 
 // ========== ROLE MODULE MAPPING ==========
 
-// Public endpoint: returns list of roles for dropdowns (signup + user management)
+// Public endpoint: returns list of roles from MongoDB (excludes admin; used by signup + user management dropdowns)
 app.get('/api/roles', async (req, res) => {
     try {
-        const mappings = await RoleModuleMapping.find().sort({ role: 1 });
-        // Always include the core User model roles; merge with any custom roles from mapping
-        const coreRoles = [
-            { value: 'product_owner',   label: 'Product Owner' },
-            { value: 'product_manager', label: 'Product Manager' },
-            { value: 'business_owner',  label: 'Business Owner' },
-            { value: 'stakeholder',     label: 'Stakeholder' },
-            { value: 'rte',             label: 'RTE (Release Train Engineer)' },
-            { value: 'scrum_master',    label: 'Scrum Master' }
-        ];
-        const coreValues = new Set(coreRoles.map(r => r.value));
-        // Add any extra roles from the mapping that aren't already in core (custom roles)
-        mappings.forEach(m => {
-            if (!coreValues.has(m.role) && m.role !== 'admin') {
-                coreRoles.push({ value: m.role, label: m.role });
-            }
-        });
-        res.json({ success: true, roles: coreRoles });
+        const mappings = await RoleModuleMapping.find({ role: { $ne: 'admin' } }).sort({ role: 1 });
+        const roles = mappings.map(m => ({ value: m.role, label: m.label || m.role }));
+        res.json({ success: true, roles });
     } catch (error) {
         res.status(500).json({ success: false, roles: [] });
     }
@@ -2751,7 +2736,7 @@ app.post('/api/role-module-mappings', authMiddleware, async (req, res) => {
         for (const m of mappings) {
             const doc = await RoleModuleMapping.findOneAndUpdate(
                 { role: m.role.trim() },
-                { modules: m.modules, updatedBy: req.user.username, updatedAt: new Date() },
+                { label: m.label || m.role.trim(), modules: m.modules, updatedBy: req.user.username, updatedAt: new Date() },
                 { upsert: true, new: true, setDefaultsOnInsert: true }
             );
             results.push(doc);

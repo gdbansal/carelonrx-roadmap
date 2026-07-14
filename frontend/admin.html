@@ -732,7 +732,7 @@
                     });
                 }
             } catch (e) {
-                sel.innerHTML = '<option value="">Select Role</option><option value="admin">Admin</option><option value="product_owner">Product Owner</option><option value="product_manager">Product Manager</option><option value="business_owner">Business Owner</option><option value="stakeholder">Stakeholder</option><option value="rte">RTE</option><option value="scrum_master">Scrum Master</option>';
+                sel.innerHTML = '<option value="">Failed to load roles — please refresh</option>';
             }
             if (selectedValue) sel.value = selectedValue;
         }
@@ -1410,15 +1410,8 @@
                     savedMappings = mappingsData.mappings;
                 }
             } catch (e) {
-                allRoles = [
-                    { value: 'admin', label: 'Admin' },
-                    { value: 'product_owner', label: 'Product Owner' },
-                    { value: 'product_manager', label: 'Product Manager' },
-                    { value: 'business_owner', label: 'Business Owner' },
-                    { value: 'stakeholder', label: 'Stakeholder' },
-                    { value: 'rte', label: 'RTE' },
-                    { value: 'scrum_master', label: 'Scrum Master' }
-                ];
+                showError('Failed to load roles from server.');
+                return;
             }
 
             // Build merged list: saved values take precedence; unsaved roles get defaults
@@ -1492,8 +1485,8 @@
         function confirmAddRole() {
             const name = document.getElementById('newRoleName').value.trim();
             if (!name) { showError('Please enter a role name'); return; }
-            if (roleMappings.some(r => r.role.toLowerCase() === name.toLowerCase())) { showError('Role already exists'); return; }
-            roleMappings.push({ role: name, modules: { dashboard: true, roadmap: false, intake: false, storyEstimations: false, capacityPlanning: false, analytics: false, adminPanel: false } });
+            if (roleMappings.some(r => r.label.toLowerCase() === name.toLowerCase() || r.role.toLowerCase() === name.toLowerCase())) { showError('Role already exists'); return; }
+            roleMappings.push({ role: name, label: name, modules: { ...DEFAULT_MODULES } });
             renderRoleMappingTable();
             closeAddRoleModal();
         }
