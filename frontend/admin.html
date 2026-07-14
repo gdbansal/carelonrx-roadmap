@@ -959,22 +959,27 @@
         // ============================================
         async function loadTeamMembers() {
             try {
+                console.log('Loading team members from:', `${API_BASE}/api/team-members`);
                 const response = await fetch(`${API_BASE}/api/team-members`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
 
+                console.log('Team members response status:', response.status);
                 const data = await response.json();
+                console.log('Team members response data:', data);
 
                 if (data.success) {
+                    console.log('Rendering', data.members.length, 'team members');
                     renderTeamMembers(data.members);
                 } else {
+                    console.error('Load failed:', data.message);
                     showError(data.message || 'Failed to load team members');
                 }
             } catch (error) {
                 console.error('Error loading team members:', error);
-                showError('Unable to connect to server');
+                showError('Unable to connect to server: ' + error.message);
             }
         }
 
@@ -1096,11 +1101,16 @@
                 memberData.isActive = document.getElementById('memberIsActive').checked;
             }
 
+            console.log('Saving team member:', memberData);
+
             try {
                 const url = editingMemberId 
                     ? `${API_BASE}/api/team-members/${editingMemberId}`
                     : `${API_BASE}/api/team-members`;
                 const method = editingMemberId ? 'PUT' : 'POST';
+
+                console.log('Request URL:', url);
+                console.log('Request method:', method);
 
                 const response = await fetch(url, {
                     method: method,
@@ -1111,18 +1121,21 @@
                     body: JSON.stringify(memberData)
                 });
 
+                console.log('Response status:', response.status);
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (data.success) {
                     showSuccess(editingMemberId ? 'Team member updated successfully' : 'Team member created successfully');
                     closeTeamMemberModal();
                     loadTeamMembers();
                 } else {
+                    console.error('Save failed:', data.message);
                     showError(data.message || 'Failed to save team member');
                 }
             } catch (error) {
                 console.error('Error saving team member:', error);
-                showError('Unable to connect to server');
+                showError('Unable to connect to server: ' + error.message);
             }
         });
 
