@@ -296,11 +296,47 @@
 
         // Check authentication
         function checkAuth() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'index.html';
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.username) {
+                window.location.href = 'login.html';
                 return;
             }
+            loadUserProfile();
+        }
+
+        function loadUserProfile() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('userName').textContent = user.name || user.username;
+            const initials = (user.name || user.username || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            document.getElementById('userInitials').textContent = initials;
+            if (user.profileImage) {
+                document.getElementById('userImage').src = user.profileImage;
+                document.getElementById('userImage').classList.remove('hidden');
+                document.getElementById('userInitials').classList.add('hidden');
+            }
+            if (user.role === 'admin') {
+                document.getElementById('adminDropdownLink').classList.remove('hidden');
+            }
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
+            lucide.createIcons();
+        }
+
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const button = event.target.closest('button[onclick="toggleProfileDropdown()"]');
+            if (!button && dropdown && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
         }
 
         // Load LOBs
