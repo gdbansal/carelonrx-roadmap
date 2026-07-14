@@ -166,7 +166,7 @@
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="avgSprint4">0</td>
                         </tr>
                         <tr class="bg-gray-100 font-bold">
-                            <td class="border border-gray-300 px-4 py-2" colspan="3">Resources available/ Sprint</td>
+                            <td class="border border-gray-300 px-4 py-2" colspan="3">Resources available/ Sprint <span class="text-xs font-normal text-gray-500">(excl. Dev Lead)</span></td>
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="totalSprint1">0</td>
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="totalSprint2">0</td>
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="totalSprint3">0</td>
@@ -381,6 +381,12 @@
             const tbody = document.getElementById('capacityTableBody');
             tbody.innerHTML = '';
 
+            // Resources available = members excluding Dev Lead (constant across all sprints)
+            const resourceCount = teamMembers.filter(m => m.role.toLowerCase() !== 'dev lead').length;
+            for (let s = 1; s <= 4; s++) {
+                document.getElementById(`totalSprint${s}`).textContent = resourceCount;
+            }
+
             teamMembers.forEach(member => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -424,17 +430,14 @@
             for (let sprint = 1; sprint <= 4; sprint++) {
                 const inputs = document.querySelectorAll(`.capacity-input[data-sprint="${sprint}"]`);
                 let total = 0;
-                let count = 0;
 
                 inputs.forEach(input => {
-                    const value = parseFloat(input.value) || 0;
-                    total += value;
-                    if (value > 0) count++;
+                    total += parseFloat(input.value) || 0;
                 });
 
-                const average = count > 0 ? (total / inputs.length).toFixed(1) : 0;
+                const average = inputs.length > 0 ? (total / inputs.length).toFixed(1) : 0;
                 document.getElementById(`avgSprint${sprint}`).textContent = average;
-                document.getElementById(`totalSprint${sprint}`).textContent = total.toFixed(1);
+                // Resources available is constant (set in renderCapacityMatrix), do not overwrite
             }
         }
 
