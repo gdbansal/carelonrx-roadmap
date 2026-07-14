@@ -659,16 +659,33 @@
                                 }
                             });
                         }
-                        // Load lines of business
-                        if (initiative.businessUnit && initiative.businessUnit.trim()) {
-                            businessUnits.add(initiative.businessUnit.trim());
-                        }
                     });
                     updatePmSpocDatalist();
-                    updateBusinessUnitDatalist();
                 }
             } catch (error) {
                 console.error('Error loading PM SPOC names:', error);
+            }
+            
+            // Load Lines of Business from dedicated API
+            loadLinesOfBusiness();
+        }
+        
+        async function loadLinesOfBusiness() {
+            try {
+                const response = await fetch('https://carelonrx-roadmap.onrender.com/api/line-of-business/active');
+                const data = await response.json();
+                
+                if (data.success && data.lobs) {
+                    businessUnits.clear();
+                    data.lobs.forEach(lob => {
+                        if (lob && lob.trim()) {
+                            businessUnits.add(lob.trim());
+                        }
+                    });
+                    updateBusinessUnitDatalist();
+                }
+            } catch (error) {
+                console.error('Error loading Lines of Business:', error);
             }
         }
 

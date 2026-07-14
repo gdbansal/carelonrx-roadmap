@@ -9,6 +9,7 @@ const EstimationSession = require('./models/EstimationSession');
 const AuditLog = require('./models/AuditLog');
 const EstimationUser = require('./models/EstimationUser');
 const UserSession = require('./models/UserSession');
+const LineOfBusiness = require('./models/LineOfBusiness');
 const { logAuditEvent } = require('./middleware/auditLogger');
 const crypto = require('crypto');
 
@@ -1988,6 +1989,222 @@ app.get('/api/jira/projects', async (req, res) => {
             success: false,
             message: errorMessage,
             error: error.code || error.message
+        });
+    }
+});
+
+// ========== LINE OF BUSINESS MANAGEMENT ==========
+
+// Get all Lines of Business
+app.get('/api/line-of-business', authMiddleware, async (req, res) => {
+    try {
+        const lobs = await LineOfBusiness.find().sort({ name: 1 });
+        res.json({
+            success: true,
+            lobs
+        });
+    } catch (error) {
+        console.error('Get LOBs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve Lines of Business',
+            error: error.message
+        });
+    }
+});
+
+// Get active Lines of Business (for dropdowns)
+app.get('/api/line-of-business/active', async (req, res) => {
+    try {
+        const lobs = await LineOfBusiness.find({ isActive: true }).sort({ name: 1 });
+        res.json({
+            success: true,
+            lobs: lobs.map(lob => lob.name)
+        });
+    } catch (error) {
+        console.error('Get active LOBs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve active Lines of Business',
+            error: error.message
+        });
+    }
+});
+
+// Get single Line of Business
+app.get('/api/line-of-business/:id', authMiddleware, async (req, res) => {
+    try {
+        const lob = await LineOfBusiness.findById(req.params.id);
+        
+        if (!lob) {
+            return res.status(404).json({
+                success: false,
+                message: 'Line of Business not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            lob
+        });
+    } catch (error) {
+        console.error('Get LOB error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve Line of Business',
+            error: error.message
+        });
+    }
+});
+
+// Create new Line of Business (Admin only)
+app.post('/api/line-of-business', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Admin access required'
+            });
+        }
+        
+        const { name, description } = req.body;
+        
+        if (!name) {
+            return res.status(400).json({
+                success: false,
+                message: 'Line of Business name is required'
+            });
+        }
+        
+        // Check if LOB already exists
+        const existingLob = await LineOfBusiness.findOne({ name: name.trim() });
+        if (existingLob) {
+            return res.status(400).json({
+                success: false,
+                message: 'Line of Business already exists'
+            });
+        }
+        
+        const lob = new LineOfBusiness({
+            name: name.trim(),
+            description: description?.trim(),
+            createdBy: req.user.username
+        });
+        
+        await lob.save();
+        
+        res.json({
+            success: true,
+            message: 'Line of Business created successfully',
+            lob
+        });
+    } catch (error) {
+        console.error('Create LOB error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create Line of Business',
+            error: error.message
+        });
+    }
+});
+
+// Update Line of Business (Admin only)
+app.put('/api/line-of-business/:id', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Admin access required'
+            });
+        }
+        
+        const { name, description, isActive } = req.body;
+        
+        const lob = await LineOfBusiness.findById(req.params.id);
+        
+        if (!lob) {
+            return res.status(404).json({
+                success: false,
+                message: 'Line of Business not found'
+            });
+        }
+        
+        // Check if new name conflicts with existing LOB
+        if (name && name.trim() !== lob.name) {
+            const existingLob = await LineOfBusiness.findOne({ name: name.trim() });
+            if (existingLob) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Line of Business with this name already exists'
+                });
+            }
+            lob.name = name.trim();
+        }
+        
+        if (description !== undefined) lob.description = description?.trim();
+        if (isActive !== undefined) lob.isActive = isActive;
+        
+        lob.updatedBy = req.user.username;
+        lob.updatedAt = new Date();
+        
+        await lob.save();
+        
+        res.json({
+            success: true,
+            message: 'Line of Business updated successfully',
+            lob
+        });
+    } catch (error) {
+        console.error('Update LOB error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update Line of Business',
+            error: error.message
+        });
+    }
+});
+
+// Delete Line of Business (Admin only)
+app.delete('/api/line-of-business/:id', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Admin access required'
+            });
+        }
+        
+        const lob = await LineOfBusiness.findById(req.params.id);
+        
+        if (!lob) {
+            return res.status(404).json({
+                success: false,
+                message: 'Line of Business not found'
+            });
+        }
+        
+        // Check if LOB is being used by any initiatives
+        const initiativesUsingLob = await Initiative.countDocuments({ businessUnit: lob.name });
+        
+        if (initiativesUsingLob > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot delete Line of Business. It is currently used by ${initiativesUsingLob} initiative(s). Please reassign those initiatives first.`
+            });
+        }
+        
+        await LineOfBusiness.findByIdAndDelete(req.params.id);
+        
+        res.json({
+            success: true,
+            message: 'Line of Business deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete LOB error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete Line of Business',
+            error: error.message
         });
     }
 });
