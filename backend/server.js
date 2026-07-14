@@ -1951,6 +1951,27 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
     }
 });
 
+app.get('/api/jira/projects', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA integration not configured', projects: [] });
+        }
+        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
+        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
+        const url = `${jiraBase}/rest/api/2/project?maxResults=200`;
+        const { status, body } = await jiraRequest(url, base64Auth);
+        if (status !== 200 || !Array.isArray(body)) {
+            return res.json({ success: true, projects: [] });
+        }
+        const projects = body.map(p => ({ key: p.key, name: p.name }))
+                             .sort((a, b) => a.name.localeCompare(b.name));
+        res.json({ success: true, projects });
+    } catch (error) {
+        console.error('JIRA projects error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch JIRA projects', projects: [] });
+    }
+});
+
 app.get('/api/jira/test', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
