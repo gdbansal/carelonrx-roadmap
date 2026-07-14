@@ -654,7 +654,7 @@
                     <p class="font-semibold text-gray-800 mb-2">What it shows:</p>
                     <ul class="list-disc list-inside text-gray-700 ml-4 text-sm space-y-1">
                         <li><strong>Summary tiles</strong> — Team Members count, Total Sprints, Avg Capacity/Sprint, Total Capacity (days)</li>
-                        <li><strong>Matrix table</strong> — Resource, Role, Project, Team, PI, one column per sprint, Avg column</li>
+                        <li><strong>Matrix table</strong> — Resource, Role, <strong>Capacity %</strong>, Project, Team, PI, one column per sprint, Avg column</li>
                         <li><strong>Team Total row</strong> — Sprint-by-sprint totals and overall average</li>
                     </ul>
                 </div>
@@ -894,16 +894,15 @@
                     <h3 class="text-xl font-semibold text-gray-800 mb-3">11.1 Selecting PI, Team &amp; Project</h3>
                     <p class="text-gray-700 mb-3">Before loading the capacity matrix, select the following filters:</p>
                     <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                        <p class="text-sm font-semibold text-blue-800 mb-2">Required fields (marked with <span class="text-red-600">*</span>):</p>
                         <ul class="list-disc list-inside space-y-2 text-gray-700 ml-2">
-                            <li><strong>Program Increment (PI):</strong> Auto-defaults to the current quarter (e.g., <code class="bg-gray-100 px-1 rounded">26.3</code> for Q3 2026). Format is <code class="bg-gray-100 px-1 rounded">YY.Q</code>. Covers 2 past and 4 future PIs.</li>
-                            <li><strong>Line of Business (LOB):</strong> Select the LOB from the dropdown.</li>
-                            <li><strong>Program:</strong> Select the program (e.g., AHD, Bioplus).</li>
-                            <li><strong>Team:</strong> Select the team — projects load based on team selection.</li>
-                            <li><strong>Project:</strong> Select the project associated with the team.</li>
-                            <li><strong>JIRA Project Key (optional):</strong> Enter a key (e.g., <code class="bg-gray-100 px-1 rounded">VPIE</code>, <code class="bg-gray-100 px-1 rounded">DIG</code>) to auto-load active/future sprint names from JIRA as table columns. If left blank or no sprints found, defaults to Sprint 1–6.</li>
+                            <li><strong>Program Increment (PI):<span class="text-red-600">*</span></strong> Auto-defaults to the current quarter (e.g., <code class="bg-gray-100 px-1 rounded">26.3</code> for Q3 2026). Format is <code class="bg-gray-100 px-1 rounded">YY.Q</code>. Covers 2 past and 4 future PIs.</li>
+                            <li><strong>Line of Business (LOB):<span class="text-red-600">*</span></strong> Select the LOB from the dropdown.</li>
+                            <li><strong>Project:<span class="text-red-600">*</span></strong> Select the project &mdash; options are filtered based on the selected LOB.</li>
+                            <li><strong>Team:<span class="text-red-600">*</span></strong> Select the team &mdash; options are filtered based on the selected project.</li>
                         </ul>
                     </div>
-                    <p class="text-gray-700">Click <strong>"Load Team Members"</strong> to populate the capacity matrix.</p>
+                    <p class="text-gray-700">Click                    <p class="text-gray-700">Click <strong>"Load Team Members"</strong> to populate the capacity matrix.</p>
                 </div>
 
                 <!-- Capacity Matrix -->
@@ -915,15 +914,16 @@
                         <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4 text-sm">
                             <li><strong>PI Banner:</strong> Orange header row showing the selected PI (e.g., <em>PI 26.3</em>) spanning all columns.</li>
                             <li><strong>Title:</strong> Shows <em>Capacity Matrix — [Team Name]</em> above the table.</li>
-                            <li><strong>Columns:</strong> Resource Name | Role | Sprint 1 … Sprint N (dynamic)</li>
+                            <li><strong>Columns:</strong> Resource Name | Role | <strong>Capacity %</strong> | Sprint 1 … Sprint N (dynamic)</li>
+                            <li><strong>Capacity %:</strong> Editable field (0-100) indicating the percentage of time this member is allocated to this team/project. Defaults to <strong>100%</strong>. Saved to MongoDB with the capacity plan.</li>
                             <li><strong>Capacity inputs:</strong> Enter working days (0–30) per member per sprint.</li>
                             <li><strong>Average Working Days / Sprint:</strong> Auto-calculated average across all members for each sprint.</li>
                             <li><strong>Resources available / Sprint:</strong> Count of team members <em>excluding Dev Lead</em> role — constant per sprint, auto-computed.</li>
                         </ul>
                     </div>
                     <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
-                        <p class="font-semibold text-yellow-800 mb-1">Sprint Columns from JIRA:</p>
-                        <p class="text-gray-700 text-sm">When a valid JIRA Project Key is entered, sprint columns are replaced with actual sprint names from the JIRA board (active and future sprints). The status indicator below the JIRA key field confirms how many sprints were loaded. Entering the key after the matrix is loaded will immediately re-render the columns.</p>
+                        <p class="font-semibold text-yellow-800 mb-1">Sprint Columns:</p>
+                        <p class="text-gray-700 text-sm">Sprint columns default to <strong>Sprint 1 &ndash; Sprint 6</strong> for the selected PI. The number of sprints is determined automatically when the team members are loaded.</p>
                     </div>
                 </div>
 
@@ -984,9 +984,18 @@
                     </div>
                 </div>
 
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
                     <p class="font-semibold text-blue-800 mb-2">Saving Capacity Plans:</p>
-                    <p class="text-gray-700 text-sm">Click <strong>"Save Capacity Plan"</strong> to persist the capacity data for the selected PI, team, and project. Saved plans store per-sprint capacity values along with JIRA sprint names and dates where available.</p>
+                    <p class="text-gray-700 text-sm">Click <strong>"Save Capacity Plan"</strong> to persist the capacity data for the selected PI, team, and project. Saved plans store per-sprint capacity values and <strong>Capacity %</strong> for each team member in MongoDB.</p>
+                </div>
+                <div class="bg-green-50 border-l-4 border-green-500 p-4">
+                    <p class="font-semibold text-green-800 mb-2">Export to Excel:</p>
+                    <p class="text-gray-700 text-sm">After saving, an <strong>"Export to Excel"</strong> button appears. Clicking it downloads an <code class="bg-gray-100 px-1 rounded">.xlsx</code> file containing:</p>
+                    <ul class="list-disc list-inside text-gray-700 ml-4 text-sm mt-2 space-y-1">
+                        <li><strong>Capacity Matrix</strong> &mdash; Resource Name, Role, Capacity %, per-sprint capacities, and average</li>
+                        <li><strong>Avg Points per Sprint</strong> &mdash; configured average story points per sprint</li>
+                        <li><strong>Team Availability</strong> &mdash; Working days, Admin %, Contingency %, Availability, and Suggested Points per sprint with a PI total</li>
+                    </ul>
                 </div>
             </div>
 

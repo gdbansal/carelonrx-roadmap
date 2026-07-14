@@ -63,6 +63,12 @@ const capacityPlanSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    capacityPercentage: {
+        type: Number,
+        default: 100,
+        min: 0,
+        max: 100
+    },
     sprints: [sprintCapacitySchema],
     createdBy: {
         type: String,

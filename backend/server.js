@@ -2590,7 +2590,7 @@ app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
         const results = [];
         
         for (const capacity of capacities) {
-            const { teamMemberId, teamMemberName, role, sprints } = capacity;
+            const { teamMemberId, teamMemberName, role, capacityPercentage, sprints } = capacity;
             
             // Check if plan already exists
             let plan = await CapacityPlan.findOne({
@@ -2604,6 +2604,7 @@ app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
             if (plan) {
                 // Update existing plan
                 plan.sprints = sprints;
+                plan.capacityPercentage = capacityPercentage !== undefined ? capacityPercentage : 100;
                 plan.updatedBy = req.user.username;
                 plan.updatedAt = new Date();
             } else {
@@ -2616,6 +2617,7 @@ app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
                     teamMemberId,
                     teamMemberName,
                     role,
+                    capacityPercentage: capacityPercentage !== undefined ? capacityPercentage : 100,
                     sprints,
                     createdBy: req.user.username
                 });

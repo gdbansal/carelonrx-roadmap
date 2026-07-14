@@ -696,7 +696,7 @@
                 const memberMap = {};
                 plans.forEach(p => {
                     const key = p.teamMemberId?._id || p.teamMemberId || p.teamMemberName;
-                    if (!memberMap[key]) memberMap[key] = { name: p.teamMemberName, role: p.role, project: p.project, team: p.team, pi: p.pi, sprints: {} };
+                    if (!memberMap[key]) memberMap[key] = { name: p.teamMemberName, role: p.role, capacityPercentage: p.capacityPercentage !== undefined ? p.capacityPercentage : 100, project: p.project, team: p.team, pi: p.pi, sprints: {} };
                     (p.sprints || []).forEach(s => {
                         const sn = s.sprintName || ('Sprint ' + s.sprintNumber);
                         if (!memberMap[key].sprints[sn]) memberMap[key].sprints[sn] = [];
@@ -711,6 +711,7 @@
                 thead.innerHTML = `<tr style="background-color:#c45c1a;" class="text-white">
                     <th class="border border-gray-300 px-3 py-2 text-left">Resource</th>
                     <th class="border border-gray-300 px-3 py-2 text-left">Role</th>
+                    <th class="border border-gray-300 px-3 py-2 text-center">Capacity %</th>
                     <th class="border border-gray-300 px-3 py-2 text-left">Project</th>
                     <th class="border border-gray-300 px-3 py-2 text-left">Team</th>
                     <th class="border border-gray-300 px-3 py-2 text-left">PI</th>
@@ -735,6 +736,7 @@
                     return `<tr class="${bg} hover:bg-orange-50">
                         <td class="border border-gray-200 px-3 py-2 font-semibold">${m.name}</td>
                         <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.role}</td>
+                        <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-blue-700">${m.capacityPercentage}%</td>
                         <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.project || ''}</td>
                         <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.team || ''}</td>
                         <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.pi || ''}</td>
@@ -747,7 +749,7 @@
                 const tfoot = document.getElementById('cpMatrixFoot');
                 const totalAvg = grandCount > 0 ? (grandTotal / grandCount).toFixed(1) : 0;
                 tfoot.innerHTML = `<tr class="bg-gray-100 font-bold">
-                    <td class="border border-gray-300 px-3 py-2" colspan="5">Team Total</td>
+                    <td class="border border-gray-300 px-3 py-2" colspan="6">Team Total</td>
                     ${sprintNames.map(sn => `<td class="border border-gray-300 px-3 py-2 text-center text-orange-700">${(sprintTotals[sn] || 0).toFixed(1)}</td>`).join('')}
                     <td class="border border-gray-300 px-3 py-2 text-center text-orange-700">${totalAvg}</td>
                 </tr>`;

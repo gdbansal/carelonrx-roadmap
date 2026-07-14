@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -156,6 +156,7 @@
                         <tr class="bg-gray-100" id="sprintHeaderRow">
                             <th class="border border-gray-300 px-4 py-2 text-left">Resource Name</th>
                             <th class="border border-gray-300 px-4 py-2 text-left">Role</th>
+                            <th class="border border-gray-300 px-4 py-2 text-center">Capacity %</th>
                             <th class="border border-gray-300 px-4 py-2 text-center">Sprint 1</th>
                             <th class="border border-gray-300 px-4 py-2 text-center">Sprint 2</th>
                             <th class="border border-gray-300 px-4 py-2 text-center">Sprint 3</th>
@@ -518,7 +519,7 @@
             document.getElementById('capacityMatrixTitle').textContent = `Capacity Matrix — ${teamName}`;
 
             // Update PI banner colspan
-            const colCount = 2 + sprintColumns.length;
+            const colCount = 3 + sprintColumns.length;
             document.getElementById('piBannerRow').setAttribute('colspan', colCount);
 
             // Rebuild sprint header row
@@ -526,6 +527,7 @@
             headerRow.innerHTML = `
                 <th class="border border-gray-300 px-4 py-2 text-left">Resource Name</th>
                 <th class="border border-gray-300 px-4 py-2 text-left">Role</th>
+                <th class="border border-gray-300 px-4 py-2 text-center">Capacity %</th>
                 ${sprintColumns.map(s => `<th class="border border-gray-300 px-4 py-2 text-center">${s.name}</th>`).join('')}
             `;
 
@@ -534,11 +536,11 @@
             const tfoot = document.getElementById('capacityTableFoot');
             tfoot.innerHTML = `
                 <tr class="bg-yellow-50 font-bold">
-                    <td class="border border-gray-300 px-4 py-2" colspan="2">Average Working Days/ Sprint</td>
+                    <td class="border border-gray-300 px-4 py-2" colspan="3">Average Working Days/ Sprint</td>
                     ${sprintColumns.map((_, i) => `<td class="border border-gray-300 px-4 py-2 text-center" id="avgSprint${i+1}">0</td>`).join('')}
                 </tr>
                 <tr class="bg-gray-100 font-bold">
-                    <td class="border border-gray-300 px-4 py-2" colspan="2">Resources available/ Sprint <span class="text-xs font-normal text-gray-500">(excl. Dev Lead)</span></td>
+                    <td class="border border-gray-300 px-4 py-2" colspan="3">Resources available/ Sprint <span class="text-xs font-normal text-gray-500">(excl. Dev Lead)</span></td>
                     ${sprintColumns.map(() => `<td class="border border-gray-300 px-4 py-2 text-center">${resourceCount}</td>`).join('')}
                 </tr>
             `;
@@ -558,11 +560,26 @@
                             data-member="${member._id}" data-sprint="${i+1}" value="${saved}">
                     </td>`;
                 }).join('');
-                row.innerHTML = `
+                const savedCapPct = member._savedCapacityPct !== undefined ? member._savedCapacityPct : 100;
+                if (isViewMode) {
+                    row.innerHTML = `
                     <td class="border border-gray-300 px-4 py-2">${member.name}</td>
                     <td class="border border-gray-300 px-4 py-2">${member.role}</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-semibold">${savedCapPct}%</td>
                     ${sprintCells}
                 `;
+                } else {
+                    row.innerHTML = `
+                    <td class="border border-gray-300 px-4 py-2">${member.name}</td>
+                    <td class="border border-gray-300 px-4 py-2">${member.role}</td>
+                    <td class="border border-gray-300 px-2 py-2 text-center">
+                        <input type="number" min="0" max="100" step="1" value="${savedCapPct}"
+                            class="w-20 px-2 py-1 border rounded text-center capacity-pct-input"
+                            data-member="${member._id}">
+                    </td>
+                    ${sprintCells}
+                `;
+                }
                 tbody.appendChild(row);
             });
 
@@ -750,10 +767,13 @@
                     });
                 });
 
+                const pctInput = document.querySelector(`.capacity-pct-input[data-member="${member._id}"]`);
+                const capacityPercentage = pctInput ? (parseInt(pctInput.value) || 100) : (member._savedCapacityPct !== undefined ? member._savedCapacityPct : 100);
                 capacities.push({
                     teamMemberId: member._id,
                     teamMemberName: member.name,
                     role: member.role,
+                    capacityPercentage,
                     sprints
                 });
             });
@@ -784,6 +804,8 @@
                             const input = document.querySelector(`.capacity-input[data-member="${member._id}"][data-sprint="${i+1}"]`);
                             return parseFloat(input?.value) || 0;
                         });
+                        const pctInput = document.querySelector(`.capacity-pct-input[data-member="${member._id}"]`);
+                        member._savedCapacityPct = pctInput ? (parseInt(pctInput.value) || 100) : (member._savedCapacityPct !== undefined ? member._savedCapacityPct : 100);
                     });
                     document.getElementById('exportBtn').classList.remove('hidden');
                     enableViewMode();
@@ -832,16 +854,19 @@
             ];
 
             // ── Section 2: Capacity Matrix ──
-            allRows.push(['Resource Name', 'Role', ...sprintHeaders, 'Avg Capacity']);
+            allRows.push(['Resource Name', 'Role', 'Capacity %', ...sprintHeaders, 'Avg Capacity']);
             teamMembers.forEach(member => {
+                const capPct = member._savedCapacityPct !== undefined ? member._savedCapacityPct : 100;
                 const caps = sprintColumns.map((_, i) => {
                     const el = document.querySelector(`.capacity-input[data-member="${member._id}"][data-sprint="${i+1}"]`);
-                    return parseFloat(el?.value) || 0;
+                    if (el) return parseFloat(el.value) || 0;
+                    const cell = document.querySelector(`.capacity-cell[data-member="${member._id}"][data-sprint="${i+1}"]`);
+                    return parseFloat(cell?.textContent) || 0;
                 });
                 const avg = caps.length
                     ? parseFloat((caps.reduce((a, b) => a + b, 0) / caps.length).toFixed(1))
                     : 0;
-                allRows.push([member.name, member.role, ...caps, avg]);
+                allRows.push([member.name, member.role, `${capPct}%`, ...caps, avg]);
             });
 
             // ── Section 3: Avg Points per Sprint ──
@@ -886,6 +911,7 @@
             ws['!cols'] = [
                 { wch: 38 },
                 { wch: 18 },
+                { wch: 12 },
                 ...sprintColumns.map(() => ({ wch: 14 })),
                 { wch: 14 }
             ];
