@@ -279,7 +279,7 @@
         async function loadAnalytics() {
             try {
                 // Load users
-                const usersResponse = await fetch('https://carelonrx-roadmap1.onrender.com/api/users', {
+                const usersResponse = await fetch('https://carelonrx-roadmap.onrender.com/api/users', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -287,7 +287,7 @@
                 const usersData = await usersResponse.json();
                 
                 // Load initiatives
-                const initiativesResponse = await fetch('https://carelonrx-roadmap1.onrender.com/api/initiatives', {
+                const initiativesResponse = await fetch('https://carelonrx-roadmap.onrender.com/api/initiatives', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }

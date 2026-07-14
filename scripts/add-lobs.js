@@ -1,7 +1,7 @@
 // Script to add Lines of Business to the database
 // Run this with: node add-lobs.js
 
-const API_BASE = 'https://carelonrx-roadmap1.onrender.com';
+const API_BASE = 'https://carelonrx-roadmap.onrender.com';
 
 // List of LOBs to add
 const lobs = [
