@@ -27,6 +27,10 @@
                     <i data-lucide="calculator" class="w-5 h-5"></i>
                     <span>Story Estimations</span>
                 </a>
+                <a href="capacity-planning.html" class="side-panel-link" data-module="capacity-planning">
+                    <i data-lucide="users-2" class="w-5 h-5"></i>
+                    <span>Capacity Planning</span>
+                </a>
                 <div class="mt-6 pt-6 border-t border-white border-opacity-20">
                     <a href="user-guide.html" class="side-panel-link" data-module="user-guide">
                         <i data-lucide="book-open" class="w-5 h-5"></i>
@@ -256,6 +260,10 @@ function setActiveLink() {
         }
         // Handle story-estimations page
         else if (currentPage === 'story-estimations.html' && module === 'story-estimations') {
+            link.classList.add('active');
+        }
+        // Handle capacity-planning page
+        else if (currentPage === 'capacity-planning.html' && module === 'capacity-planning') {
             link.classList.add('active');
         }
         // Handle user-guide page
