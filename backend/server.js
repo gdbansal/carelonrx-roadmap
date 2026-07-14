@@ -1857,7 +1857,7 @@ function jiraRequest(url, auth) {
                 try {
                     resolve({ status: resp.statusCode, body: JSON.parse(data) });
                 } catch (e) {
-                    reject(new Error('Invalid JSON from JIRA'));
+                    resolve({ status: resp.statusCode, body: { errorMessages: [`Non-JSON response: ${data.substring(0, 200)}`] } });
                 }
             });
         });
@@ -1917,32 +1917,36 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
         // Step 1: find boards for this project
         const boardsUrl = `${process.env.JIRA_BASE_URL}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=10`;
         const { status: bs, body: boardsBody } = await jiraRequest(boardsUrl, base64Auth);
+        console.log(`JIRA boards [${projectKey}] status=${bs} boards=${boardsBody?.values?.length}`);
 
         if (bs !== 200 || !boardsBody.values || boardsBody.values.length === 0) {
-            return res.json({ success: true, sprints: [] });
+            return res.json({ success: true, sprints: [], message: `No boards found for project ${projectKey}` });
         }
 
-        // Step 2: get active + future sprints from the first board
-        const boardId = boardsBody.values[0].id;
-        const sprintsUrl = `${process.env.JIRA_BASE_URL}/rest/agile/1.0/board/${boardId}/sprint?state=active,future&maxResults=20`;
-        const { status: ss, body: sprintsBody } = await jiraRequest(sprintsUrl, base64Auth);
+        // Try all boards until we find one with sprints
+        let sprints = [];
+        for (const board of boardsBody.values) {
+            if (board.type === 'kanban') continue; // kanban boards don't have sprints
+            const sprintsUrl = `${process.env.JIRA_BASE_URL}/rest/agile/1.0/board/${board.id}/sprint?state=active,future&maxResults=20`;
+            const { status: ss, body: sprintsBody } = await jiraRequest(sprintsUrl, base64Auth);
+            console.log(`JIRA sprints board=${board.id} type=${board.type} status=${ss} count=${sprintsBody?.values?.length}`);
 
-        if (ss !== 200 || !sprintsBody.values) {
-            return res.json({ success: true, sprints: [] });
+            if (ss === 200 && sprintsBody.values && sprintsBody.values.length > 0) {
+                sprints = sprintsBody.values.map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    state: s.state,
+                    startDate: s.startDate,
+                    endDate: s.endDate
+                }));
+                break;
+            }
         }
-
-        const sprints = sprintsBody.values.map(s => ({
-            id: s.id,
-            name: s.name,
-            state: s.state,
-            startDate: s.startDate,
-            endDate: s.endDate
-        }));
 
         res.json({ success: true, sprints });
     } catch (error) {
         console.error('JIRA sprints error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch sprints' });
+        res.status(500).json({ success: false, message: `Failed to fetch sprints: ${error.message}` });
     }
 });
 

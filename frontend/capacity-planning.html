@@ -76,6 +76,9 @@
                     <select id="sprintFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                         <option value="">Enter JIRA Project Key first</option>
                     </select>
+                    <input type="text" id="sprintManual" placeholder="Or type sprint name manually"
+                        class="hidden w-full mt-2 px-4 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-400 text-sm">
+                    <p id="sprintHint" class="hidden text-xs text-orange-500 mt-1">No sprints found via JIRA — enter manually above.</p>
                 </div>
             </div>
             <div class="mt-4">
@@ -279,17 +282,22 @@
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await response.json();
+                const manualInput = document.getElementById('sprintManual');
+                const sprintHint = document.getElementById('sprintHint');
                 if (data.success && data.sprints.length > 0) {
                     sprintSelect.innerHTML = '<option value="">Select Sprint</option>' +
                         data.sprints.map(s => {
                             const badge = s.state === 'active' ? ' 🟢' : ' 🔵';
                             return `<option value="${s.name}">${s.name}${badge}</option>`;
                         }).join('');
-                    // Auto-select active sprint if present
                     const active = data.sprints.find(s => s.state === 'active');
                     if (active) sprintSelect.value = active.name;
+                    manualInput.classList.add('hidden');
+                    sprintHint.classList.add('hidden');
                 } else {
-                    sprintSelect.innerHTML = '<option value="">No active/future sprints found</option>';
+                    sprintSelect.innerHTML = '<option value="">No sprints found</option>';
+                    manualInput.classList.remove('hidden');
+                    sprintHint.classList.remove('hidden');
                 }
             } catch (err) {
                 console.error('Sprint load error:', err);
@@ -338,7 +346,7 @@
             const program = document.getElementById('programFilter').value;
             const project = document.getElementById('projectFilter').value;
             const team = document.getElementById('teamFilter').value;
-            const sprint = document.getElementById('sprintFilter').value;
+            const sprint = document.getElementById('sprintFilter').value || document.getElementById('sprintManual').value.trim();
 
             if (!lob || !program || !project || !team || !sprint) {
                 showError('Please fill in all required fields');
@@ -436,7 +444,7 @@
             const program = document.getElementById('programFilter').value;
             const project = document.getElementById('projectFilter').value;
             const team = document.getElementById('teamFilter').value;
-            const sprint = document.getElementById('sprintFilter').value;
+            const sprint = document.getElementById('sprintFilter').value || document.getElementById('sprintManual').value.trim();
 
             const capacities = [];
 
