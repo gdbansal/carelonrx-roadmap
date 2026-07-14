@@ -125,6 +125,34 @@
             <div class="mt-4 p-4 bg-blue-50 rounded-lg">
                 <p class="text-sm text-gray-700"><strong>Note:</strong> Enter capacity in working days for each team member per sprint. The system will calculate averages and totals automatically.</p>
             </div>
+
+            <!-- Avg Points Section -->
+            <div class="mt-6 overflow-x-auto">
+                <table class="w-full border-collapse" id="avgPointsTable">
+                    <tbody id="avgPointsBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Team Availability Section -->
+            <div class="mt-6">
+                <h3 class="text-base font-bold mb-2" style="color:#c45c1a;">Team Availability</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse" id="availabilityTable">
+                        <thead>
+                            <tr style="background-color:#c45c1a;" class="text-white">
+                                <th class="border border-gray-300 px-4 py-2 text-center">Sprints</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">Working days<br><span class="text-xs font-normal">(Team Avg)</span></th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">Admin Work %</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">Contingency %</th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">Availability<br><span class="text-xs font-normal">(days/sprint)</span></th>
+                                <th class="border border-gray-300 px-4 py-2 text-center">Suggested<br><span class="text-xs font-normal">Points per sprint</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="availabilityBody"></tbody>
+                        <tfoot id="availabilityFoot"></tfoot>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- Empty State -->
@@ -429,7 +457,105 @@
                 input.addEventListener('input', calculateTotals);
             });
 
+            renderAvgPointsTable();
+            renderAvailabilityTable();
             lucide.createIcons();
+        }
+
+        const AVG_POINTS_PER_DAY = 12; // points a person completes when 100% available
+
+        function renderAvgPointsTable() {
+            const tbody = document.getElementById('avgPointsBody');
+            const orangeBg = 'style="background-color:#c45c1a;" class="text-white"';
+            const grayBg = 'class="bg-gray-100"';
+            const sprintCells = sprintColumns.map(s =>
+                `<th class="border border-gray-300 px-4 py-2 text-center font-bold" style="background-color:#c45c1a;" >${s.name}</th>`
+            ).join('');
+            const valueCells = sprintColumns.map(() =>
+                `<td class="border border-gray-300 px-4 py-2 text-center bg-gray-100">${AVG_POINTS_PER_DAY}</td>`
+            ).join('');
+            tbody.innerHTML = `
+                <tr>
+                    <th class="border border-gray-300 px-4 py-2 text-center font-bold" style="background-color:#c45c1a; color:white;">Sprint</th>
+                    ${sprintCells}
+                </tr>
+                <tr class="bg-gray-50">
+                    <td class="border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700" style="max-width:180px;">Avg Points a person can complete in a sprint when available 100%</td>
+                    ${valueCells}
+                </tr>
+            `;
+        }
+
+        function renderAvailabilityTable() {
+            const tbody = document.getElementById('availabilityBody');
+            const tfoot = document.getElementById('availabilityFoot');
+            const resourceCount = teamMembers.filter(m => m.role.toLowerCase() !== 'dev lead').length;
+
+            tbody.innerHTML = sprintColumns.map((s, i) => {
+                const idx = i + 1;
+                const avgDays = parseFloat(document.getElementById(`avgSprint${idx}`)?.textContent) || 0;
+                return `
+                <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                    <td class="border border-gray-300 px-4 py-2 text-center font-semibold">${s.name}</td>
+                    <td class="border border-gray-300 px-2 py-2 text-center">
+                        <input type="number" min="0" max="30" step="0.1" value="${avgDays.toFixed(1)}"
+                            class="w-20 px-2 py-1 border rounded text-center avail-input"
+                            data-sprint="${idx}" data-field="workingDays"
+                            oninput="recalcAvailability(${idx})">
+                    </td>
+                    <td class="border border-gray-300 px-2 py-2 text-center">
+                        <input type="number" min="0" max="100" step="1" value="${idx === 1 ? 5 : 10}"
+                            class="w-20 px-2 py-1 border rounded text-center avail-input"
+                            data-sprint="${idx}" data-field="adminPct"
+                            oninput="recalcAvailability(${idx})">
+                    </td>
+                    <td class="border border-gray-300 px-2 py-2 text-center">
+                        <input type="number" min="0" max="100" step="1" value="5"
+                            class="w-20 px-2 py-1 border rounded text-center avail-input"
+                            data-sprint="${idx}" data-field="contingencyPct"
+                            oninput="recalcAvailability(${idx})">
+                    </td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">—</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">—</td>
+                </tr>`;
+            }).join('');
+
+            tfoot.innerHTML = `
+                <tr class="bg-green-50 font-bold">
+                    <td class="border border-gray-300 px-4 py-2 text-center" colspan="5">Total</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center" id="avail-total">—</td>
+                </tr>`;
+
+            // Compute all sprints after render
+            sprintColumns.forEach((_, i) => recalcAvailability(i + 1));
+        }
+
+        function recalcAvailability(sprintIdx) {
+            const get = (field) => {
+                const el = document.querySelector(`.avail-input[data-sprint="${sprintIdx}"][data-field="${field}"]`);
+                return parseFloat(el?.value) || 0;
+            };
+            const workingDays  = get('workingDays');
+            const adminPct     = get('adminPct');
+            const contingency  = get('contingencyPct');
+            const resourceCount = teamMembers.filter(m => m.role.toLowerCase() !== 'dev lead').length;
+
+            const availability = workingDays * (1 - adminPct / 100) * (1 - contingency / 100);
+            const suggested    = Math.round(availability * resourceCount * (AVG_POINTS_PER_DAY / 10));
+
+            const daysEl = document.getElementById(`avail-days-${sprintIdx}`);
+            const ptsEl  = document.getElementById(`avail-pts-${sprintIdx}`);
+            if (daysEl) daysEl.textContent = availability.toFixed(1);
+            if (ptsEl)  ptsEl.textContent  = suggested;
+
+            // Update total
+            let total = 0;
+            sprintColumns.forEach((_, i) => {
+                const el = document.getElementById(`avail-pts-${i + 1}`);
+                total += parseInt(el?.textContent) || 0;
+            });
+            const totalEl = document.getElementById('avail-total');
+            if (totalEl) totalEl.textContent = total;
         }
 
         // Calculate totals
@@ -442,6 +568,9 @@
                 const avg = inputs.length > 0 ? (total / inputs.length).toFixed(1) : 0;
                 const avgEl = document.getElementById(`avgSprint${idx}`);
                 if (avgEl) avgEl.textContent = avg;
+                // Sync working days in availability table and recalc
+                const wdInput = document.querySelector(`.avail-input[data-sprint="${idx}"][data-field="workingDays"]`);
+                if (wdInput) { wdInput.value = avg; recalcAvailability(idx); }
             });
         }
 
