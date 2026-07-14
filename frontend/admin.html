@@ -661,22 +661,27 @@
         // ============================================
         async function loadLobs() {
             try {
+                console.log('Loading LOBs from:', `${API_BASE}/api/line-of-business`);
                 const response = await fetch(`${API_BASE}/api/line-of-business`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
 
+                console.log('LOB Response status:', response.status);
                 const data = await response.json();
+                console.log('LOB Response data:', data);
 
                 if (data.success) {
+                    console.log('Rendering', data.lobs.length, 'LOBs');
                     renderLobs(data.lobs);
                 } else {
+                    console.error('LOB load failed:', data.message);
                     showError(data.message || 'Failed to load Lines of Business');
                 }
             } catch (error) {
                 console.error('Error loading LOBs:', error);
-                showError('Unable to connect to server');
+                showError('Unable to connect to server: ' + error.message);
             }
         }
 
@@ -791,11 +796,16 @@
                 lobData.isActive = document.getElementById('lobIsActive').checked;
             }
 
+            console.log('Saving LOB:', lobData);
+
             try {
                 const url = editingLobId 
                     ? `${API_BASE}/api/line-of-business/${editingLobId}`
                     : `${API_BASE}/api/line-of-business`;
                 const method = editingLobId ? 'PUT' : 'POST';
+
+                console.log('Request URL:', url);
+                console.log('Request method:', method);
 
                 const response = await fetch(url, {
                     method: method,
@@ -806,18 +816,21 @@
                     body: JSON.stringify(lobData)
                 });
 
+                console.log('Save response status:', response.status);
                 const data = await response.json();
+                console.log('Save response data:', data);
 
                 if (data.success) {
                     showSuccess(editingLobId ? 'Line of Business updated successfully' : 'Line of Business created successfully');
                     closeLobModal();
                     loadLobs();
                 } else {
+                    console.error('Save failed:', data.message);
                     showError(data.message || 'Failed to save Line of Business');
                 }
             } catch (error) {
                 console.error('Error saving LOB:', error);
-                showError('Unable to connect to server');
+                showError('Unable to connect to server: ' + error.message);
             }
         });
 
