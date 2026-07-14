@@ -1384,33 +1384,56 @@
 
         let roleMappings = [];
 
+        const DEFAULT_MODULES = { roadmap: true, storyEstimations: false, capacityPlanning: false };
+
         async function loadRoleMappings() {
+            // Fetch all known roles and saved mappings in parallel
+            const token = localStorage.getItem('token');
+            let allRoles = [];
+            let savedMappings = [];
+
             try {
-                const res = await fetch(`${API_BASE}/api/role-module-mappings`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                });
-                const data = await res.json();
-                if (data.success && data.mappings.length > 0) {
-                    roleMappings = data.mappings.map(m => ({ role: m.role, modules: { ...m.modules } }));
-                } else {
-                    roleMappings = getDefaultMappings();
+                const [rolesRes, mappingsRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/roles`),
+                    fetch(`${API_BASE}/api/role-module-mappings`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                ]);
+                const rolesData = await rolesRes.json();
+                const mappingsData = await mappingsRes.json();
+
+                if (rolesData.success) {
+                    // Always include admin first, then all other roles
+                    allRoles = [{ value: 'admin', label: 'Admin' }, ...rolesData.roles];
+                }
+                if (mappingsData.success) {
+                    savedMappings = mappingsData.mappings;
                 }
             } catch (e) {
-                roleMappings = getDefaultMappings();
+                allRoles = [
+                    { value: 'admin', label: 'Admin' },
+                    { value: 'product_owner', label: 'Product Owner' },
+                    { value: 'product_manager', label: 'Product Manager' },
+                    { value: 'business_owner', label: 'Business Owner' },
+                    { value: 'stakeholder', label: 'Stakeholder' },
+                    { value: 'rte', label: 'RTE' },
+                    { value: 'scrum_master', label: 'Scrum Master' }
+                ];
             }
-            renderRoleMappingTable();
-        }
 
-        function getDefaultMappings() {
-            return [
-                { role: 'admin',           modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
-                { role: 'product_owner',   modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
-                { role: 'product_manager', modules: { roadmap: true,  storyEstimations: false, capacityPlanning: false } },
-                { role: 'business_owner',  modules: { roadmap: true,  storyEstimations: false, capacityPlanning: false } },
-                { role: 'rte',             modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
-                { role: 'scrum_master',    modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
-                { role: 'stakeholder',     modules: { roadmap: true,  storyEstimations: false, capacityPlanning: false } }
-            ];
+            // Build merged list: saved values take precedence; unsaved roles get defaults
+            const savedMap = {};
+            savedMappings.forEach(m => { savedMap[m.role] = m.modules; });
+
+            roleMappings = allRoles.map(r => ({
+                role: r.value,
+                label: r.label,
+                modules: savedMap[r.value]
+                    ? { ...DEFAULT_MODULES, ...savedMap[r.value] }
+                    : { ...DEFAULT_MODULES }
+            }));
+
+            renderRoleMappingTable();
         }
 
         function renderRoleMappingTable() {
@@ -1429,7 +1452,7 @@
             roleMappings.forEach((rm, ri) => {
                 const bg = ri % 2 === 0 ? 'bg-white' : 'bg-gray-50';
                 let row = `<tr class="${bg}">`;
-                row += `<td class="px-4 py-3 text-sm font-semibold text-gray-700 border-r border-b border-gray-200 ${bg}">${rm.role}</td>`;
+                row += `<td class="px-4 py-3 text-sm font-semibold text-gray-700 border-r border-b border-gray-200 ${bg}">${rm.label || rm.role}</td>`;
                 MODULES.forEach(mod => {
                     const chk = rm.modules[mod.key] ? 'checked' : '';
                     row += `<td class="px-4 py-3 text-center border-b border-gray-100"><input type="checkbox" ${chk} onchange="toggleMapping(${ri},'${mod.key}',this.checked)" class="w-5 h-5 rounded accent-blue-600 cursor-pointer"></td>`;
