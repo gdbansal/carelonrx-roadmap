@@ -12,10 +12,11 @@
 9. [Roadmap View](#roadmap-view)
 10. [Analytics Dashboard](#analytics-dashboard)
 11. [Story Estimations](#story-estimations)
-12. [Admin Panel](#admin-panel)
-13. [Session Management](#session-management)
-14. [Data Persistence](#data-persistence)
-15. [Troubleshooting](#troubleshooting)
+12. [Capacity Planning](#capacity-planning)
+13. [Admin Panel](#admin-panel)
+14. [Session Management](#session-management)
+15. [Data Persistence](#data-persistence)
+16. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -1042,19 +1043,164 @@ https://carelonrx-roadmap1.onrender.com/story-estimations.html?session=session_X
 
 ---
 
+## Capacity Planning
+
+**Access**: All authenticated users
+
+The Capacity Planning module helps teams plan and track resource capacity across multiple sprints. It provides a matrix-based interface for entering team member availability and automatically calculates averages and totals.
+
+### Accessing Capacity Planning
+
+1. Click **"Capacity Planning"** in the left sidebar (below Story Estimations)
+2. You'll see the capacity planning interface with filters and matrix
+
+### Planning Capacity
+
+**Step 1: Select Context**
+
+Fill in the required filters:
+- **Line of Business**: Select from configured LOBs
+- **Program**: Choose program (e.g., AHD, Bioplus)
+- **Project**: Enter project name
+- **Team**: Select from available teams
+- **Sprint**: Enter sprint identifier (e.g., "Sprint 24")
+
+**Step 2: Load Team Members**
+
+1. Click **"Load Team Members"** button
+2. System fetches all active team members for the selected team
+3. Capacity matrix appears with team member rows
+
+**Step 3: Enter Sprint Dates (Optional)**
+
+- Enter start and end dates for each sprint (1-4)
+- Dates help track sprint timelines
+- Can be left blank if not needed
+
+**Step 4: Enter Capacity**
+
+For each team member and sprint:
+- Enter **working days** available (0-10)
+- Use decimal values for partial days (e.g., 5.5)
+- System auto-calculates totals as you type
+
+**Step 5: Save Capacity Plan**
+
+1. Review all entries
+2. Click **"Save Capacity Plan"**
+3. Data is saved to database
+4. Success message confirms save
+
+### Capacity Matrix Structure
+
+**Columns**:
+- **Resource Name**: Team member name
+- **Role**: Member's role (Dev Lead, Developer, QA, etc.)
+- **Team**: Team name
+- **Sprint 1-4**: Capacity input fields with date headers
+
+**Rows**:
+- One row per team member
+- Input fields for each sprint
+- Easy keyboard navigation (Tab key)
+
+**Footer Calculations**:
+- **Average Working Days/Sprint**: Average capacity per member
+- **Resources Available/Sprint**: Total capacity for the sprint
+
+### Auto-Calculations
+
+The system automatically calculates:
+- **Total capacity per sprint**: Sum of all member capacities
+- **Average capacity per sprint**: Average across all members
+- **Real-time updates**: Calculations update as you type
+
+### Use Cases
+
+**Sprint Planning**:
+- Determine total team capacity
+- Plan story point allocation
+- Identify resource constraints
+
+**Resource Management**:
+- Track member availability
+- Plan for vacations/time off
+- Balance workload across team
+
+**Multi-Sprint Planning**:
+- Plan capacity for 4 sprints ahead
+- Identify trends and patterns
+- Adjust resource allocation
+
+### Best Practices
+
+**Accurate Capacity Entry**:
+- ✅ Account for holidays and time off
+- ✅ Consider meetings and ceremonies
+- ✅ Use realistic working days (typically 6-8 per sprint)
+- ✅ Update regularly as plans change
+
+**Team Member Management**:
+- 📋 Keep team member list current in Admin Panel
+- 🔄 Mark inactive members appropriately
+- 📝 Use consistent team names across projects
+
+**Planning Horizon**:
+- 🎯 Plan 4 sprints ahead for better visibility
+- 🔍 Review and update each sprint
+- 📊 Use historical data to improve estimates
+
+### Tips
+
+- **Keyboard Navigation**: Use Tab key to move between fields quickly
+- **Decimal Values**: Enter 0.5 for half days, 7.5 for 7.5 days, etc.
+- **Save Frequently**: Click Save after completing each section
+- **Review Totals**: Check footer calculations to verify capacity
+- **Team Coordination**: Share capacity plans with team for alignment
+
+### Integration with Admin Panel
+
+Capacity Planning integrates with Admin Panel's Team Members module:
+- Team members must be added in Admin Panel first
+- Active members appear in capacity planning
+- Inactive members are hidden
+- Team names must match exactly
+
+### Troubleshooting
+
+**No Team Members Showing**:
+- ✅ Verify team members exist in Admin Panel → Team Members
+- ✅ Check team name spelling matches exactly
+- ✅ Ensure members are marked as Active
+- ✅ Refresh page and try again
+
+**Can't Save Capacity Plan**:
+- ✅ Fill in all required filters (LOB, Program, Project, Team, Sprint)
+- ✅ Enter at least one capacity value
+- ✅ Check internet connection
+- ✅ Verify you're logged in
+
+**Calculations Not Updating**:
+- ✅ Ensure you're entering numeric values
+- ✅ Use decimal point (.) not comma (,)
+- ✅ Refresh page if calculations freeze
+
+---
+
 ## Admin Panel
 
 **Access**: Admin role only
 
-The Admin Panel provides two main modules for system administration:
+The Admin Panel provides three main modules for system administration:
 1. **User Management** - Manage user accounts and roles
 2. **Line of Business Management** - Manage LOB values that appear in initiative dropdowns
+3. **Team Members Management** - Manage team members for capacity planning
 
 ### Accessing Admin Panel
 
 1. Click on your **Profile Dropdown** (top right)
 2. Select **"Admin Panel"** (only visible to admins)
-3. You'll see a tabbed interface with two sections
+3. You'll see a tabbed interface with three sections
 
 ### User Management Tab
 
@@ -1199,6 +1345,96 @@ The Admin Panel provides two main modules for system administration:
 - Icon-based actions (edit, delete)
 - Confirmation dialogs for destructive actions
 - Success/error messages for all operations
+
+### Team Members Management Tab
+
+**Purpose**: Manage team members for capacity planning. Team members added here will appear in the Capacity Planning module.
+
+**View Team Members**:
+- See all configured team members
+- Table shows: Name, Role, Team, Email, Status (Active/Inactive), Actions
+- Active members appear in capacity planning
+- Inactive members are hidden but preserved in database
+
+**Add New Team Member**:
+1. Click **"Add Team Member"** button
+2. Fill in the form:
+   - **Name** (required): Full name of team member
+     - Example: "John Smith", "Jane Doe"
+   - **Role** (required): Select from dropdown
+     - Options: Dev Lead, Developer, QA, Scrum Master, Product Owner, Architect, Designer, DevOps
+   - **Team** (required): Team name
+     - Example: "Enhance Warriors", "Innovation Team"
+     - Must match exactly in Capacity Planning
+   - **Email** (optional): Team member's email address
+3. Click **"Save"**
+4. Success message appears
+5. New member immediately available in Capacity Planning
+
+**Edit Team Member**:
+1. Click the **edit icon** (pencil) next to a team member
+2. Modify fields:
+   - **Name**: Update member name
+   - **Role**: Change role
+   - **Team**: Update team assignment
+   - **Email**: Update email
+   - **Active Status**: Toggle active/inactive
+     - ✅ **Active**: Appears in Capacity Planning
+     - ❌ **Inactive**: Hidden from Capacity Planning (but existing plans keep the data)
+3. Click **"Save"**
+4. Changes take effect immediately
+
+**Delete Team Member**:
+1. Click the **trash icon** next to a team member
+2. System checks if member has capacity plans
+3. **If has capacity plans**: 
+   - ❌ Deletion blocked
+   - Error message shows: "Cannot delete team member. They have X capacity plan(s). Please remove those first."
+   - You must first delete capacity plans or reassign
+4. **If no capacity plans**:
+   - ✅ Confirm deletion in popup dialog
+   - Member is permanently removed from database
+5. Deleted members no longer appear in Capacity Planning
+
+**Smart Delete Protection**:
+- System prevents accidental deletion of members with capacity plans
+- Protects data integrity
+- Shows count of affected plans
+- Guides admin to clean up plans first
+
+**Active/Inactive Status**:
+- **Active Members**: 
+  - ✅ Appear in Capacity Planning team selection
+  - ✅ Can be assigned to capacity plans
+  - ✅ Shown with green "Active" badge
+- **Inactive Members**:
+  - ❌ Hidden from Capacity Planning
+  - ✅ Existing capacity plans retain the data
+  - ✅ Can be reactivated anytime
+  - ✅ Shown with gray "Inactive" badge
+  - 💡 Use this for members who left the team
+
+**How Team Members Drive Capacity Planning**:
+1. Admin adds team members in Admin Panel
+2. Members sync to database (MongoDB)
+3. Capacity Planning fetches active members by team
+4. Users select team and see all active members
+5. Ensures consistent team member data
+
+**Benefits**:
+- ✅ **Centralized Management**: Manage all team members in one place
+- ✅ **Data Consistency**: Everyone uses the same member list
+- ✅ **Role Tracking**: Track member roles and responsibilities
+- ✅ **Team Organization**: Group members by team
+- ✅ **Audit Trail**: Track who created/updated each member
+- ✅ **Safe Deletion**: Prevents deletion of members in use
+
+**Best Practices**:
+- 📋 **Add all team members** before using Capacity Planning
+- 🔄 **Use Inactive** instead of Delete when members leave
+- 📝 **Keep team names consistent** across all modules
+- ✅ **Update regularly** to reflect team changes
+- 🔍 **Check capacity plans** before deleting members
 
 ---
 
