@@ -712,10 +712,13 @@
 
         // Initialize
         checkAuth();
-        populatePIDropdown();
         loadLOBs();
         loadTeams();
         lucide.createIcons();
+        // Use requestAnimationFrame to guarantee select is rendered before setting value
+        requestAnimationFrame(function() {
+            populatePIDropdown();
+        });
     </script>
 </body>
 </html>
