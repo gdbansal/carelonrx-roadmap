@@ -1242,15 +1242,37 @@
                 input.style.display = 'block';
                 input.required = true;
                 input.focus();
+                // For manual project: show team dropdown with manual entry option immediately
+                loadJiraTeamsManual();
             } else {
                 input.style.display = 'none';
                 input.required = false;
                 input.value = '';
+                // Reset and reload teams for selected JIRA project
+                document.getElementById('memberTeam').style.display = 'none';
+                document.getElementById('memberTeam').required = false;
+                loadJiraTeams();
             }
-            // Reset and reload teams for selected project
-            document.getElementById('memberTeam').style.display = 'none';
-            document.getElementById('memberTeam').required = false;
-            loadJiraTeams();
+        }
+
+        async function loadJiraTeamsManual() {
+            const sel = document.getElementById('memberTeamSelect');
+            sel.innerHTML = '<option value="">-- Select Team --</option>';
+            // Populate with any already-cached team names from previous loads
+            jiraTeamList.forEach(name => {
+                const o = document.createElement('option');
+                o.value = name;
+                o.textContent = name;
+                sel.appendChild(o);
+            });
+            const other = document.createElement('option');
+            other.value = '__other__';
+            other.textContent = 'Other (enter manually)';
+            sel.appendChild(other);
+            // Auto-show the manual input since project is also manual
+            document.getElementById('memberTeam').style.display = 'block';
+            document.getElementById('memberTeam').required = true;
+            sel.value = '__other__';
         }
 
         function getProjectValue() {
