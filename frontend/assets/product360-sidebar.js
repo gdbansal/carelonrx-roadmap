@@ -67,15 +67,19 @@
         </div>
     `;
 
-    // Inject sidebar into body
-    document.body.insertAdjacentHTML('afterbegin', sidebarHTML);
-
     // Add main-content-with-sidebar class to body
     document.body.classList.add('has-sidebar');
 
-    // Wrap existing content in main-content div
-    const existingContent = document.body.innerHTML.replace(sidebarHTML, '');
-    document.body.innerHTML = sidebarHTML + '<div class="main-content-with-sidebar">' + existingContent + '</div>';
+    // Wrap all existing body children in a main-content div (preserves event listeners)
+    const mainWrapper = document.createElement('div');
+    mainWrapper.className = 'main-content-with-sidebar';
+    // Move all current children into the wrapper
+    while (document.body.firstChild) {
+        mainWrapper.appendChild(document.body.firstChild);
+    }
+    // Now inject sidebar HTML, then append wrapper
+    document.body.insertAdjacentHTML('afterbegin', sidebarHTML);
+    document.body.appendChild(mainWrapper);
 
     // Initialize Lucide icons
     if (typeof lucide !== 'undefined') {
