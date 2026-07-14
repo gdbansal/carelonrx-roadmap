@@ -1845,7 +1845,7 @@ app.get('/api/estimation-analysis/export', async (req, res) => {
 
 const https = require('https');
 
-function jiraRequest(url, auth) {
+function jiraRequest(url) {
     return new Promise((resolve, reject) => {
         const parsedUrl = new URL(url);
         const options = {
@@ -1853,7 +1853,7 @@ function jiraRequest(url, auth) {
             path: parsedUrl.pathname + parsedUrl.search,
             method: 'GET',
             headers: {
-                'Authorization': `Basic ${auth}`,
+                'Authorization': `Bearer ${process.env.JIRA_API_TOKEN}`,
                 'Accept': 'application/json'
             }
         };
@@ -1877,14 +1877,13 @@ app.get('/api/jira/issue/:issueKey', authMiddleware, async (req, res) => {
     try {
         const { issueKey } = req.params;
 
-        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
             return res.status(503).json({ success: false, message: 'JIRA integration not configured' });
         }
 
-        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
         const url = `${process.env.JIRA_BASE_URL}/rest/api/2/issue/${issueKey}?fields=summary,status,assignee,priority,issuetype`;
 
-        const { status, body } = await jiraRequest(url, base64Auth);
+        const { status, body } = await jiraRequest(url);
 
         if (status !== 200) {
             return res.status(status).json({ success: false, message: `JIRA returned ${status}: ${body.errorMessages || body.message || ''}` });
@@ -1910,7 +1909,7 @@ app.get('/api/jira/issue/:issueKey', authMiddleware, async (req, res) => {
 
 app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
     try {
-        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
             return res.status(503).json({ success: false, message: 'JIRA integration not configured' });
         }
 
@@ -1919,12 +1918,11 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
             return res.status(400).json({ success: false, message: 'projectKey query param is required' });
         }
 
-        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
         const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
 
         // Step 1: find boards for this project
         const boardsUrl = `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=10`;
-        const { status: bs, body: boardsBody } = await jiraRequest(boardsUrl, base64Auth);
+        const { status: bs, body: boardsBody } = await jiraRequest(boardsUrl);
         console.log(`JIRA boards [${projectKey}] status=${bs} boards=${boardsBody?.values?.length}`);
 
         if (bs !== 200 || !boardsBody.values || boardsBody.values.length === 0) {
@@ -1936,7 +1934,7 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
         for (const board of boardsBody.values) {
             if (board.type === 'kanban') continue; // kanban boards don't have sprints
             const sprintsUrl = `${jiraBase}/rest/agile/1.0/board/${board.id}/sprint?state=active,future&maxResults=20`;
-            const { status: ss, body: sprintsBody } = await jiraRequest(sprintsUrl, base64Auth);
+            const { status: ss, body: sprintsBody } = await jiraRequest(sprintsUrl);
             console.log(`JIRA sprints board=${board.id} type=${board.type} status=${ss} count=${sprintsBody?.values?.length}`);
 
             if (ss === 200 && sprintsBody.values && sprintsBody.values.length > 0) {
@@ -1960,17 +1958,16 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
 
 app.get('/api/jira/boards', authMiddleware, async (req, res) => {
     try {
-        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
             return res.status(503).json({ success: false, message: 'JIRA integration not configured', boards: [] });
         }
         const { projectKey } = req.query;
         if (!projectKey) {
             return res.status(400).json({ success: false, message: 'projectKey is required', boards: [] });
         }
-        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
         const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
         const url = `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=50`;
-        const { status, body } = await jiraRequest(url, base64Auth);
+        const { status, body } = await jiraRequest(url);
         if (status !== 200 || !body.values) {
             return res.json({ success: true, boards: [] });
         }
@@ -1985,13 +1982,12 @@ app.get('/api/jira/boards', authMiddleware, async (req, res) => {
 
 app.get('/api/jira/projects', authMiddleware, async (req, res) => {
     try {
-        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
             return res.status(503).json({ success: false, message: 'JIRA integration not configured', projects: [] });
         }
-        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
         const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
         const url = `${jiraBase}/rest/api/2/project?maxResults=200`;
-        const { status, body } = await jiraRequest(url, base64Auth);
+        const { status, body } = await jiraRequest(url);
         if (status !== 200 || !Array.isArray(body)) {
             return res.json({ success: true, projects: [] });
         }
@@ -2006,97 +2002,17 @@ app.get('/api/jira/projects', authMiddleware, async (req, res) => {
 
 app.get('/api/jira/test', authMiddleware, async (req, res) => {
     try {
-        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
-            return res.json({ success: false, message: 'Env vars missing', vars: { JIRA_BASE_URL: !!process.env.JIRA_BASE_URL, JIRA_EMAIL: !!process.env.JIRA_EMAIL, JIRA_API_TOKEN: !!process.env.JIRA_API_TOKEN } });
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
+            return res.json({ success: false, message: 'Env vars missing', vars: { JIRA_BASE_URL: !!process.env.JIRA_BASE_URL, JIRA_API_TOKEN: !!process.env.JIRA_API_TOKEN } });
         }
-        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
         const url = `${process.env.JIRA_BASE_URL}/rest/api/2/myself`;
-        const { status, body } = await jiraRequest(url, base64Auth);
+        const { status, body } = await jiraRequest(url);
         res.json({ success: status === 200, httpStatus: status, jiraUser: body.displayName || body.name, jiraEmail: body.emailAddress, error: status !== 200 ? body : undefined });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
 });
 
-// ========== JIRA INTEGRATION ==========
-
-app.get('/api/jira/projects', async (req, res) => {
-    try {
-        // Check if JIRA is configured
-        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
-            console.log('JIRA env vars check:', {
-                JIRA_BASE_URL: !!process.env.JIRA_BASE_URL,
-                JIRA_EMAIL: !!process.env.JIRA_EMAIL,
-                JIRA_API_TOKEN: !!process.env.JIRA_API_TOKEN
-            });
-            return res.json({
-                success: false,
-                message: 'JIRA integration not configured. Please set JIRA_BASE_URL, JIRA_EMAIL, and JIRA_API_TOKEN environment variables.'
-            });
-        }
-
-        // Create base64 auth token
-        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
-        
-        // Fetch projects from JIRA REST API using existing jiraRequest helper
-        const url = `${process.env.JIRA_BASE_URL}/rest/api/2/project`;
-        console.log('Fetching JIRA projects from:', url);
-        console.log('JIRA_BASE_URL:', process.env.JIRA_BASE_URL);
-        
-        const { status, body } = await jiraRequest(url, base64Auth);
-        
-        console.log('JIRA API response status:', status);
-        
-        if (status !== 200) {
-            console.error('JIRA API error:', body);
-            return res.json({
-                success: false,
-                message: `JIRA API returned ${status}: ${body.errorMessages || body.message || 'Unknown error'}`
-            });
-        }
-
-        const projects = body;
-        
-        if (projects && Array.isArray(projects) && projects.length > 0) {
-            console.log(`Found ${projects.length} JIRA projects`);
-            // Extract project names for team selection
-            const teamNames = projects.map(p => ({
-                key: p.key,
-                name: p.name,
-                lead: p.lead?.displayName || 'Unknown'
-            }));
-            
-            res.json({
-                success: true,
-                projects: teamNames
-            });
-        } else {
-            console.log('No projects in response or invalid format');
-            res.json({
-                success: false,
-                message: 'No JIRA projects found'
-            });
-        }
-    } catch (error) {
-        console.error('Error fetching JIRA projects:', error);
-        
-        // Provide helpful error messages based on error type
-        let errorMessage = 'Failed to fetch JIRA projects';
-        if (error.code === 'ENOTFOUND') {
-            errorMessage = `Cannot connect to JIRA server. Please verify JIRA_BASE_URL is correct. Current: ${process.env.JIRA_BASE_URL}. Should be like: https://yourcompany.atlassian.net`;
-        } else if (error.code === 'ECONNREFUSED') {
-            errorMessage = 'Connection refused by JIRA server';
-        } else if (error.message) {
-            errorMessage = error.message;
-        }
-        
-        res.json({
-            success: false,
-            message: errorMessage,
-            error: error.code || error.message
-        });
-    }
-});
 
 // ========== LINE OF BUSINESS MANAGEMENT ==========
 
