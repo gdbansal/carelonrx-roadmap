@@ -907,6 +907,11 @@
                 document.getElementById('teamTab').classList.remove('border-transparent', 'text-gray-500');
                 document.getElementById('teamContent').classList.remove('hidden');
                 loadTeamMembers();
+            } else if (tab === 'rolemodule') {
+                document.getElementById('rolemoduleTab').classList.add('active', 'border-blue-600', 'text-blue-600');
+                document.getElementById('rolemoduleTab').classList.remove('border-transparent', 'text-gray-500');
+                document.getElementById('rolemoduleContent').classList.remove('hidden');
+                if (roleMappings.length === 0) loadRoleMappings();
             }
             
             lucide.createIcons();
@@ -1464,13 +1469,6 @@
                 const data = await res.json();
                 data.success ? showSuccess('Role mappings saved successfully!') : showError(data.message || 'Failed to save');
             } catch (e) { showError('Connection error: ' + e.message); }
-        }
-
-        // patch switchTab to load role mappings on first visit
-        const _origSwitchTab = switchTab;
-        function switchTab(tab) {
-            _origSwitchTab(tab);
-            if (tab === 'rolemodule' && roleMappings.length === 0) loadRoleMappings();
         }
 
         // Initialize
