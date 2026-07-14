@@ -32,7 +32,7 @@ const capacityPlanSchema = new mongoose.Schema({
     },
     program: {
         type: String,
-        required: true,
+        required: false,
         trim: true
     },
     project: {
@@ -81,7 +81,7 @@ const capacityPlanSchema = new mongoose.Schema({
 });
 
 // Compound index for efficient queries
-capacityPlanSchema.index({ lineOfBusiness: 1, program: 1, project: 1, team: 1, pi: 1 });
+capacityPlanSchema.index({ lineOfBusiness: 1, project: 1, team: 1, pi: 1 });
 capacityPlanSchema.index({ teamMemberId: 1 });
 
 module.exports = mongoose.model('CapacityPlan', capacityPlanSchema);

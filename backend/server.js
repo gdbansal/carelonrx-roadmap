@@ -2577,12 +2577,12 @@ app.get('/api/capacity-plans', authMiddleware, async (req, res) => {
 // Create or update capacity plan
 app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
     try {
-        const { lineOfBusiness, program, project, team, pi, capacities } = req.body;
+        const { lineOfBusiness, project, team, pi, capacities } = req.body;
         
-        if (!lineOfBusiness || !program || !project || !team || !pi || !capacities) {
+        if (!lineOfBusiness || !project || !team || !pi || !capacities) {
             return res.status(400).json({
                 success: false,
-                message: 'All fields are required'
+                message: 'All fields are required (lineOfBusiness, project, team, pi)'
             });
         }
         
@@ -2595,7 +2595,6 @@ app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
             // Check if plan already exists
             let plan = await CapacityPlan.findOne({
                 lineOfBusiness,
-                program,
                 project,
                 team,
                 pi,
@@ -2611,7 +2610,6 @@ app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
                 // Create new plan
                 plan = new CapacityPlan({
                     lineOfBusiness,
-                    program,
                     project,
                     team,
                     pi,
