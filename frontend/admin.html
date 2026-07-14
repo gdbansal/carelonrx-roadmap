@@ -1389,12 +1389,13 @@
 
         function getDefaultMappings() {
             return [
-                { role: 'admin',         modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
-                { role: 'user',          modules: { roadmap: true,  storyEstimations: false, capacityPlanning: false } },
-                { role: 'viewer',        modules: { roadmap: true,  storyEstimations: false, capacityPlanning: false } },
-                { role: 'Product Owner', modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
-                { role: 'Scrum Master',  modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
-                { role: 'Developer',     modules: { roadmap: false, storyEstimations: true,  capacityPlanning: false } }
+                { role: 'admin',           modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
+                { role: 'product_owner',   modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
+                { role: 'product_manager', modules: { roadmap: true,  storyEstimations: false, capacityPlanning: false } },
+                { role: 'business_owner',  modules: { roadmap: true,  storyEstimations: false, capacityPlanning: false } },
+                { role: 'rte',             modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
+                { role: 'scrum_master',    modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
+                { role: 'stakeholder',     modules: { roadmap: true,  storyEstimations: false, capacityPlanning: false } }
             ];
         }
 

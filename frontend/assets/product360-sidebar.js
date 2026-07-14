@@ -325,7 +325,13 @@ async function applyRoleModuleVisibility() {
         return; // fail open — show everything if API is down
     }
 
-    const roleMap = mappings.find(m => m.role === user.role);
+    // Match role: try exact, then snake_case->display name conversion
+    const toDisplay = r => r.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const roleMap = mappings.find(m =>
+        m.role === user.role ||
+        m.role === toDisplay(user.role) ||
+        m.role.toLowerCase().replace(/\s+/g, '_') === user.role
+    );
     if (!roleMap) return; // role not configured — show everything
 
     const currentPage = window.location.pathname.split('/').pop();
