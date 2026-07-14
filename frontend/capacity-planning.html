@@ -819,8 +819,10 @@
             const team    = document.getElementById('teamFilter').value;
             const pi      = document.getElementById('piFilter').value;
 
-            // Build header metadata rows
-            const metaRows = [
+            const sprintHeaders = sprintColumns.map(s => s.name);
+
+            // ── Section 1: Metadata ──
+            const allRows = [
                 ['Capacity Plan'],
                 ['PI', pi],
                 ['Line of Business', lob],
@@ -829,31 +831,62 @@
                 []
             ];
 
-            // Build column header row
-            const sprintHeaders = sprintColumns.map(s => s.name);
-            const headerRow = ['Resource Name', 'Role', ...sprintHeaders, 'Avg Capacity'];
-
-            // Build data rows
-            const dataRows = teamMembers.map(member => {
-                const capacities = sprintColumns.map((_, i) => {
-                    const input = document.querySelector(`.capacity-input[data-member="${member._id}"][data-sprint="${i+1}"]`);
-                    return parseFloat(input?.value) || 0;
+            // ── Section 2: Capacity Matrix ──
+            allRows.push(['Resource Name', 'Role', ...sprintHeaders, 'Avg Capacity']);
+            teamMembers.forEach(member => {
+                const caps = sprintColumns.map((_, i) => {
+                    const el = document.querySelector(`.capacity-input[data-member="${member._id}"][data-sprint="${i+1}"]`);
+                    return parseFloat(el?.value) || 0;
                 });
-                const avg = capacities.length
-                    ? parseFloat((capacities.reduce((a, b) => a + b, 0) / capacities.length).toFixed(1))
+                const avg = caps.length
+                    ? parseFloat((caps.reduce((a, b) => a + b, 0) / caps.length).toFixed(1))
                     : 0;
-                return [member.name, member.role, ...capacities, avg];
+                allRows.push([member.name, member.role, ...caps, avg]);
             });
 
-            const allRows = [...metaRows, headerRow, ...dataRows];
+            // ── Section 3: Avg Points per Sprint ──
+            allRows.push([]);
+            allRows.push(['Avg Points per Sprint', ...sprintHeaders]);
+            const avgPtsRow = ['Avg Points a person can complete in a sprint when available 100%'];
+            sprintColumns.forEach((_, i) => {
+                const idx = i + 1;
+                const input = document.getElementById(`avgPts-${idx}`);
+                const view  = document.getElementById(`avgPts-${idx}-view`);
+                avgPtsRow.push(parseFloat(input?.value || view?.textContent) || AVG_POINTS_PER_DAY);
+            });
+            allRows.push(avgPtsRow);
+
+            // ── Section 4: Team Availability ──
+            allRows.push([]);
+            allRows.push(['Team Availability']);
+            allRows.push(['Sprint', 'Working Days (Team Avg)', 'Admin Work %', 'Contingency %', 'Availability (days/sprint)', 'Suggested Points per Sprint']);
+
+            let totalSuggested = 0;
+            sprintColumns.forEach((s, i) => {
+                const idx = i + 1;
+                const getVal = (field) => {
+                    const input = document.querySelector(`.avail-input[data-sprint="${idx}"][data-field="${field}"]`);
+                    if (input) return parseFloat(input.value) || 0;
+                    const view = document.querySelector(`.avail-view[data-sprint="${idx}"][data-field="${field}"]`);
+                    return parseFloat(view?.textContent) || 0;
+                };
+                const wd   = getVal('workingDays');
+                const adm  = getVal('adminPct');
+                const con  = getVal('contingencyPct');
+                const avDays = parseFloat(document.getElementById(`avail-days-${idx}`)?.textContent) || 0;
+                const sugg   = parseInt(document.getElementById(`avail-pts-${idx}`)?.textContent)  || 0;
+                totalSuggested += sugg;
+                allRows.push([s.name, wd, `${adm}%`, `${con}%`, avDays, sugg]);
+            });
+            allRows.push(['', '', '', '', 'Total', totalSuggested]);
 
             const ws = XLSX.utils.aoa_to_sheet(allRows);
 
-            // Style column widths
+            // Column widths
             ws['!cols'] = [
-                { wch: 28 },
+                { wch: 38 },
                 { wch: 18 },
-                ...sprintColumns.map(() => ({ wch: 12 })),
+                ...sprintColumns.map(() => ({ wch: 14 })),
                 { wch: 14 }
             ];
 
