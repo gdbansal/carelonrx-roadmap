@@ -92,10 +92,16 @@
         <div id="capacityMatrix" class="hidden bg-white rounded-lg shadow-lg p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-gray-800" id="capacityMatrixTitle">Capacity Matrix</h2>
-                <button onclick="saveCapacityPlan()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
-                    <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
-                    Save Capacity Plan
-                </button>
+                <div class="flex gap-3">
+                    <button id="saveBtn" onclick="saveCapacityPlan()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                        <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
+                        Save Capacity Plan
+                    </button>
+                    <button id="editBtn" onclick="enableEditMode()" class="hidden bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i data-lucide="pencil" class="w-4 h-4 inline mr-2"></i>
+                        Edit
+                    </button>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
@@ -184,6 +190,7 @@
     <script>
         const API_BASE = 'https://carelonrx-roadmap.onrender.com';
         let teamMembers = [];
+        let isViewMode = false;
 
         // ---- PI (Program Increment) helpers ----
         // PI format: YY.Q  e.g. 26.1 = 2026 Q1, 26.3 = 2026 Q3
@@ -384,6 +391,9 @@
 
                 if (data.success && data.members.length > 0) {
                     teamMembers = data.members;
+                    isViewMode = false;
+                    document.getElementById('saveBtn').classList.remove('hidden');
+                    document.getElementById('editBtn').classList.add('hidden');
                     renderCapacityMatrix();
                     document.getElementById('emptyState').classList.add('hidden');
                     document.getElementById('capacityMatrix').classList.remove('hidden');
@@ -444,13 +454,18 @@
             // Render member rows
             teamMembers.forEach(member => {
                 const row = document.createElement('tr');
-                const sprintCells = sprintColumns.map((_, i) => `
+                const sprintCells = sprintColumns.map((_, i) => {
+                    const saved = (member._savedCapacity || [])[i] ?? 0;
+                    if (isViewMode) {
+                        return `<td class="border border-gray-300 px-4 py-2 text-center font-semibold capacity-cell" data-member="${member._id}" data-sprint="${i+1}">${saved}</td>`;
+                    }
+                    return `
                     <td class="border border-gray-300 px-2 py-2 text-center">
                         <input type="number" min="0" max="30" step="0.5"
                             class="w-20 px-2 py-1 border rounded text-center capacity-input"
-                            data-member="${member._id}" data-sprint="${i+1}" value="0">
-                    </td>
-                `).join('');
+                            data-member="${member._id}" data-sprint="${i+1}" value="${saved}">
+                    </td>`;
+                }).join('');
                 row.innerHTML = `
                     <td class="border border-gray-300 px-4 py-2">${member.name}</td>
                     <td class="border border-gray-300 px-4 py-2">${member.role}</td>
@@ -459,9 +474,11 @@
                 tbody.appendChild(row);
             });
 
-            document.querySelectorAll('.capacity-input').forEach(input => {
-                input.addEventListener('input', calculateTotals);
-            });
+            if (!isViewMode) {
+                document.querySelectorAll('.capacity-input').forEach(input => {
+                    input.addEventListener('input', calculateTotals);
+                });
+            }
 
             renderAvgPointsTable();
             renderAvailabilityTable();
@@ -640,6 +657,14 @@
 
                 if (data.success) {
                     showSuccess('Capacity plan saved successfully!');
+                    // Persist saved values on members and switch to view mode
+                    teamMembers.forEach(member => {
+                        member._savedCapacity = sprintColumns.map((_, i) => {
+                            const input = document.querySelector(`.capacity-input[data-member="${member._id}"][data-sprint="${i+1}"]`);
+                            return parseFloat(input?.value) || 0;
+                        });
+                    });
+                    enableViewMode();
                 } else {
                     showError(data.message || 'Failed to save capacity plan');
                 }
@@ -647,6 +672,22 @@
                 console.error('Error saving capacity plan:', error);
                 showError('Failed to save capacity plan');
             }
+        }
+
+        function enableViewMode() {
+            isViewMode = true;
+            document.getElementById('saveBtn').classList.add('hidden');
+            document.getElementById('editBtn').classList.remove('hidden');
+            renderCapacityMatrix();
+            calculateTotals();
+        }
+
+        function enableEditMode() {
+            isViewMode = false;
+            document.getElementById('saveBtn').classList.remove('hidden');
+            document.getElementById('editBtn').classList.add('hidden');
+            renderCapacityMatrix();
+            calculateTotals();
         }
 
         function showSuccess(message) {
