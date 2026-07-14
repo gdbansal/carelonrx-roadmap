@@ -287,7 +287,7 @@
             if (!key) {
                 statusEl.textContent = 'Sprints will appear as table columns after loading.';
                 statusEl.className = 'text-xs text-gray-400 mt-1';
-                sprintColumns = [{ name: 'Sprint 1' }, { name: 'Sprint 2' }, { name: 'Sprint 3' }, { name: 'Sprint 4' }];
+                sprintColumns = [{ name: 'Sprint 1' }, { name: 'Sprint 2' }, { name: 'Sprint 3' }, { name: 'Sprint 4' }, { name: 'Sprint 5' }, { name: 'Sprint 6' }];
                 return;
             }
             statusEl.textContent = 'Fetching sprints from JIRA...';
@@ -313,9 +313,9 @@
                     statusEl.textContent = `✅ ${sprintColumns.length} sprint(s) loaded from JIRA — will appear as columns when you load team members.`;
                     statusEl.className = 'text-xs text-green-600 mt-1';
                 } else {
-                    statusEl.textContent = 'No sprints found for this JIRA key. Default Sprint 1–4 columns will be used.';
+                    statusEl.textContent = 'No sprints found for this JIRA key. Default Sprint 1–6 columns will be used.';
                     statusEl.className = 'text-xs text-orange-500 mt-1';
-                    sprintColumns = [{ name: 'Sprint 1' }, { name: 'Sprint 2' }, { name: 'Sprint 3' }, { name: 'Sprint 4' }];
+                    sprintColumns = [{ name: 'Sprint 1' }, { name: 'Sprint 2' }, { name: 'Sprint 3' }, { name: 'Sprint 4' }, { name: 'Sprint 5' }, { name: 'Sprint 6' }];
                 }
                 // If matrix already loaded, re-render with new sprint columns
                 if (!document.getElementById('capacityMatrix').classList.contains('hidden')) {
@@ -392,12 +392,14 @@
             }
         }
 
-        // Sprint columns (populated from JIRA or defaults)
+        // Sprint columns (populated from JIRA or defaults - minimum 6 per PI)
         let sprintColumns = [
             { name: 'Sprint 1' },
             { name: 'Sprint 2' },
             { name: 'Sprint 3' },
-            { name: 'Sprint 4' }
+            { name: 'Sprint 4' },
+            { name: 'Sprint 5' },
+            { name: 'Sprint 6' }
         ];
 
         // Render capacity matrix
