@@ -12,6 +12,7 @@ const UserSession = require('./models/UserSession');
 const LineOfBusiness = require('./models/LineOfBusiness');
 const TeamMember = require('./models/TeamMember');
 const CapacityPlan = require('./models/CapacityPlan');
+const RoleModuleMapping = require('./models/RoleModuleMapping');
 const { logAuditEvent } = require('./middleware/auditLogger');
 const crypto = require('crypto');
 
@@ -2697,6 +2698,52 @@ app.delete('/api/capacity-plans/:id', authMiddleware, async (req, res) => {
             message: 'Failed to delete capacity plan',
             error: error.message
         });
+    }
+});
+
+// ========== ROLE MODULE MAPPING ==========
+
+// Get all role-module mappings
+app.get('/api/role-module-mappings', authMiddleware, async (req, res) => {
+    try {
+        const mappings = await RoleModuleMapping.find().sort({ role: 1 });
+        res.json({ success: true, mappings });
+    } catch (error) {
+        console.error('Get role-module mappings error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch mappings' });
+    }
+});
+
+// Save all role-module mappings (upsert per role)
+app.post('/api/role-module-mappings', authMiddleware, async (req, res) => {
+    try {
+        const { mappings } = req.body;
+        if (!Array.isArray(mappings) || mappings.length === 0) {
+            return res.status(400).json({ success: false, message: 'mappings array is required' });
+        }
+        const results = [];
+        for (const m of mappings) {
+            const doc = await RoleModuleMapping.findOneAndUpdate(
+                { role: m.role.trim() },
+                { modules: m.modules, updatedBy: req.user.username, updatedAt: new Date() },
+                { upsert: true, new: true, setDefaultsOnInsert: true }
+            );
+            results.push(doc);
+        }
+        res.json({ success: true, message: 'Mappings saved successfully', mappings: results });
+    } catch (error) {
+        console.error('Save role-module mappings error:', error);
+        res.status(500).json({ success: false, message: 'Failed to save mappings', error: error.message });
+    }
+});
+
+// Delete a role mapping
+app.delete('/api/role-module-mappings/:role', authMiddleware, async (req, res) => {
+    try {
+        await RoleModuleMapping.findOneAndDelete({ role: req.params.role });
+        res.json({ success: true, message: 'Role deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to delete role' });
     }
 });
 

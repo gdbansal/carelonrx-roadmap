@@ -90,6 +90,10 @@
                         <i data-lucide="users" class="w-4 h-4"></i>
                         <span>Team Members</span>
                     </button>
+                    <button onclick="switchTab('rolemodule')" id="rolemoduleTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                        <i data-lucide="grid" class="w-4 h-4"></i>
+                        <span>Role vs Module</span>
+                    </button>
                 </nav>
             </div>
         </div>
@@ -434,6 +438,66 @@
             </form>
         </div>
     </div>
+
+        <!-- Role vs Module Mapping Tab -->
+        <div id="rolemoduleContent" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Role vs Module Mapping</h2>
+                        <p class="text-sm text-gray-600 mt-1">Control which modules each role can access. Changes are saved to MongoDB.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="showAddRoleModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Add Role</span>
+                        </button>
+                        <button onclick="saveRoleMappings()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            <span>Save Mappings</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border border-gray-200 rounded-lg" id="roleMappingTable">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase border-b border-gray-200 min-w-32">Module</th>
+                                <!-- Role columns injected by JS -->
+                            </tr>
+                        </thead>
+                        <tbody id="roleMappingBody">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-gray-400 mt-3">Tick a checkbox to grant a role access to that module. Untick to revoke.</p>
+            </div>
+        </div>
+
+        <!-- Add Role Modal -->
+        <div id="addRoleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Add New Role</h3>
+                    <button onclick="closeAddRoleModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Role Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="newRoleName" maxlength="100" placeholder="e.g., Business Analyst"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="confirmAddRole()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold">Add Role</button>
+                        <button onclick="closeAddRoleModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <!-- Success Message -->
     <div id="successMessage" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50">
@@ -1290,6 +1354,123 @@
                 console.error('Error saving team member:', error);
                 showError('Unable to connect to server: ' + error.message);
             }
+        }
+
+        // ========== ROLE vs MODULE MAPPING ==========
+        const MODULES = [
+            { key: 'dashboard',        label: 'Dashboard' },
+            { key: 'roadmap',          label: 'Roadmap' },
+            { key: 'intake',           label: 'Initiative Intake' },
+            { key: 'storyEstimations', label: 'Story Estimations' },
+            { key: 'capacityPlanning', label: 'Capacity Planning' },
+            { key: 'analytics',        label: 'Analytics' },
+            { key: 'adminPanel',       label: 'Admin Panel' }
+        ];
+
+        let roleMappings = [];
+
+        async function loadRoleMappings() {
+            try {
+                const res = await fetch(`${API_BASE}/api/role-module-mappings`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                if (data.success && data.mappings.length > 0) {
+                    roleMappings = data.mappings.map(m => ({ role: m.role, modules: { ...m.modules } }));
+                } else {
+                    roleMappings = getDefaultMappings();
+                }
+            } catch (e) {
+                roleMappings = getDefaultMappings();
+            }
+            renderRoleMappingTable();
+        }
+
+        function getDefaultMappings() {
+            return [
+                { role: 'admin',         modules: { dashboard: true,  roadmap: true,  intake: true,  storyEstimations: true,  capacityPlanning: true,  analytics: true,  adminPanel: true  } },
+                { role: 'user',          modules: { dashboard: true,  roadmap: true,  intake: true,  storyEstimations: false, capacityPlanning: false, analytics: false, adminPanel: false } },
+                { role: 'viewer',        modules: { dashboard: true,  roadmap: true,  intake: false, storyEstimations: false, capacityPlanning: false, analytics: false, adminPanel: false } },
+                { role: 'Product Owner', modules: { dashboard: true,  roadmap: true,  intake: true,  storyEstimations: true,  capacityPlanning: true,  analytics: true,  adminPanel: false } },
+                { role: 'Scrum Master',  modules: { dashboard: true,  roadmap: true,  intake: true,  storyEstimations: true,  capacityPlanning: true,  analytics: false, adminPanel: false } },
+                { role: 'Developer',     modules: { dashboard: true,  roadmap: false, intake: false, storyEstimations: true,  capacityPlanning: false, analytics: false, adminPanel: false } }
+            ];
+        }
+
+        function renderRoleMappingTable() {
+            const thead = document.querySelector('#roleMappingTable thead tr');
+            const tbody = document.getElementById('roleMappingBody');
+            thead.innerHTML = `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase border-b border-r border-gray-200 bg-gray-50" style="min-width:160px">Module \ Role</th>`;
+            roleMappings.forEach((rm, ri) => {
+                thead.innerHTML += `<th class="px-3 py-3 text-center text-xs font-semibold text-gray-700 border-b border-gray-200" style="min-width:110px">
+                    <div class="flex flex-col items-center gap-1">
+                        <span>${rm.role}</span>
+                        <button onclick="deleteRole(${ri})" class="text-red-400 hover:text-red-600" title="Remove role"><i data-lucide="x-circle" class="w-3 h-3"></i></button>
+                    </div></th>`;
+            });
+            tbody.innerHTML = '';
+            MODULES.forEach((mod, mi) => {
+                const bg = mi % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                let row = `<tr class="${bg}"><td class="px-4 py-3 text-sm font-semibold text-gray-700 border-r border-b border-gray-200 ${bg}" style="min-width:160px">${mod.label}</td>`;
+                roleMappings.forEach((rm, ri) => {
+                    const chk = rm.modules[mod.key] ? 'checked' : '';
+                    row += `<td class="px-3 py-3 text-center border-b border-gray-100"><input type="checkbox" ${chk} onchange="toggleMapping(${ri},'${mod.key}',this.checked)" class="w-4 h-4 rounded accent-blue-600 cursor-pointer"></td>`;
+                });
+                row += '</tr>';
+                tbody.innerHTML += row;
+            });
+            lucide.createIcons();
+        }
+
+        function toggleMapping(ri, key, val) { roleMappings[ri].modules[key] = val; }
+
+        async function deleteRole(ri) {
+            const role = roleMappings[ri].role;
+            if (!confirm(`Remove role "${role}" from mappings?`)) return;
+            try {
+                await fetch(`${API_BASE}/api/role-module-mappings/${encodeURIComponent(role)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+            } catch(e) {}
+            roleMappings.splice(ri, 1);
+            renderRoleMappingTable();
+        }
+
+        function showAddRoleModal() {
+            document.getElementById('newRoleName').value = '';
+            document.getElementById('addRoleModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeAddRoleModal() { document.getElementById('addRoleModal').classList.add('hidden'); }
+
+        function confirmAddRole() {
+            const name = document.getElementById('newRoleName').value.trim();
+            if (!name) { showError('Please enter a role name'); return; }
+            if (roleMappings.some(r => r.role.toLowerCase() === name.toLowerCase())) { showError('Role already exists'); return; }
+            roleMappings.push({ role: name, modules: { dashboard: true, roadmap: false, intake: false, storyEstimations: false, capacityPlanning: false, analytics: false, adminPanel: false } });
+            renderRoleMappingTable();
+            closeAddRoleModal();
+        }
+
+        async function saveRoleMappings() {
+            try {
+                const res = await fetch(`${API_BASE}/api/role-module-mappings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: JSON.stringify({ mappings: roleMappings })
+                });
+                const data = await res.json();
+                data.success ? showSuccess('Role mappings saved successfully!') : showError(data.message || 'Failed to save');
+            } catch (e) { showError('Connection error: ' + e.message); }
+        }
+
+        // patch switchTab to load role mappings on first visit
+        const _origSwitchTab = switchTab;
+        function switchTab(tab) {
+            _origSwitchTab(tab);
+            if (tab === 'rolemodule' && roleMappings.length === 0) loadRoleMappings();
         }
 
         // Initialize
