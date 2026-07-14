@@ -1046,31 +1046,159 @@ https://carelonrx-roadmap1.onrender.com/story-estimations.html?session=session_X
 
 **Access**: Admin role only
 
-### User Management
+The Admin Panel provides two main modules for system administration:
+1. **User Management** - Manage user accounts and roles
+2. **Line of Business Management** - Manage LOB values that appear in initiative dropdowns
+
+### Accessing Admin Panel
+
+1. Click on your **Profile Dropdown** (top right)
+2. Select **"Admin Panel"** (only visible to admins)
+3. You'll see a tabbed interface with two sections
+
+### User Management Tab
 
 **View Users**:
 - See all registered users
 - View username, name, email, role, status
+- Table shows: Name, Username, Role, Status, Actions
 
 **Add New User**:
-1. Click **"Add New User"**
-2. Fill in:
-   - Full Name
-   - Username
-   - Email (@elevancehealth.com or @carelon.com)
-   - Password
-   - Role
+1. Click **"Add User"** button
+2. Fill in required information:
+   - **Full Name** (required)
+   - **Username** (required, unique)
+   - **Email** (required, must be @elevancehealth.com or @carelon.com)
+   - **Password** (required, minimum 8 characters with complexity requirements)
+   - **Role** (required): Admin, Product Owner, Product Manager, Business Owner, Stakeholder, RTE, Scrum Master
 3. Click **"Save User"**
+4. Success message appears
+5. User can now login with their credentials
+
+**Password Requirements**:
+- ✅ Minimum 8 characters
+- ✅ At least one uppercase letter (A-Z)
+- ✅ At least one lowercase letter (a-z)
+- ✅ At least one number (0-9)
+- ✅ At least one special character (!@#$%^&*)
 
 **Edit User**:
-1. Click the **edit icon** next to a user
-2. Modify fields (leave password blank to keep current)
+1. Click the **edit icon** (pencil) next to a user
+2. Modify any fields:
+   - Update name, email, or role
+   - Change password (leave blank to keep current)
 3. Click **"Save User"**
+4. Changes take effect immediately
 
 **Delete User**:
-1. Click the **trash icon**
-2. Confirm deletion
-3. User is removed (cannot delete yourself)
+1. Click the **trash icon** next to a user
+2. Confirm deletion in popup dialog
+3. User account is permanently removed
+4. **Note**: Cannot delete yourself while logged in
+
+### Line of Business Management Tab
+
+**Purpose**: Manage the Line of Business values that appear in the initiative form dropdown. This ensures consistency across all initiatives and provides centralized control over LOB options.
+
+**View Lines of Business**:
+- See all configured LOBs
+- Table shows: Name, Description, Status (Active/Inactive), Created By, Actions
+- Active LOBs appear in initiative dropdowns
+- Inactive LOBs are hidden from dropdowns but preserved in database
+
+**Add New Line of Business**:
+1. Click **"Add Line of Business"** button
+2. Fill in the form:
+   - **Name** (required): The LOB name that will appear in dropdowns
+     - Example: "Medicare", "Medicaid", "Commercial"
+     - Maximum 200 characters
+     - Must be unique
+   - **Description** (optional): Additional details about this LOB
+     - Maximum 500 characters
+     - Helps users understand the LOB purpose
+3. Click **"Save"**
+4. Success message appears
+5. New LOB immediately appears in initiative form dropdowns
+
+**Edit Line of Business**:
+1. Click the **edit icon** (pencil) next to an LOB
+2. Modify fields:
+   - **Name**: Update the LOB name
+   - **Description**: Update description
+   - **Active Status**: Toggle active/inactive
+     - ✅ **Active**: Appears in initiative dropdowns
+     - ❌ **Inactive**: Hidden from dropdowns (but existing initiatives keep the value)
+3. Click **"Save"**
+4. Changes take effect immediately across all forms
+
+**Delete Line of Business**:
+1. Click the **trash icon** next to an LOB
+2. System checks if LOB is in use by any initiatives
+3. **If in use**: 
+   - ❌ Deletion blocked
+   - Error message shows: "Cannot delete Line of Business. It is currently used by X initiative(s). Please reassign those initiatives first."
+   - You must first edit initiatives to use a different LOB
+4. **If not in use**:
+   - ✅ Confirm deletion in popup dialog
+   - LOB is permanently removed from database
+5. Deleted LOBs no longer appear in dropdowns
+
+**Smart Delete Protection**:
+- System prevents accidental deletion of LOBs in use
+- Protects data integrity
+- Shows count of affected initiatives
+- Guides admin to reassign initiatives first
+
+**Active/Inactive Status**:
+- **Active LOBs**: 
+  - ✅ Appear in initiative form dropdowns
+  - ✅ Can be selected for new initiatives
+  - ✅ Shown with green "Active" badge
+- **Inactive LOBs**:
+  - ❌ Hidden from initiative form dropdowns
+  - ✅ Existing initiatives retain the value
+  - ✅ Can be reactivated anytime
+  - ✅ Shown with gray "Inactive" badge
+  - 💡 Use this to phase out old LOBs without losing data
+
+**How LOBs Drive Initiative Form**:
+1. Admin adds/updates LOBs in Admin Panel
+2. Changes sync to database (MongoDB)
+3. Initiative form fetches active LOBs via API
+4. Dropdown auto-populates with current active LOBs
+5. Users see only active, admin-approved LOB values
+6. Ensures data consistency across all initiatives
+
+**Benefits**:
+- ✅ **Centralized Control**: Manage all LOB values in one place
+- ✅ **Data Consistency**: Everyone uses the same LOB values
+- ✅ **No Typos**: Users select from predefined list
+- ✅ **Easy Updates**: Change LOB names globally
+- ✅ **Audit Trail**: Track who created/updated each LOB
+- ✅ **Flexible**: Add new LOBs as business needs evolve
+- ✅ **Safe Deletion**: Prevents deletion of LOBs in use
+
+**Best Practices**:
+- 📋 **Plan LOB structure** before adding many initiatives
+- 🔄 **Use Inactive** instead of Delete when phasing out LOBs
+- 📝 **Add descriptions** to help users understand each LOB
+- ✅ **Review regularly** to ensure LOB list stays current
+- 🔍 **Check usage** before deleting (system will warn you)
+
+### Admin Panel Navigation
+
+**Switching Between Tabs**:
+- Click **"User Management"** tab to manage users
+- Click **"Line of Business"** tab to manage LOBs
+- Tab content loads automatically
+- Current tab highlighted in blue
+
+**Visual Design**:
+- Clean tabbed interface
+- Color-coded status badges
+- Icon-based actions (edit, delete)
+- Confirmation dialogs for destructive actions
+- Success/error messages for all operations
 
 ---
 
