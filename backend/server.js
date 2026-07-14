@@ -2311,7 +2311,7 @@ app.post('/api/team-members', authMiddleware, async (req, res) => {
             });
         }
         
-        const { name, role, team, email } = req.body;
+        const { name, role, team, project, email } = req.body;
         
         if (!name || !role || !team) {
             return res.status(400).json({
@@ -2324,6 +2324,7 @@ app.post('/api/team-members', authMiddleware, async (req, res) => {
             name: name.trim(),
             role,
             team: team.trim(),
+            project: project?.trim(),
             email: email?.trim(),
             createdBy: req.user.username
         });
@@ -2355,7 +2356,7 @@ app.put('/api/team-members/:id', authMiddleware, async (req, res) => {
             });
         }
         
-        const { name, role, team, email, isActive } = req.body;
+        const { name, role, team, project, email, isActive } = req.body;
         
         const member = await TeamMember.findById(req.params.id);
         
@@ -2369,6 +2370,7 @@ app.put('/api/team-members/:id', authMiddleware, async (req, res) => {
         if (name) member.name = name.trim();
         if (role) member.role = role;
         if (team) member.team = team.trim();
+        if (project !== undefined) member.project = project?.trim();
         if (email !== undefined) member.email = email?.trim();
         if (isActive !== undefined) member.isActive = isActive;
         
