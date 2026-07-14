@@ -471,9 +471,15 @@
             const sprintCells = sprintColumns.map(s =>
                 `<th class="border border-gray-300 px-4 py-2 text-center font-bold" style="background-color:#c45c1a;" >${s.name}</th>`
             ).join('');
-            const valueCells = sprintColumns.map(() =>
-                `<td class="border border-gray-300 px-4 py-2 text-center bg-gray-100">${AVG_POINTS_PER_DAY}</td>`
-            ).join('');
+            const valueCells = sprintColumns.map((_, i) => {
+                const idx = i + 1;
+                return `<td class="border border-gray-300 px-2 py-2 text-center bg-gray-50">
+                    <input type="number" min="1" max="100" step="1" value="${AVG_POINTS_PER_DAY}"
+                        id="avgPts-${idx}"
+                        class="w-20 px-2 py-1 border rounded text-center font-semibold"
+                        oninput="recalcAvailability(${idx})">
+                </td>`;
+            }).join('');
             tbody.innerHTML = `
                 <tr>
                     <th class="border border-gray-300 px-4 py-2 text-center font-bold" style="background-color:#c45c1a; color:white;">Sprint</th>
@@ -535,13 +541,15 @@
                 const el = document.querySelector(`.avail-input[data-sprint="${sprintIdx}"][data-field="${field}"]`);
                 return parseFloat(el?.value) || 0;
             };
-            const workingDays  = get('workingDays');
-            const adminPct     = get('adminPct');
-            const contingency  = get('contingencyPct');
+            const workingDays   = get('workingDays');
+            const adminPct      = get('adminPct');
+            const contingency   = get('contingencyPct');
+            const avgPtsInput   = document.getElementById(`avgPts-${sprintIdx}`);
+            const avgPts        = parseFloat(avgPtsInput?.value) || AVG_POINTS_PER_DAY;
             const resourceCount = teamMembers.filter(m => m.role.toLowerCase() !== 'dev lead').length;
 
             const availability = workingDays * (1 - adminPct / 100) * (1 - contingency / 100);
-            const suggested    = Math.round(availability * resourceCount * (AVG_POINTS_PER_DAY / 10));
+            const suggested    = Math.round(availability * resourceCount * (avgPts / 10));
 
             const daysEl = document.getElementById(`avail-days-${sprintIdx}`);
             const ptsEl  = document.getElementById(`avail-pts-${sprintIdx}`);
