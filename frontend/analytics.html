@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -193,6 +193,68 @@
             </div>
         </div>
 
+        <!-- Capacity Planning Matrix -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-1 flex items-center">
+                <i data-lucide="table-2" class="w-5 h-5 mr-2"></i>
+                Capacity Planning Matrix
+            </h3>
+            <p class="text-sm text-gray-500 mb-4">View saved capacity plans by PI, Project and Team</p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">PI</label>
+                    <select id="cpPI" onchange="loadCapacityMatrix()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="">All PIs</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Project</label>
+                    <select id="cpProject" onchange="loadCapacityMatrix()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Projects</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Team</label>
+                    <select id="cpTeam" onchange="loadCapacityMatrix()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Teams</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="loadCapacityMatrix()" class="w-full btn-carelon-primary text-white px-4 py-2 rounded-lg text-sm transition">
+                        Load Matrix
+                    </button>
+                </div>
+            </div>
+            <div id="cpSummaryTiles" class="hidden mb-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-orange-50 rounded-lg p-3 text-center border border-orange-100">
+                        <p class="text-xs text-gray-500 font-semibold">Team Members</p>
+                        <p id="cpTileMembers" class="text-2xl font-bold text-orange-600">0</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-3 text-center border border-blue-100">
+                        <p class="text-xs text-gray-500 font-semibold">Total Sprints</p>
+                        <p id="cpTileSprints" class="text-2xl font-bold text-blue-600">0</p>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-3 text-center border border-green-100">
+                        <p class="text-xs text-gray-500 font-semibold">Avg Capacity / Sprint</p>
+                        <p id="cpTileAvg" class="text-2xl font-bold text-green-600">0</p>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-3 text-center border border-purple-100">
+                        <p class="text-xs text-gray-500 font-semibold">Total Capacity (days)</p>
+                        <p id="cpTileTotal" class="text-2xl font-bold text-purple-600">0</p>
+                    </div>
+                </div>
+            </div>
+            <div id="cpMatrixLoading" class="hidden text-center py-6 text-gray-400 text-sm">Loading...</div>
+            <div id="cpMatrixEmpty" class="hidden text-center py-6 text-gray-400 text-sm">No capacity plans found for the selected filters.</div>
+            <div id="cpMatrixWrap" class="hidden overflow-x-auto">
+                <table class="w-full border-collapse text-sm">
+                    <thead id="cpMatrixHead"></thead>
+                    <tbody id="cpMatrixBody"></tbody>
+                    <tfoot id="cpMatrixFoot"></tfoot>
+                </table>
+            </div>
+        </div>
         <!-- User Activity Table -->
         <div class="bg-white rounded-lg shadow-lg p-6">
             <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
@@ -576,8 +638,136 @@
             });
         }
 
+        const API_BASE = 'https://carelonrx-roadmap.onrender.com';
+
+        // ── Capacity Matrix ──────────────────────────────────────────
+        async function initCapacityFilters() {
+            try {
+                const res = await fetch(`${API_BASE}/api/capacity-plans`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                if (!data.success) return;
+                const plans = data.plans || [];
+                const pis      = [...new Set(plans.map(p => p.pi).filter(Boolean))].sort();
+                const projects = [...new Set(plans.map(p => p.project).filter(Boolean))].sort();
+                const teams    = [...new Set(plans.map(p => p.team).filter(Boolean))].sort();
+                const piSel = document.getElementById('cpPI');
+                const prSel = document.getElementById('cpProject');
+                const tmSel = document.getElementById('cpTeam');
+                pis.forEach(v      => { const o = document.createElement('option'); o.value = v; o.textContent = 'PI ' + v; piSel.appendChild(o); });
+                projects.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; prSel.appendChild(o); });
+                teams.forEach(v    => { const o = document.createElement('option'); o.value = v; o.textContent = v; tmSel.appendChild(o); });
+            } catch(e) { console.warn('Capacity filter init failed', e); }
+        }
+
+        async function loadCapacityMatrix() {
+            const pi      = document.getElementById('cpPI').value;
+            const project = document.getElementById('cpProject').value;
+            const team    = document.getElementById('cpTeam').value;
+
+            document.getElementById('cpMatrixWrap').classList.add('hidden');
+            document.getElementById('cpMatrixEmpty').classList.add('hidden');
+            document.getElementById('cpSummaryTiles').classList.add('hidden');
+            document.getElementById('cpMatrixLoading').classList.remove('hidden');
+
+            try {
+                let url = `${API_BASE}/api/capacity-plans?`;
+                if (pi)      url += `pi=${encodeURIComponent(pi)}&`;
+                if (project) url += `project=${encodeURIComponent(project)}&`;
+                if (team)    url += `team=${encodeURIComponent(team)}&`;
+
+                const res  = await fetch(url, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                const data = await res.json();
+                document.getElementById('cpMatrixLoading').classList.add('hidden');
+
+                const plans = data.plans || [];
+                if (plans.length === 0) {
+                    document.getElementById('cpMatrixEmpty').classList.remove('hidden');
+                    return;
+                }
+
+                // Derive sprint columns from all plans
+                const sprintNames = [];
+                plans.forEach(p => (p.sprints || []).forEach(s => { if (!sprintNames.includes(s.sprintName || ('Sprint ' + s.sprintNumber))) sprintNames.push(s.sprintName || ('Sprint ' + s.sprintNumber)); }));
+                sprintNames.sort((a, b) => { const na = parseInt(a.match(/\d+/)?.[0]||0); const nb = parseInt(b.match(/\d+/)?.[0]||0); return na - nb; });
+
+                // Group plans by member
+                const memberMap = {};
+                plans.forEach(p => {
+                    const key = p.teamMemberId?._id || p.teamMemberId || p.teamMemberName;
+                    if (!memberMap[key]) memberMap[key] = { name: p.teamMemberName, role: p.role, project: p.project, team: p.team, pi: p.pi, sprints: {} };
+                    (p.sprints || []).forEach(s => {
+                        const sn = s.sprintName || ('Sprint ' + s.sprintNumber);
+                        if (!memberMap[key].sprints[sn]) memberMap[key].sprints[sn] = [];
+                        memberMap[key].sprints[sn].push(s.capacity);
+                    });
+                });
+
+                const members = Object.values(memberMap);
+
+                // Build header
+                const thead = document.getElementById('cpMatrixHead');
+                thead.innerHTML = `<tr style="background-color:#c45c1a;" class="text-white">
+                    <th class="border border-gray-300 px-3 py-2 text-left">Resource</th>
+                    <th class="border border-gray-300 px-3 py-2 text-left">Role</th>
+                    <th class="border border-gray-300 px-3 py-2 text-left">Project</th>
+                    <th class="border border-gray-300 px-3 py-2 text-left">Team</th>
+                    <th class="border border-gray-300 px-3 py-2 text-left">PI</th>
+                    ${sprintNames.map(s => `<th class="border border-gray-300 px-3 py-2 text-center">${s}</th>`).join('')}
+                    <th class="border border-gray-300 px-3 py-2 text-center">Avg</th>
+                </tr>`;
+
+                // Build body
+                const tbody = document.getElementById('cpMatrixBody');
+                let grandTotal = 0; let grandCount = 0;
+                const sprintTotals = {};
+                tbody.innerHTML = members.map((m, idx) => {
+                    const caps = sprintNames.map(sn => {
+                        const vals = m.sprints[sn] || [];
+                        return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : 0;
+                    });
+                    const avg = caps.length ? (caps.reduce((a,b) => a+b,0) / caps.length).toFixed(1) : 0;
+                    caps.forEach((c, i) => { sprintTotals[sprintNames[i]] = (sprintTotals[sprintNames[i]] || 0) + c; });
+                    grandTotal += caps.reduce((a,b) => a+b, 0);
+                    grandCount += caps.length;
+                    const bg = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                    return `<tr class="${bg} hover:bg-orange-50">
+                        <td class="border border-gray-200 px-3 py-2 font-semibold">${m.name}</td>
+                        <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.role}</td>
+                        <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.project || ''}</td>
+                        <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.team || ''}</td>
+                        <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.pi || ''}</td>
+                        ${caps.map(c => `<td class="border border-gray-200 px-3 py-2 text-center font-semibold">${c.toFixed(1)}</td>`).join('')}
+                        <td class="border border-gray-200 px-3 py-2 text-center font-bold text-orange-700">${avg}</td>
+                    </tr>`;
+                }).join('');
+
+                // Build footer totals row
+                const tfoot = document.getElementById('cpMatrixFoot');
+                const totalAvg = grandCount > 0 ? (grandTotal / grandCount).toFixed(1) : 0;
+                tfoot.innerHTML = `<tr class="bg-gray-100 font-bold">
+                    <td class="border border-gray-300 px-3 py-2" colspan="5">Team Total</td>
+                    ${sprintNames.map(sn => `<td class="border border-gray-300 px-3 py-2 text-center text-orange-700">${(sprintTotals[sn] || 0).toFixed(1)}</td>`).join('')}
+                    <td class="border border-gray-300 px-3 py-2 text-center text-orange-700">${totalAvg}</td>
+                </tr>`;
+
+                // Summary tiles
+                document.getElementById('cpTileMembers').textContent = members.length;
+                document.getElementById('cpTileSprints').textContent = sprintNames.length;
+                document.getElementById('cpTileAvg').textContent     = totalAvg;
+                document.getElementById('cpTileTotal').textContent   = grandTotal.toFixed(1);
+                document.getElementById('cpSummaryTiles').classList.remove('hidden');
+                document.getElementById('cpMatrixWrap').classList.remove('hidden');
+            } catch(e) {
+                console.error('Capacity matrix error', e);
+                document.getElementById('cpMatrixLoading').classList.add('hidden');
+                document.getElementById('cpMatrixEmpty').classList.remove('hidden');
+            }
+        }
         // Load analytics on page load
         loadAnalytics();
+        initCapacityFilters();
         lucide.createIcons();
     </script>
 </body>
