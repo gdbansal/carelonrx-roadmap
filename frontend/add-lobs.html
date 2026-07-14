@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Lines of Business - Bulk Import</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">Bulk Add Lines of Business</h1>
+            <p class="text-gray-600 mb-6">This tool will add all the predefined LOBs to the database. You must be logged in as an admin.</p>
+
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-sm text-blue-800"><strong>Note:</strong> Make sure you're logged in as admin before clicking the button below.</p>
+            </div>
+
+            <button id="addLobsBtn" onclick="addAllLOBs()" 
+                class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                Add All LOBs (37 items)
+            </button>
+
+            <div id="progress" class="mt-6 hidden">
+                <div class="mb-2">
+                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Progress</span>
+                        <span id="progressText">0 / 37</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="results" class="mt-6 hidden">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Results</h2>
+                <div id="resultsList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                
+                <div id="summary" class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-bold text-gray-800 mb-2">Summary</h3>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <div class="text-2xl font-bold text-green-600" id="successCount">0</div>
+                            <div class="text-sm text-gray-600">Added</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-yellow-600" id="skippedCount">0</div>
+                            <div class="text-sm text-gray-600">Skipped</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-red-600" id="failedCount">0</div>
+                            <div class="text-sm text-gray-600">Failed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://carelonrx-roadmap.onrender.com';
+
+        const lobs = [
+            'Elevance Health Digital Experience Product Engineering (EDEPT)',
+            'Digital Tech Platform and Experience',
+            'Whole Health Advocacy and Provider Experience Platform',
+            'Platform Modernization and Cloud Enablement',
+            'CarelonRx',
+            'Digital IT',
+            'Corporate IT Solutions COE',
+            'Artificial Intelligence',
+            'FEP - Fusion',
+            'Enterprise Architecture',
+            'Mgmt/Bench - AI and Digital Platform',
+            'Clinical and Member Analytics',
+            'Enterprise Data Analytics',
+            'Provider Analytics - 1',
+            'Clinical and Member Analytic Solutions',
+            'Carelon Rx - Tech',
+            'Shared Service and Delivery Transformation',
+            'Enterprise Provider Solutions',
+            'Payment Integrity & Advanced Analytics',
+            'Data and Analytic Operations',
+            'Provider Analytics-2',
+            'Enterprise Data Analytics_1',
+            'Carelon Tech - APC.PC',
+            'Carelon Tech - MBM',
+            'Carelon Tech - CPAS',
+            'GBD IT',
+            'EDA Dev Ops',
+            'Reporting and Data Analysis',
+            'FHPS',
+            'Carelon Tech - CBH',
+            'Customer and Membership Management',
+            'NDA_IT Claims',
+            'IT Claims',
+            'NDA_Speciality IT',
+            'ORMB LO',
+            'Carelon MBM',
+            'Health Solutions- PDS IT'
+        ];
+
+        async function addAllLOBs() {
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                alert('You must be logged in as admin to use this tool. Please login first.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Disable button
+            const btn = document.getElementById('addLobsBtn');
+            btn.disabled = true;
+            btn.textContent = 'Adding LOBs...';
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Show progress
+            document.getElementById('progress').classList.remove('hidden');
+            document.getElementById('results').classList.remove('hidden');
+
+            let successCount = 0;
+            let failCount = 0;
+            let skippedCount = 0;
+
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '';
+
+            for (let i = 0; i < lobs.length; i++) {
+                const lobName = lobs[i];
+                
+                // Update progress
+                const progress = ((i + 1) / lobs.length) * 100;
+                document.getElementById('progressBar').style.width = `${progress}%`;
+                document.getElementById('progressText').textContent = `${i + 1} / ${lobs.length}`;
+
+                try {
+                    const response = await fetch(`${API_BASE}/api/line-of-business`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            name: lobName,
+                            description: `${lobName} line of business`
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    let resultHTML = '';
+                    if (data.success) {
+                        successCount++;
+                        resultHTML = `<div class="flex items-center space-x-2 text-green-600">
+                            <span class="font-bold">✓</span>
+                            <span class="text-sm">${lobName}</span>
+                        </div>`;
+                    } else {
+                        if (data.message && data.message.includes('already exists')) {
+                            skippedCount++;
+                            resultHTML = `<div class="flex items-center space-x-2 text-yellow-600">
+                                <span class="font-bold">⊘</span>
+                                <span class="text-sm">${lobName} (already exists)</span>
+                            </div>`;
+                        } else {
+                            failCount++;
+                            resultHTML = `<div class="flex items-center space-x-2 text-red-600">
+                                <span class="font-bold">✗</span>
+                                <span class="text-sm">${lobName} - ${data.message}</span>
+                            </div>`;
+                        }
+                    }
+
+                    resultsList.innerHTML += resultHTML;
+                    resultsList.scrollTop = resultsList.scrollHeight;
+
+                } catch (error) {
+                    failCount++;
+                    resultsList.innerHTML += `<div class="flex items-center space-x-2 text-red-600">
+                        <span class="font-bold">✗</span>
+                        <span class="text-sm">${lobName} - ${error.message}</span>
+                    </div>`;
+                }
+
+                // Update summary
+                document.getElementById('successCount').textContent = successCount;
+                document.getElementById('skippedCount').textContent = skippedCount;
+                document.getElementById('failedCount').textContent = failCount;
+
+                // Small delay
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            // Re-enable button
+            btn.disabled = false;
+            btn.textContent = 'Add All LOBs (37 items)';
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            alert(`Complete! Added: ${successCount}, Skipped: ${skippedCount}, Failed: ${failCount}`);
+        }
+    </script>
+</body>
+</html>
