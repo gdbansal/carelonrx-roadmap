@@ -96,12 +96,17 @@
         <!-- User Management Tab -->
         <div id="usersContent" class="tab-content">
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-4">
                     <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
                     <button onclick="showAddUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
                         <i data-lucide="user-plus" class="w-4 h-4"></i>
                         <span>Add User</span>
                     </button>
+                </div>
+                <div class="mb-4 relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="userSearch" oninput="filterUsers()" placeholder="Search by name, username or role..."
+                        class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                 </div>
 
             <div class="overflow-x-auto">
@@ -125,7 +130,7 @@
         <!-- Line of Business Tab -->
         <div id="lobContent" class="tab-content hidden">
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">Line of Business Management</h2>
                         <p class="text-sm text-gray-600 mt-1">Manage Lines of Business that appear in initiative dropdowns</p>
@@ -134,6 +139,11 @@
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         <span>Add Line of Business</span>
                     </button>
+                </div>
+                <div class="mb-4 relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="lobSearch" oninput="filterLobs()" placeholder="Search by name or description..."
+                        class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                 </div>
 
                 <div class="overflow-x-auto">
@@ -157,7 +167,7 @@
         <!-- Team Members Tab -->
         <div id="teamContent" class="tab-content hidden">
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">Team Members Management</h2>
                         <p class="text-sm text-gray-600 mt-1">Manage team members for capacity planning</p>
@@ -166,6 +176,11 @@
                         <i data-lucide="user-plus" class="w-4 h-4"></i>
                         <span>Add Team Member</span>
                     </button>
+                </div>
+                <div class="mb-4 relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="teamSearch" oninput="filterTeamMembers()" placeholder="Search by name, role, team or project..."
+                        class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                 </div>
 
                 <div class="overflow-x-auto">
@@ -425,6 +440,9 @@
         let editingUserId = null;
         let editingLobId = null;
         let editingMemberId = null;
+        let allUsers = [];
+        let allLobs = [];
+        let allTeamMembers = [];
 
         function checkAuth() {
             const token = localStorage.getItem('token');
@@ -536,7 +554,39 @@
             }
         }
 
-        function renderUsers(users) {
+        function filterUsers() {
+            const q = document.getElementById('userSearch').value.toLowerCase();
+            const filtered = allUsers.filter(u =>
+                (u.name || '').toLowerCase().includes(q) ||
+                (u.username || '').toLowerCase().includes(q) ||
+                (u.role || '').toLowerCase().includes(q)
+            );
+            renderUsers(filtered, true);
+        }
+
+        function filterLobs() {
+            const q = document.getElementById('lobSearch').value.toLowerCase();
+            const filtered = allLobs.filter(l =>
+                (l.name || '').toLowerCase().includes(q) ||
+                (l.description || '').toLowerCase().includes(q)
+            );
+            renderLobs(filtered, true);
+        }
+
+        function filterTeamMembers() {
+            const q = document.getElementById('teamSearch').value.toLowerCase();
+            const filtered = allTeamMembers.filter(m =>
+                (m.name || '').toLowerCase().includes(q) ||
+                (m.role || '').toLowerCase().includes(q) ||
+                (m.team || '').toLowerCase().includes(q) ||
+                (m.project || '').toLowerCase().includes(q) ||
+                (m.email || '').toLowerCase().includes(q)
+            );
+            renderTeamMembers(filtered, true);
+        }
+
+        function renderUsers(users, fromFilter = false) {
+            if (!fromFilter) allUsers = users;
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = users.map(user => `
                 <tr>
@@ -815,7 +865,8 @@
             }
         }
 
-        function renderLobs(lobs) {
+        function renderLobs(lobs, fromFilter = false) {
+            if (!fromFilter) allLobs = lobs;
             const tbody = document.getElementById('lobTableBody');
             tbody.innerHTML = lobs.map(lob => `
                 <tr>
@@ -993,7 +1044,8 @@
             }
         }
 
-        function renderTeamMembers(members) {
+        function renderTeamMembers(members, fromFilter = false) {
+            if (!fromFilter) allTeamMembers = members;
             const tbody = document.getElementById('teamMembersTableBody');
             tbody.innerHTML = members.map(member => `
                 <tr>
