@@ -374,27 +374,6 @@
                 </div>
 
                 <div>
-                    <label for="memberTeamSelect" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Team <span class="text-red-500">*</span>
-                    </label>
-                    <div class="flex gap-2 items-center mb-1">
-                        <select id="memberTeamSelect"
-                            onchange="onTeamSelectChange()"
-                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Loading teams from JIRA...</option>
-                        </select>
-                        <button type="button" onclick="loadJiraTeams()" title="Refresh from JIRA"
-                            class="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-500">
-                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                    <input type="text" id="memberTeam" maxlength="200" style="display:none"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-1"
-                        placeholder="Enter team name manually">
-                    <p class="text-xs text-gray-500 mt-1">Teams loaded from JIRA projects. Select <em>Other (enter manually)</em> to type a custom name.</p>
-                </div>
-
-                <div>
                     <label for="memberProjectSelect" class="block text-sm font-semibold text-gray-700 mb-2">
                         Project <span class="text-red-500">*</span>
                     </label>
@@ -413,6 +392,27 @@
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-1"
                         placeholder="Enter project name manually">
                     <p class="text-xs text-gray-500 mt-1">Projects loaded from JIRA. Select <em>Other (enter manually)</em> to type a custom name.</p>
+                </div>
+
+                <div>
+                    <label for="memberTeamSelect" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Team <span class="text-red-500">*</span>
+                    </label>
+                    <div class="flex gap-2 items-center mb-1">
+                        <select id="memberTeamSelect"
+                            onchange="onTeamSelectChange()"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select a Project first</option>
+                        </select>
+                        <button type="button" onclick="loadJiraTeams()" title="Refresh from JIRA"
+                            class="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-500">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <input type="text" id="memberTeam" maxlength="200" style="display:none"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-1"
+                        placeholder="Enter team name manually">
+                    <p class="text-xs text-gray-500 mt-1">Teams loaded from JIRA boards for the selected project. Select <em>Other (enter manually)</em> to type a custom name.</p>
                 </div>
 
                 <div>
@@ -1247,6 +1247,10 @@
                 input.required = false;
                 input.value = '';
             }
+            // Reset and reload teams for selected project
+            document.getElementById('memberTeam').style.display = 'none';
+            document.getElementById('memberTeam').required = false;
+            loadJiraTeams();
         }
 
         function getProjectValue() {
@@ -1275,19 +1279,27 @@
 
         async function loadJiraTeams() {
             const sel = document.getElementById('memberTeamSelect');
-            sel.innerHTML = '<option value="">Loading from JIRA...</option>';
+            const projectSel = document.getElementById('memberProjectSelect');
+            const projectKey = jiraProjectList.find(p => p.name === projectSel.value)?.key;
+            if (!projectKey) {
+                sel.innerHTML = '<option value="">Select a Project first</option>';
+                return;
+            }
+            sel.innerHTML = '<option value="">Loading teams from JIRA...</option>';
             try {
-                const res = await fetch(`${API_BASE}/api/jira/projects`, {
+                const res = await fetch(`${API_BASE}/api/jira/boards?projectKey=${encodeURIComponent(projectKey)}`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await res.json();
-                const projects = data.projects || data || [];
-                jiraTeamList = projects.map(p => p.name || p).filter(Boolean).sort();
+                jiraTeamList = (data.boards || []).map(b => b.name).filter(Boolean);
             } catch(e) {
-                console.warn('JIRA projects fetch failed, using cached list', e);
+                console.warn('JIRA boards fetch failed', e);
+                jiraTeamList = [];
             }
-            // Rebuild dropdown
             sel.innerHTML = '<option value="">-- Select Team --</option>';
+            if (jiraTeamList.length === 0) {
+                sel.innerHTML += '<option value="" disabled>No teams found for this project</option>';
+            }
             jiraTeamList.forEach(name => {
                 const o = document.createElement('option');
                 o.value = name;
@@ -1350,7 +1362,6 @@
             document.getElementById('memberProject').style.display = 'none';
             document.getElementById('memberProject').required = false;
             document.getElementById('teamMemberModal').classList.remove('hidden');
-            loadJiraTeams();
             loadJiraProjects();
             lucide.createIcons();
         }
@@ -1374,10 +1385,10 @@
                     document.getElementById('memberIsActive').checked = data.member.isActive;
                     document.getElementById('memberStatusContainer').classList.remove('hidden');
                     document.getElementById('teamMemberModal').classList.remove('hidden');
-                    await loadJiraTeams();
-                    setTeamValue(data.member.team);
                     await loadJiraProjects();
                     setProjectValue(data.member.project || '');
+                    await loadJiraTeams();
+                    setTeamValue(data.member.team);
                     lucide.createIcons();
                 }
             } catch (error) {

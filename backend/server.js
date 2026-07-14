@@ -1958,6 +1958,31 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
     }
 });
 
+app.get('/api/jira/boards', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA integration not configured', boards: [] });
+        }
+        const { projectKey } = req.query;
+        if (!projectKey) {
+            return res.status(400).json({ success: false, message: 'projectKey is required', boards: [] });
+        }
+        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
+        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
+        const url = `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=50`;
+        const { status, body } = await jiraRequest(url, base64Auth);
+        if (status !== 200 || !body.values) {
+            return res.json({ success: true, boards: [] });
+        }
+        const boards = body.values.map(b => ({ id: b.id, name: b.name, type: b.type }))
+                                  .sort((a, b) => a.name.localeCompare(b.name));
+        res.json({ success: true, boards });
+    } catch (error) {
+        console.error('JIRA boards error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch JIRA boards', boards: [] });
+    }
+});
+
 app.get('/api/jira/projects', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
