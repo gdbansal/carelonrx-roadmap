@@ -85,6 +85,9 @@
     // Set active link based on current page
     setActiveLink();
 
+    // Enforce role-module visibility
+    applyRoleModuleVisibility();
+
     // Add CSS styles if not already present
     if (!document.getElementById('product360-styles')) {
         const styles = document.createElement('style');
@@ -291,3 +294,54 @@ document.addEventListener('click', function(e) {
         closeComingSoonModal();
     }
 });
+
+// data-module attr -> DB key mapping
+const MODULE_KEY_MAP = {
+    'roadmap':          'roadmap',
+    'story-estimations': 'storyEstimations',
+    'capacity-planning': 'capacityPlanning'
+};
+
+// page filename -> data-module
+const PAGE_MODULE_MAP = {
+    'story-estimations.html': 'story-estimations',
+    'capacity-planning.html': 'capacity-planning'
+};
+
+async function applyRoleModuleVisibility() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const token = localStorage.getItem('token');
+    if (!user.role || !token) return;
+
+    let mappings = [];
+    try {
+        const API_BASE = 'https://carelonrx-roadmap.onrender.com';
+        const res = await fetch(`${API_BASE}/api/role-module-mappings`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) mappings = data.mappings;
+    } catch (e) {
+        return; // fail open — show everything if API is down
+    }
+
+    const roleMap = mappings.find(m => m.role === user.role);
+    if (!roleMap) return; // role not configured — show everything
+
+    const currentPage = window.location.pathname.split('/').pop();
+
+    document.querySelectorAll('.side-panel-link[data-module]').forEach(link => {
+        const attr = link.getAttribute('data-module');
+        const dbKey = MODULE_KEY_MAP[attr];
+        if (!dbKey) return; // user-guide etc — always show
+        const allowed = roleMap.modules[dbKey];
+        if (!allowed) {
+            link.style.display = 'none';
+            // If user is currently on this restricted page, redirect to dashboard
+            const linkedPage = PAGE_MODULE_MAP[currentPage];
+            if (linkedPage === attr) {
+                window.location.href = 'dashboard.html';
+            }
+        }
+    });
+}
