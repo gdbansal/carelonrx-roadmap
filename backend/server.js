@@ -1901,6 +1901,51 @@ app.get('/api/jira/issue/:issueKey', authMiddleware, async (req, res) => {
     }
 });
 
+app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA integration not configured' });
+        }
+
+        const { projectKey } = req.query;
+        if (!projectKey) {
+            return res.status(400).json({ success: false, message: 'projectKey query param is required' });
+        }
+
+        const base64Auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64');
+
+        // Step 1: find boards for this project
+        const boardsUrl = `${process.env.JIRA_BASE_URL}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=10`;
+        const { status: bs, body: boardsBody } = await jiraRequest(boardsUrl, base64Auth);
+
+        if (bs !== 200 || !boardsBody.values || boardsBody.values.length === 0) {
+            return res.json({ success: true, sprints: [] });
+        }
+
+        // Step 2: get active + future sprints from the first board
+        const boardId = boardsBody.values[0].id;
+        const sprintsUrl = `${process.env.JIRA_BASE_URL}/rest/agile/1.0/board/${boardId}/sprint?state=active,future&maxResults=20`;
+        const { status: ss, body: sprintsBody } = await jiraRequest(sprintsUrl, base64Auth);
+
+        if (ss !== 200 || !sprintsBody.values) {
+            return res.json({ success: true, sprints: [] });
+        }
+
+        const sprints = sprintsBody.values.map(s => ({
+            id: s.id,
+            name: s.name,
+            state: s.state,
+            startDate: s.startDate,
+            endDate: s.endDate
+        }));
+
+        res.json({ success: true, sprints });
+    } catch (error) {
+        console.error('JIRA sprints error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch sprints' });
+    }
+});
+
 app.get('/api/jira/test', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_EMAIL || !process.env.JIRA_API_TOKEN) {

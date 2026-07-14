@@ -35,7 +35,7 @@
         <!-- Filter Section -->
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 class="text-xl font-bold text-gray-800 mb-4">Select Team & Sprint</h2>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Line of Business *</label>
                     <select id="lobFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
@@ -56,16 +56,26 @@
                         <option value="">Select Team</option>
                     </select>
                 </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Project *</label>
-                    <select id="projectFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <select id="projectFilter" onchange="onProjectChange()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                         <option value="">Select Team first</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Sprint *</label>
-                    <input type="text" id="sprintFilter" placeholder="e.g., Sprint 24"
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">JIRA Project Key</label>
+                    <input type="text" id="jiraProjectKey" placeholder="e.g., DIG, DIGM, IDL"
+                        oninput="onJiraProjectKeyChange()"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-400 mt-1">Enter key to auto-load sprints from JIRA</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Sprint *</label>
+                    <select id="sprintFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Enter JIRA Project Key first</option>
+                    </select>
                 </div>
             </div>
             <div class="mt-4">
@@ -246,6 +256,51 @@
             } catch (error) {
                 console.error('Error loading teams:', error);
             }
+        }
+
+        // When JIRA project key is typed, debounce then load sprints
+        let jiraKeyTimer = null;
+        function onJiraProjectKeyChange() {
+            clearTimeout(jiraKeyTimer);
+            const key = document.getElementById('jiraProjectKey').value.trim().toUpperCase();
+            const sprintSelect = document.getElementById('sprintFilter');
+            if (!key) {
+                sprintSelect.innerHTML = '<option value="">Enter JIRA Project Key first</option>';
+                return;
+            }
+            sprintSelect.innerHTML = '<option value="">Loading sprints...</option>';
+            jiraKeyTimer = setTimeout(() => loadJiraSprints(key), 600);
+        }
+
+        async function loadJiraSprints(projectKey) {
+            const sprintSelect = document.getElementById('sprintFilter');
+            try {
+                const response = await fetch(`${API_BASE}/api/jira/sprints?projectKey=${encodeURIComponent(projectKey)}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await response.json();
+                if (data.success && data.sprints.length > 0) {
+                    sprintSelect.innerHTML = '<option value="">Select Sprint</option>' +
+                        data.sprints.map(s => {
+                            const badge = s.state === 'active' ? ' 🟢' : ' 🔵';
+                            return `<option value="${s.name}">${s.name}${badge}</option>`;
+                        }).join('');
+                    // Auto-select active sprint if present
+                    const active = data.sprints.find(s => s.state === 'active');
+                    if (active) sprintSelect.value = active.name;
+                } else {
+                    sprintSelect.innerHTML = '<option value="">No active/future sprints found</option>';
+                }
+            } catch (err) {
+                console.error('Sprint load error:', err);
+                sprintSelect.innerHTML = '<option value="">Failed to load sprints</option>';
+            }
+        }
+
+        // When project dropdown changes, also try to load sprints if JIRA key is set
+        async function onProjectChange() {
+            const key = document.getElementById('jiraProjectKey').value.trim().toUpperCase();
+            if (key) loadJiraSprints(key);
         }
 
         // When team changes, load projects for that team
