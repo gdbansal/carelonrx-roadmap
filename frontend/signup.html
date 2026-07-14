@@ -69,13 +69,7 @@
                     </div>
                     <select id="role" required
                         class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white">
-                        <option value="">Select Role</option>
-                        <option value="product_owner">Product Owner</option>
-                        <option value="product_manager">Product Manager</option>
-                        <option value="business_owner">Business Owner</option>
-                        <option value="stakeholder">Stakeholder</option>
-                        <option value="rte">RTE (Release Train Engineer)</option>
-                        <option value="scrum_master">Scrum Master</option>
+                        <option value="">Loading roles...</option>
                     </select>
                 </div>
                 <p class="text-xs text-gray-500 mt-1">Select your role in the organization</p>
@@ -145,6 +139,28 @@
 
     <script>
         lucide.createIcons();
+
+        const API_BASE = 'https://carelonrx-roadmap.onrender.com';
+
+        async function loadRoles() {
+            const sel = document.getElementById('role');
+            try {
+                const res = await fetch(`${API_BASE}/api/roles`);
+                const data = await res.json();
+                sel.innerHTML = '<option value="">Select Role</option>';
+                if (data.success) {
+                    data.roles.forEach(r => {
+                        const opt = document.createElement('option');
+                        opt.value = r.value;
+                        opt.textContent = r.label;
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                sel.innerHTML = '<option value="">Select Role</option><option value="product_owner">Product Owner</option><option value="product_manager">Product Manager</option><option value="business_owner">Business Owner</option><option value="stakeholder">Stakeholder</option><option value="rte">RTE (Release Train Engineer)</option><option value="scrum_master">Scrum Master</option>';
+            }
+        }
+        loadRoles();
 
         function validatePasswordComplexity(password) {
             const minLength = 8;
