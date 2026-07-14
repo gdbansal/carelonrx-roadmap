@@ -73,7 +73,7 @@
                         <span>Capacity Planning Module</span>
                     </div>
                 </div>
-                <p class="text-sm text-gray-500 mt-4">Version 2.2 | July 14, 2026</p>
+                <p class="text-sm text-gray-500 mt-4">Version 2.3 | July 14, 2026</p>
             </div>
 
             <hr class="my-8">
@@ -114,7 +114,14 @@
                             <li><a href="#cp-availability" class="hover:underline">Team Availability &amp; Suggested Points</a></li>
                         </ol>
                     </li>
-                    <li><a href="#admin-panel" class="hover:underline">Admin Panel</a></li>
+                    <li><a href="#admin-panel" class="hover:underline">Admin Panel</a>
+                        <ol class="list-decimal list-inside ml-6 mt-1 space-y-1">
+                            <li><a href="#admin-users" class="hover:underline">User Management</a></li>
+                            <li><a href="#admin-lob" class="hover:underline">Line of Business</a></li>
+                            <li><a href="#admin-team" class="hover:underline">Team Members</a></li>
+                            <li><a href="#admin-role-module" class="hover:underline">Role vs Module Mapping</a></li>
+                        </ol>
+                    </li>
                     <li><a href="#session-management" class="hover:underline">Session Management</a></li>
                     <li><a href="#data-persistence" class="hover:underline">Data Persistence</a></li>
                     <li><a href="#troubleshooting" class="hover:underline">Troubleshooting</a></li>
@@ -159,7 +166,7 @@
                     <li><strong>Visual Timeline:</strong> Interactive roadmap across quarters</li>
                     <li><strong>Story Estimations:</strong> Planning Poker with real-time collaboration</li>
                     <li><strong>Analytics Dashboard:</strong> Real-time statistics and charts</li>
-                    <li><strong>Role-Based Access:</strong> Admin and user permissions</li>
+                    <li><strong>Role-Based Access:</strong> Dynamic role permissions with module-level visibility control</li>
                     <li><strong>Budget Tracking:</strong> Approval status management</li>
                     <li><strong>Dependency Management:</strong> Track system dependencies</li>
                     <li><strong>Audit Logging:</strong> Comprehensive tracking for estimations</li>
@@ -968,35 +975,112 @@
             <div id="admin-panel" class="mb-12 section">
                 <h2 class="text-3xl font-bold text-gray-800 mb-4">8. Admin Panel</h2>
                 <p class="text-red-600 font-semibold mb-4">Access: Admin role only</p>
-                
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">User Management</h3>
-                
-                <div class="mb-6">
-                    <p class="font-semibold text-gray-800 mb-2">Add New User:</p>
-                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
-                        <li>Click <strong>"Add New User"</strong></li>
-                        <li>Fill in: Full Name, Username, Email, Password, Role</li>
-                        <li>Email must be @elevancehealth.com or @carelon.com</li>
-                        <li>Click <strong>"Save User"</strong></li>
-                    </ol>
+                <p class="text-gray-700 mb-6">The Admin Panel has four tabs: <strong>User Management</strong>, <strong>Line of Business</strong>, <strong>Team Members</strong>, and <strong>Role vs Module Mapping</strong>.</p>
+
+                <!-- User Management -->
+                <div id="admin-users" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">8.1 User Management</h3>
+                    <p class="text-gray-700 mb-4">Create, edit, and delete application users. Roles are loaded dynamically from MongoDB.</p>
+
+                    <div class="mb-4">
+                        <p class="font-semibold text-gray-800 mb-2">Add New User:</p>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                            <li>Click <strong>"Add New User"</strong></li>
+                            <li>Fill in: Full Name, Username, Email, Password, Role</li>
+                            <li>Email must be @elevancehealth.com or @carelon.com</li>
+                            <li>Role dropdown is populated from MongoDB — only roles defined in Role vs Module Mapping appear</li>
+                            <li>Click <strong>"Save User"</strong></li>
+                        </ol>
+                    </div>
+
+                    <div class="mb-4">
+                        <p class="font-semibold text-gray-800 mb-2">Edit User:</p>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                            <li>Click the <strong>edit icon</strong> next to a user</li>
+                            <li>Modify fields (leave password blank to keep current)</li>
+                            <li>Click <strong>"Save User"</strong></li>
+                        </ol>
+                    </div>
+
+                    <div>
+                        <p class="font-semibold text-gray-800 mb-2">Delete User:</p>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                            <li>Click the <strong>trash icon</strong></li>
+                            <li>Confirm deletion</li>
+                            <li>User is removed (cannot delete yourself)</li>
+                        </ol>
+                    </div>
                 </div>
 
-                <div class="mb-6">
-                    <p class="font-semibold text-gray-800 mb-2">Edit User:</p>
-                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
-                        <li>Click the <strong>edit icon</strong> next to a user</li>
-                        <li>Modify fields (leave password blank to keep current)</li>
-                        <li>Click <strong>"Save User"</strong></li>
-                    </ol>
+                <!-- Line of Business -->
+                <div id="admin-lob" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">8.2 Line of Business</h3>
+                    <p class="text-gray-700 mb-4">Manage Lines of Business (LOBs) that are available as filter options in Capacity Planning and Roadmap modules.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Add new LOBs with name and optional description</li>
+                        <li>Edit or delete existing LOBs</li>
+                        <li>Search LOBs by name or description</li>
+                    </ul>
                 </div>
 
-                <div>
-                    <p class="font-semibold text-gray-800 mb-2">Delete User:</p>
-                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
-                        <li>Click the <strong>trash icon</strong></li>
-                        <li>Confirm deletion</li>
-                        <li>User is removed (cannot delete yourself)</li>
-                    </ol>
+                <!-- Team Members -->
+                <div id="admin-team" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">8.3 Team Members</h3>
+                    <p class="text-gray-700 mb-4">Manage team members that appear in the Capacity Planning matrix. Team names are sourced from JIRA projects.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                        <li>Add members with name, role, and team assignment</li>
+                        <li>Team dropdown is populated from JIRA projects (with manual entry fallback)</li>
+                        <li>Edit or remove team members</li>
+                        <li>Members appear in capacity matrix when their team is selected</li>
+                    </ul>
+                </div>
+
+                <!-- Role vs Module Mapping -->
+                <div id="admin-role-module" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">8.4 Role vs Module Mapping</h3>
+                    <p class="text-gray-700 mb-4">Control which modules each role can access in the Product 360 sidebar. All role definitions and permissions are stored in MongoDB — there are no hardcoded roles.</p>
+
+                    <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-4">
+                        <p class="font-semibold text-purple-800 mb-2">How it works:</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4 text-sm space-y-1">
+                            <li>Rows = Roles (one row per role)</li>
+                            <li>Columns = Modules: <strong>Roadmap</strong>, <strong>Story Estimations</strong>, <strong>Capacity Planning</strong></li>
+                            <li>Tick a checkbox to grant that role access to the module</li>
+                            <li>Untick to revoke access — the sidebar link will be hidden for that role</li>
+                            <li>Changes take effect immediately after <strong>Save Mappings</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <p class="font-semibold text-gray-800 mb-2">Adding a New Role:</p>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                            <li>Click <strong>"Add Role"</strong></li>
+                            <li>Enter the role name (e.g., <em>Business Analyst</em>)</li>
+                            <li>Click <strong>"Add Role"</strong> — a new row appears in the table</li>
+                            <li>Set module access checkboxes</li>
+                            <li>Click <strong>"Save Mappings"</strong> to persist to MongoDB</li>
+                            <li>The new role will automatically appear in the Signup and User Management role dropdowns</li>
+                        </ol>
+                    </div>
+
+                    <div class="mb-4">
+                        <p class="font-semibold text-gray-800 mb-2">Removing a Role:</p>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4">
+                            <li>Click the <strong>trash icon</strong> in the Remove column for that role</li>
+                            <li>Confirm the deletion — the role is deleted from MongoDB</li>
+                            <li>Users with this role will see all modules until their role is reassigned</li>
+                        </ol>
+                    </div>
+
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
+                        <p class="font-semibold text-yellow-800 mb-1">Clean Duplicates:</p>
+                        <p class="text-gray-700 text-sm">If duplicate role entries appear (old display-name format vs. new key format), click <strong>"Clean Duplicates"</strong> to automatically remove stale entries from MongoDB.</p>
+                    </div>
+
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                        <p class="font-semibold text-blue-800 mb-1">Module Visibility Enforcement:</p>
+                        <p class="text-gray-700 text-sm">When a user logs in, the sidebar checks their role against the MongoDB mapping and hides any module links they are not permitted to access. If a user navigates directly to a restricted page URL, they are automatically redirected to the Dashboard.</p>
+                    </div>
                 </div>
             </div>
 
