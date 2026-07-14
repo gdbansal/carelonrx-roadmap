@@ -17,6 +17,10 @@ const teamMemberSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    project: {
+        type: String,
+        trim: true
+    },
     email: {
         type: String,
         trim: true
