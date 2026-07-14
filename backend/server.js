@@ -10,6 +10,8 @@ const AuditLog = require('./models/AuditLog');
 const EstimationUser = require('./models/EstimationUser');
 const UserSession = require('./models/UserSession');
 const LineOfBusiness = require('./models/LineOfBusiness');
+const TeamMember = require('./models/TeamMember');
+const CapacityPlan = require('./models/CapacityPlan');
 const { logAuditEvent } = require('./middleware/auditLogger');
 const crypto = require('crypto');
 
@@ -2204,6 +2206,399 @@ app.delete('/api/line-of-business/:id', authMiddleware, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to delete Line of Business',
+            error: error.message
+        });
+    }
+});
+
+// ========== TEAM MEMBERS MANAGEMENT ==========
+
+// Get all team members
+app.get('/api/team-members', authMiddleware, async (req, res) => {
+    try {
+        const { team } = req.query;
+        const query = team ? { team, isActive: true } : {};
+        
+        const members = await TeamMember.find(query).sort({ team: 1, name: 1 });
+        res.json({
+            success: true,
+            members
+        });
+    } catch (error) {
+        console.error('Get team members error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve team members',
+            error: error.message
+        });
+    }
+});
+
+// Get unique team names
+app.get('/api/team-members/teams', authMiddleware, async (req, res) => {
+    try {
+        const teams = await TeamMember.distinct('team', { isActive: true });
+        res.json({
+            success: true,
+            teams: teams.sort()
+        });
+    } catch (error) {
+        console.error('Get teams error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve teams',
+            error: error.message
+        });
+    }
+});
+
+// Get single team member
+app.get('/api/team-members/:id', authMiddleware, async (req, res) => {
+    try {
+        const member = await TeamMember.findById(req.params.id);
+        
+        if (!member) {
+            return res.status(404).json({
+                success: false,
+                message: 'Team member not found'
+            });
+        }
+        
+        res.json({
+            success: true,
+            member
+        });
+    } catch (error) {
+        console.error('Get team member error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve team member',
+            error: error.message
+        });
+    }
+});
+
+// Create new team member (Admin only)
+app.post('/api/team-members', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Admin access required'
+            });
+        }
+        
+        const { name, role, team, email } = req.body;
+        
+        if (!name || !role || !team) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name, role, and team are required'
+            });
+        }
+        
+        const member = new TeamMember({
+            name: name.trim(),
+            role,
+            team: team.trim(),
+            email: email?.trim(),
+            createdBy: req.user.username
+        });
+        
+        await member.save();
+        
+        res.json({
+            success: true,
+            message: 'Team member created successfully',
+            member
+        });
+    } catch (error) {
+        console.error('Create team member error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create team member',
+            error: error.message
+        });
+    }
+});
+
+// Update team member (Admin only)
+app.put('/api/team-members/:id', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Admin access required'
+            });
+        }
+        
+        const { name, role, team, email, isActive } = req.body;
+        
+        const member = await TeamMember.findById(req.params.id);
+        
+        if (!member) {
+            return res.status(404).json({
+                success: false,
+                message: 'Team member not found'
+            });
+        }
+        
+        if (name) member.name = name.trim();
+        if (role) member.role = role;
+        if (team) member.team = team.trim();
+        if (email !== undefined) member.email = email?.trim();
+        if (isActive !== undefined) member.isActive = isActive;
+        
+        member.updatedBy = req.user.username;
+        member.updatedAt = new Date();
+        
+        await member.save();
+        
+        res.json({
+            success: true,
+            message: 'Team member updated successfully',
+            member
+        });
+    } catch (error) {
+        console.error('Update team member error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update team member',
+            error: error.message
+        });
+    }
+});
+
+// Delete team member (Admin only)
+app.delete('/api/team-members/:id', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Admin access required'
+            });
+        }
+        
+        const member = await TeamMember.findById(req.params.id);
+        
+        if (!member) {
+            return res.status(404).json({
+                success: false,
+                message: 'Team member not found'
+            });
+        }
+        
+        // Check if member has capacity plans
+        const capacityPlans = await CapacityPlan.countDocuments({ teamMemberId: req.params.id });
+        
+        if (capacityPlans > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot delete team member. They have ${capacityPlans} capacity plan(s). Please remove those first.`
+            });
+        }
+        
+        await TeamMember.findByIdAndDelete(req.params.id);
+        
+        res.json({
+            success: true,
+            message: 'Team member deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete team member error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete team member',
+            error: error.message
+        });
+    }
+});
+
+// ========== CAPACITY PLANNING ==========
+
+// Get capacity plans with filters
+app.get('/api/capacity-plans', authMiddleware, async (req, res) => {
+    try {
+        const { lineOfBusiness, program, project, team, sprint } = req.query;
+        
+        const query = {};
+        if (lineOfBusiness) query.lineOfBusiness = lineOfBusiness;
+        if (program) query.program = program;
+        if (project) query.project = project;
+        if (team) query.team = team;
+        if (sprint) query.sprint = sprint;
+        
+        const plans = await CapacityPlan.find(query)
+            .populate('teamMemberId')
+            .sort({ teamMemberName: 1 });
+        
+        res.json({
+            success: true,
+            plans
+        });
+    } catch (error) {
+        console.error('Get capacity plans error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve capacity plans',
+            error: error.message
+        });
+    }
+});
+
+// Create or update capacity plan
+app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
+    try {
+        const { lineOfBusiness, program, project, team, sprint, capacities } = req.body;
+        
+        if (!lineOfBusiness || !program || !project || !team || !sprint || !capacities) {
+            return res.status(400).json({
+                success: false,
+                message: 'All fields are required'
+            });
+        }
+        
+        // Process each team member's capacity
+        const results = [];
+        
+        for (const capacity of capacities) {
+            const { teamMemberId, teamMemberName, role, sprints } = capacity;
+            
+            // Check if plan already exists
+            let plan = await CapacityPlan.findOne({
+                lineOfBusiness,
+                program,
+                project,
+                team,
+                sprint,
+                teamMemberId
+            });
+            
+            if (plan) {
+                // Update existing plan
+                plan.sprints = sprints;
+                plan.updatedBy = req.user.username;
+                plan.updatedAt = new Date();
+            } else {
+                // Create new plan
+                plan = new CapacityPlan({
+                    lineOfBusiness,
+                    program,
+                    project,
+                    team,
+                    sprint,
+                    teamMemberId,
+                    teamMemberName,
+                    role,
+                    sprints,
+                    createdBy: req.user.username
+                });
+            }
+            
+            await plan.save();
+            results.push(plan);
+        }
+        
+        res.json({
+            success: true,
+            message: 'Capacity plans saved successfully',
+            plans: results
+        });
+    } catch (error) {
+        console.error('Save capacity plans error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to save capacity plans',
+            error: error.message
+        });
+    }
+});
+
+// Get capacity summary/statistics
+app.get('/api/capacity-plans/summary', authMiddleware, async (req, res) => {
+    try {
+        const { lineOfBusiness, program, project, team, sprint } = req.query;
+        
+        const query = {};
+        if (lineOfBusiness) query.lineOfBusiness = lineOfBusiness;
+        if (program) query.program = program;
+        if (project) query.project = project;
+        if (team) query.team = team;
+        if (sprint) query.sprint = sprint;
+        
+        const plans = await CapacityPlan.find(query);
+        
+        // Calculate summary statistics
+        const summary = {
+            totalMembers: plans.length,
+            totalCapacity: 0,
+            averageCapacity: 0,
+            sprintSummaries: {}
+        };
+        
+        plans.forEach(plan => {
+            plan.sprints.forEach(sprint => {
+                if (!summary.sprintSummaries[sprint.sprintNumber]) {
+                    summary.sprintSummaries[sprint.sprintNumber] = {
+                        totalCapacity: 0,
+                        memberCount: 0,
+                        averageCapacity: 0
+                    };
+                }
+                summary.sprintSummaries[sprint.sprintNumber].totalCapacity += sprint.capacity;
+                summary.sprintSummaries[sprint.sprintNumber].memberCount++;
+                summary.totalCapacity += sprint.capacity;
+            });
+        });
+        
+        // Calculate averages
+        const totalSprints = Object.keys(summary.sprintSummaries).length;
+        if (totalSprints > 0) {
+            summary.averageCapacity = summary.totalCapacity / (plans.length * totalSprints);
+            
+            Object.keys(summary.sprintSummaries).forEach(sprintNum => {
+                const sprintData = summary.sprintSummaries[sprintNum];
+                sprintData.averageCapacity = sprintData.totalCapacity / sprintData.memberCount;
+            });
+        }
+        
+        res.json({
+            success: true,
+            summary
+        });
+    } catch (error) {
+        console.error('Get capacity summary error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve capacity summary',
+            error: error.message
+        });
+    }
+});
+
+// Delete capacity plan
+app.delete('/api/capacity-plans/:id', authMiddleware, async (req, res) => {
+    try {
+        const plan = await CapacityPlan.findById(req.params.id);
+        
+        if (!plan) {
+            return res.status(404).json({
+                success: false,
+                message: 'Capacity plan not found'
+            });
+        }
+        
+        await CapacityPlan.findByIdAndDelete(req.params.id);
+        
+        res.json({
+            success: true,
+            message: 'Capacity plan deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete capacity plan error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete capacity plan',
             error: error.message
         });
     }
