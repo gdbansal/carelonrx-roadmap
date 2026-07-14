@@ -1,4 +1,4 @@
-# Product 360 - User Guide
+﻿# Product 360 - User Guide
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -1058,12 +1058,11 @@ The Capacity Planning module helps teams plan and track resource capacity across
 
 **Step 1: Select Context**
 
-Fill in the required filters:
+Fill in the required filters (all required, marked with *):
+- **Program Increment (PI)**: Auto-defaults to current quarter (e.g., 26.3 for Q3 2026)
 - **Line of Business**: Select from configured LOBs
-- **Program**: Choose program (e.g., AHD, Bioplus)
-- **Project**: Enter project name
-- **Team**: Select from available teams
-- **Sprint**: Enter sprint identifier (e.g., "Sprint 24")
+- **Project**: Select project — filtered based on LOB selection
+- **Team**: Select team — filtered based on project selection
 
 **Step 2: Load Team Members**
 
@@ -1090,6 +1089,14 @@ For each team member and sprint:
 2. Click **"Save Capacity Plan"**
 3. Data is saved to database
 4. Success message confirms save
+
+**Step 6: Export to Excel (after save)**
+
+1. After a successful save, the **"Export to Excel"** button appears
+2. Click it to download a `.xlsx` file containing:
+   - Capacity Matrix (members × sprints with averages)
+   - Avg Points per Sprint table
+   - Team Availability table (Working days, Admin %, Contingency %, Availability, Suggested Points, PI Total)
 
 ### Capacity Matrix Structure
 
@@ -1175,7 +1182,7 @@ Capacity Planning integrates with Admin Panel's Team Members module:
 - ✅ Refresh page and try again
 
 **Can't Save Capacity Plan**:
-- ✅ Fill in all required filters (LOB, Program, Project, Team, Sprint)
+- ✅ Fill in all required filters (PI, LOB, Project, Team) — highlighted in red if missing
 - ✅ Enter at least one capacity value
 - ✅ Check internet connection
 - ✅ Verify you're logged in
@@ -1676,12 +1683,12 @@ Every initiative update is tracked with:
 
 ## Version Information
 
-**Version**: 2.1  
-**Last Updated**: July 3, 2026  
-**Application URL**: https://carelonrx-roadmap1.onrender.com  
+**Version**: 2.3  
+**Last Updated**: July 14, 2026  
+**Application URL**: https://carelonrx-roadmap.onrender.com  
 **API URL**: https://carelonrx-roadmap.onrender.com  
 
-**Recent Updates (v2.1 - July 2026)**:
+**Recent Updates (v2.3 - July 2026)**:
 - ✅ **Initiative Enhancements**:
   - **Line of Business Field** - New required field with autocomplete functionality
   - **Business Commitment Date** - Optional date field prioritized over Delivery Date
