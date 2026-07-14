@@ -67,7 +67,13 @@
                         <span>Story Estimations Module</span>
                     </div>
                 </div>
-                <p class="text-sm text-gray-500 mt-4">Version 2.1 | July 6, 2026</p>
+                <div class="flex items-center justify-center space-x-4 text-sm mt-2">
+                        <div class="flex items-center space-x-1 text-orange-600">
+                            <i data-lucide="calendar-range" class="w-4 h-4"></i>
+                            <span>Capacity Planning Module</span>
+                        </div>
+                    </div>
+                <p class="text-sm text-gray-500 mt-4">Version 2.2 | July 14, 2026</p>
             </div>
 
             <hr class="my-8">
@@ -100,6 +106,14 @@
                         </ol>
                     </li>
                     <li><a href="#user-profile" class="hover:underline">User Profile</a></li>
+                    <li><a href="#capacity-planning" class="hover:underline">Capacity Planning Module</a>
+                        <ol class="list-decimal list-inside ml-6 mt-1 space-y-1">
+                            <li><a href="#cp-filters" class="hover:underline">Selecting PI, Team &amp; Project</a></li>
+                            <li><a href="#cp-matrix" class="hover:underline">Capacity Matrix</a></li>
+                            <li><a href="#cp-avg-points" class="hover:underline">Avg Points per Sprint</a></li>
+                            <li><a href="#cp-availability" class="hover:underline">Team Availability &amp; Suggested Points</a></li>
+                        </ol>
+                    </li>
                     <li><a href="#admin-panel" class="hover:underline">Admin Panel</a></li>
                     <li><a href="#session-management" class="hover:underline">Session Management</a></li>
                     <li><a href="#data-persistence" class="hover:underline">Data Persistence</a></li>
@@ -128,6 +142,13 @@
                         </h4>
                         <p class="text-gray-700 text-sm mt-1">Collaborative Planning Poker tool for agile teams to estimate user stories using Fibonacci sequence with real-time collaboration.</p>
                     </div>
+                    <div class="border-l-4 border-orange-500 pl-4 py-2 bg-orange-50">
+                        <h4 class="font-bold text-gray-800 flex items-center space-x-2">
+                            <i data-lucide="calendar-range" class="w-5 h-5 text-orange-500"></i>
+                            <span>Capacity Planning Module (Available Now)</span>
+                        </h4>
+                        <p class="text-gray-700 text-sm mt-1">PI-based sprint capacity planning tool for teams to manage working days, availability, and suggested story points per sprint with optional JIRA sprint integration.</p>
+                    </div>
                 </div>
                 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Key Features</h3>
@@ -142,6 +163,8 @@
                     <li><strong>Budget Tracking:</strong> Approval status management</li>
                     <li><strong>Dependency Management:</strong> Track system dependencies</li>
                     <li><strong>Audit Logging:</strong> Comprehensive tracking for estimations</li>
+                    <li><strong>Capacity Planning:</strong> PI-based team capacity matrix with JIRA sprint integration</li>
+                    <li><strong>Team Availability:</strong> Auto-computed availability and suggested story points per sprint</li>
                 </ul>
             </div>
 
@@ -191,6 +214,13 @@
                         <div>
                             <h4 class="font-bold text-gray-800">Story Estimations <span class="text-xs text-green-600">(Available Now)</span></h4>
                             <p class="text-sm text-gray-700">Collaborative Planning Poker estimation tool with real-time collaboration, session management, and comprehensive audit logging.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3 p-3 bg-orange-50 rounded-lg">
+                        <i data-lucide="calendar-range" class="w-5 h-5 text-orange-500 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Capacity Planning <span class="text-xs text-orange-500">(Available Now)</span></h4>
+                            <p class="text-sm text-gray-700">PI-based capacity matrix for managing team sprint availability, JIRA sprint integration, and auto-computing suggested story points.</p>
                         </div>
                     </div>
                 </div>
@@ -823,6 +853,117 @@
                 </div>
             </div>
 
+            <!-- Capacity Planning Module -->
+            <div id="capacity-planning" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">11. Capacity Planning Module</h2>
+                <p class="text-gray-700 mb-4">The Capacity Planning module enables teams to plan sprint-level resource availability per Program Increment (PI), with optional JIRA sprint integration to auto-populate sprint columns.</p>
+
+                <div class="bg-orange-50 border-l-4 border-orange-500 p-4 mb-6">
+                    <p class="font-semibold text-orange-800 mb-1">Access:</p>
+                    <p class="text-gray-700 text-sm">Navigate via the Product 360 sidebar → <strong>Capacity Planning</strong></p>
+                </div>
+
+                <!-- Filters -->
+                <div id="cp-filters" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">11.1 Selecting PI, Team &amp; Project</h3>
+                    <p class="text-gray-700 mb-3">Before loading the capacity matrix, select the following filters:</p>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                        <ul class="list-disc list-inside space-y-2 text-gray-700 ml-2">
+                            <li><strong>Program Increment (PI):</strong> Auto-defaults to the current quarter (e.g., <code class="bg-gray-100 px-1 rounded">26.3</code> for Q3 2026). Format is <code class="bg-gray-100 px-1 rounded">YY.Q</code>. Covers 2 past and 4 future PIs.</li>
+                            <li><strong>Line of Business (LOB):</strong> Select the LOB from the dropdown.</li>
+                            <li><strong>Program:</strong> Select the program (e.g., AHD, Bioplus).</li>
+                            <li><strong>Team:</strong> Select the team — projects load based on team selection.</li>
+                            <li><strong>Project:</strong> Select the project associated with the team.</li>
+                            <li><strong>JIRA Project Key (optional):</strong> Enter a key (e.g., <code class="bg-gray-100 px-1 rounded">VPIE</code>, <code class="bg-gray-100 px-1 rounded">DIG</code>) to auto-load active/future sprint names from JIRA as table columns. If left blank or no sprints found, defaults to Sprint 1–6.</li>
+                        </ul>
+                    </div>
+                    <p class="text-gray-700">Click <strong>"Load Team Members"</strong> to populate the capacity matrix.</p>
+                </div>
+
+                <!-- Capacity Matrix -->
+                <div id="cp-matrix" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">11.2 Capacity Matrix</h3>
+                    <p class="text-gray-700 mb-3">The matrix displays all team members with editable capacity inputs per sprint:</p>
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                        <p class="font-semibold text-gray-800 mb-2">Table structure:</p>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4 text-sm">
+                            <li><strong>PI Banner:</strong> Orange header row showing the selected PI (e.g., <em>PI 26.3</em>) spanning all columns.</li>
+                            <li><strong>Title:</strong> Shows <em>Capacity Matrix — [Team Name]</em> above the table.</li>
+                            <li><strong>Columns:</strong> Resource Name | Role | Sprint 1 … Sprint N (dynamic)</li>
+                            <li><strong>Capacity inputs:</strong> Enter working days (0–30) per member per sprint.</li>
+                            <li><strong>Average Working Days / Sprint:</strong> Auto-calculated average across all members for each sprint.</li>
+                            <li><strong>Resources available / Sprint:</strong> Count of team members <em>excluding Dev Lead</em> role — constant per sprint, auto-computed.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                        <p class="font-semibold text-yellow-800 mb-1">Sprint Columns from JIRA:</p>
+                        <p class="text-gray-700 text-sm">When a valid JIRA Project Key is entered, sprint columns are replaced with actual sprint names from the JIRA board (active and future sprints). The status indicator below the JIRA key field confirms how many sprints were loaded. Entering the key after the matrix is loaded will immediately re-render the columns.</p>
+                    </div>
+                </div>
+
+                <!-- Avg Points -->
+                <div id="cp-avg-points" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">11.3 Avg Points per Sprint</h3>
+                    <p class="text-gray-700 mb-3">Below the capacity matrix, a summary table shows the average story points a person can complete per sprint when available 100%:</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-3">
+                        <li>One editable input per sprint column — default value is <strong>12</strong>.</li>
+                        <li>Each value can be adjusted independently per sprint.</li>
+                        <li>Changing a value instantly recalculates <strong>Suggested Points per sprint</strong> in the Team Availability table below.</li>
+                    </ul>
+                </div>
+
+                <!-- Team Availability -->
+                <div id="cp-availability" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">11.4 Team Availability &amp; Suggested Points</h3>
+                    <p class="text-gray-700 mb-3">The <strong>Team Availability</strong> section provides per-sprint capacity analysis with the following columns:</p>
+                    <table class="w-full border-collapse border border-gray-300 mb-4 text-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Column</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Description</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left">Editable?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border border-gray-300 px-3 py-2 font-semibold">Working days (Team Avg)</td>
+                                <td class="border border-gray-300 px-3 py-2">Pre-filled from capacity matrix average; manually adjustable.</td>
+                                <td class="border border-gray-300 px-3 py-2">Yes</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="border border-gray-300 px-3 py-2 font-semibold">Admin Work %</td>
+                                <td class="border border-gray-300 px-3 py-2">Percentage of time spent on admin tasks. Default: Sprint 1 = 5%, others = 10%.</td>
+                                <td class="border border-gray-300 px-3 py-2">Yes</td>
+                            </tr>
+                            <tr>
+                                <td class="border border-gray-300 px-3 py-2 font-semibold">Contingency %</td>
+                                <td class="border border-gray-300 px-3 py-2">Buffer percentage for unplanned work. Default: 5%.</td>
+                                <td class="border border-gray-300 px-3 py-2">Yes</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="border border-gray-300 px-3 py-2 font-semibold">Availability (days/sprint)</td>
+                                <td class="border border-gray-300 px-3 py-2">Auto-computed: Working days × (1 − Admin%) × (1 − Contingency%)</td>
+                                <td class="border border-gray-300 px-3 py-2">No (computed)</td>
+                            </tr>
+                            <tr>
+                                <td class="border border-gray-300 px-3 py-2 font-semibold">Suggested Points per sprint</td>
+                                <td class="border border-gray-300 px-3 py-2">Auto-computed: Availability × Resources (excl. Dev Lead) × (Avg Points ÷ 10)</td>
+                                <td class="border border-gray-300 px-3 py-2">No (computed)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4">
+                        <p class="font-semibold text-green-800 mb-1">Total Row:</p>
+                        <p class="text-gray-700 text-sm">The footer shows the <strong>Total Suggested Points</strong> — the sum of all sprints' suggested points for the PI. This is the team's estimated PI capacity.</p>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                    <p class="font-semibold text-blue-800 mb-2">Saving Capacity Plans:</p>
+                    <p class="text-gray-700 text-sm">Click <strong>"Save Capacity Plan"</strong> to persist the capacity data for the selected PI, team, and project. Saved plans store per-sprint capacity values along with JIRA sprint names and dates where available.</p>
+                </div>
+            </div>
+
             <!-- Admin Panel -->
             <div id="admin-panel" class="mb-12 section">
                 <h2 class="text-3xl font-bold text-gray-800 mb-4">8. Admin Panel</h2>
@@ -1011,7 +1152,7 @@
             <!-- Footer -->
             <hr class="my-8">
             <div class="text-center text-gray-600 text-sm">
-                <p><strong>Version 2.0</strong> | Last Updated: June 29, 2026</p>
+                <p><strong>Version 2.2</strong> | Last Updated: July 14, 2026</p>
                 <p class="mt-2">Application URL: <code class="bg-gray-100 px-2 py-1 rounded">https://carelonrx-roadmap.onrender.com</code></p>
                 <p class="mt-4">© 2026 Product 360. All rights reserved.</p>
             </div>
