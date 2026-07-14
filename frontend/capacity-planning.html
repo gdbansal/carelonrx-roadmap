@@ -10,6 +10,7 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="assets/session-manager.js?v=2.2"></script>
     <script src="assets/product360-sidebar.js?v=2.2" defer></script>
     <link rel="stylesheet" href="assets/carelon-theme.css?v=2.1">
@@ -134,6 +135,10 @@
                     <button id="editBtn" onclick="enableEditMode()" class="hidden bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
                         <i data-lucide="pencil" class="w-4 h-4 inline mr-2"></i>
                         Edit
+                    </button>
+                    <button id="exportBtn" onclick="exportToExcel()" class="hidden bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition" style="background-color:#059669;">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4 inline mr-2"></i>
+                        Export to Excel
                     </button>
                 </div>
             </div>
@@ -780,6 +785,7 @@
                             return parseFloat(input?.value) || 0;
                         });
                     });
+                    document.getElementById('exportBtn').classList.remove('hidden');
                     enableViewMode();
                 } else {
                     showError(data.message || 'Failed to save capacity plan');
@@ -802,8 +808,60 @@
             isViewMode = false;
             document.getElementById('saveBtn').classList.remove('hidden');
             document.getElementById('editBtn').classList.add('hidden');
+            document.getElementById('exportBtn').classList.add('hidden');
             renderCapacityMatrix();
             calculateTotals();
+        }
+
+        function exportToExcel() {
+            const lob     = document.getElementById('lobFilter').value;
+            const project = document.getElementById('projectFilter').value;
+            const team    = document.getElementById('teamFilter').value;
+            const pi      = document.getElementById('piFilter').value;
+
+            // Build header metadata rows
+            const metaRows = [
+                ['Capacity Plan'],
+                ['PI', pi],
+                ['Line of Business', lob],
+                ['Project', project],
+                ['Team', team],
+                []
+            ];
+
+            // Build column header row
+            const sprintHeaders = sprintColumns.map(s => s.name);
+            const headerRow = ['Resource Name', 'Role', ...sprintHeaders, 'Avg Capacity'];
+
+            // Build data rows
+            const dataRows = teamMembers.map(member => {
+                const capacities = sprintColumns.map((_, i) => {
+                    const input = document.querySelector(`.capacity-input[data-member="${member._id}"][data-sprint="${i+1}"]`);
+                    return parseFloat(input?.value) || 0;
+                });
+                const avg = capacities.length
+                    ? parseFloat((capacities.reduce((a, b) => a + b, 0) / capacities.length).toFixed(1))
+                    : 0;
+                return [member.name, member.role, ...capacities, avg];
+            });
+
+            const allRows = [...metaRows, headerRow, ...dataRows];
+
+            const ws = XLSX.utils.aoa_to_sheet(allRows);
+
+            // Style column widths
+            ws['!cols'] = [
+                { wch: 28 },
+                { wch: 18 },
+                ...sprintColumns.map(() => ({ wch: 12 })),
+                { wch: 14 }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Capacity Plan');
+
+            const filename = `CapacityPlan_${team}_PI${pi}_${new Date().toISOString().slice(0,10)}.xlsx`;
+            XLSX.writeFile(wb, filename);
         }
 
         function showSuccess(message) {
