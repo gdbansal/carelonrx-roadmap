@@ -310,7 +310,7 @@
                 </div>
 
                 <div class="flex space-x-3 pt-4">
-                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <button type="button" onclick="saveLob()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                         Save
                     </button>
                     <button type="button" onclick="closeLobModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
@@ -387,7 +387,7 @@
                 </div>
 
                 <div class="flex space-x-3 pt-4">
-                    <button type="submit" id="saveTeamMemberBtn" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <button type="button" onclick="saveTeamMember()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                         Save
                     </button>
                     <button type="button" onclick="closeTeamMemberModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
@@ -904,13 +904,16 @@
             editingLobId = null;
         }
 
-        document.getElementById('lobForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
+        async function saveLob() {
             const lobData = {
                 name: document.getElementById('lobName').value.trim(),
                 description: document.getElementById('lobDescription').value.trim()
             };
+
+            if (!lobData.name) {
+                showError('Please enter a Line of Business name');
+                return;
+            }
 
             if (editingLobId) {
                 lobData.isActive = document.getElementById('lobIsActive').checked;
@@ -923,9 +926,6 @@
                     ? `${API_BASE}/api/line-of-business/${editingLobId}`
                     : `${API_BASE}/api/line-of-business`;
                 const method = editingLobId ? 'PUT' : 'POST';
-
-                console.log('Request URL:', url);
-                console.log('Request method:', method);
 
                 const response = await fetch(url, {
                     method: method,
@@ -952,7 +952,7 @@
                 console.error('Error saving LOB:', error);
                 showError('Unable to connect to server: ' + error.message);
             }
-        });
+        }
 
         // ============================================
         // TEAM MEMBERS MANAGEMENT
@@ -1087,67 +1087,56 @@
             editingMemberId = null;
         }
 
-        // Team Member Form Handler
-        const teamMemberForm = document.getElementById('teamMemberForm');
-        if (teamMemberForm) {
-            teamMemberForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+        async function saveTeamMember() {
+            const memberData = {
+                name: document.getElementById('memberName').value.trim(),
+                role: document.getElementById('memberRole').value,
+                team: document.getElementById('memberTeam').value.trim(),
+                email: document.getElementById('memberEmail').value.trim()
+            };
 
-                console.log('Team member form submitted');
+            if (!memberData.name || !memberData.role || !memberData.team) {
+                showError('Please fill in all required fields (Name, Role, Team)');
+                return;
+            }
 
-                const memberData = {
-                    name: document.getElementById('memberName').value.trim(),
-                    role: document.getElementById('memberRole').value,
-                    team: document.getElementById('memberTeam').value.trim(),
-                    email: document.getElementById('memberEmail').value.trim()
-                };
+            if (editingMemberId) {
+                memberData.isActive = document.getElementById('memberIsActive').checked;
+            }
 
-                if (editingMemberId) {
-                    memberData.isActive = document.getElementById('memberIsActive').checked;
+            console.log('Saving team member:', memberData);
+
+            try {
+                const url = editingMemberId 
+                    ? `${API_BASE}/api/team-members/${editingMemberId}`
+                    : `${API_BASE}/api/team-members`;
+                const method = editingMemberId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(memberData)
+                });
+
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (data.success) {
+                    showSuccess(editingMemberId ? 'Team member updated successfully' : 'Team member created successfully');
+                    closeTeamMemberModal();
+                    loadTeamMembers();
+                } else {
+                    console.error('Save failed:', data.message);
+                    showError(data.message || 'Failed to save team member');
                 }
-
-                console.log('Saving team member:', memberData);
-
-                try {
-                    const url = editingMemberId 
-                        ? `${API_BASE}/api/team-members/${editingMemberId}`
-                        : `${API_BASE}/api/team-members`;
-                    const method = editingMemberId ? 'PUT' : 'POST';
-
-                    console.log('Request URL:', url);
-                    console.log('Request method:', method);
-
-                    const response = await fetch(url, {
-                        method: method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify(memberData)
-                    });
-
-                    console.log('Response status:', response.status);
-                    const data = await response.json();
-                    console.log('Response data:', data);
-
-                    if (data.success) {
-                        showSuccess(editingMemberId ? 'Team member updated successfully' : 'Team member created successfully');
-                        closeTeamMemberModal();
-                        loadTeamMembers();
-                    } else {
-                        console.error('Save failed:', data.message);
-                        showError(data.message || 'Failed to save team member');
-                    }
-                } catch (error) {
-                    console.error('Error saving team member:', error);
-                    showError('Unable to connect to server: ' + error.message);
-                }
-
-                return false;
-            });
-        } else {
-            console.error('Team member form not found!');
+            } catch (error) {
+                console.error('Error saving team member:', error);
+                showError('Unable to connect to server: ' + error.message);
+            }
         }
 
         // Initialize
