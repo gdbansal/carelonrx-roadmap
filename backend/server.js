@@ -2707,10 +2707,41 @@ app.delete('/api/capacity-plans/:id', authMiddleware, async (req, res) => {
 app.get('/api/roles', async (req, res) => {
     try {
         const mappings = await RoleModuleMapping.find({ role: { $ne: 'admin' } }).sort({ role: 1 });
-        const roles = mappings.map(m => ({ value: m.role, label: m.label || m.role }));
+        // Deduplicate: prefer snake_case entries over display-name duplicates
+        // Group by normalised key (lowercase, no spaces/underscores)
+        const seen = new Map();
+        mappings.forEach(m => {
+            const norm = m.role.toLowerCase().replace(/[\s_]+/g, '');
+            const isSnake = /^[a-z_]+$/.test(m.role);
+            if (!seen.has(norm) || isSnake) {
+                seen.set(norm, { value: m.role, label: m.label || m.role });
+            }
+        });
+        const roles = Array.from(seen.values());
         res.json({ success: true, roles });
     } catch (error) {
         res.status(500).json({ success: false, roles: [] });
+    }
+});
+
+// Admin-only: clean up stale display-name role entries that have snake_case equivalents
+app.delete('/api/role-module-mappings/cleanup', authMiddleware, async (req, res) => {
+    try {
+        const all = await RoleModuleMapping.find();
+        const snakeKeys = new Set(all.filter(m => /^[a-z_]+$/.test(m.role)).map(m => m.role));
+        const toDelete = all.filter(m => {
+            if (/^[a-z_]+$/.test(m.role)) return false; // keep snake_case
+            const snake = m.role.toLowerCase().replace(/\s+/g, '_');
+            return snakeKeys.has(snake); // delete if snake version exists
+        });
+        const deleted = [];
+        for (const doc of toDelete) {
+            await RoleModuleMapping.findByIdAndDelete(doc._id);
+            deleted.push(doc.role);
+        }
+        res.json({ success: true, deleted });
+    } catch (e) {
+        res.status(500).json({ success: false, message: e.message });
     }
 });
 

@@ -441,6 +441,10 @@
                         <p class="text-sm text-gray-600 mt-1">Control which modules each role can access. Changes are saved to MongoDB.</p>
                     </div>
                     <div class="flex gap-3">
+                        <button onclick="cleanupDuplicateRoles()" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition flex items-center space-x-2">
+                            <i data-lucide="trash" class="w-4 h-4"></i>
+                            <span>Clean Duplicates</span>
+                        </button>
                         <button onclick="showAddRoleModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
                             <i data-lucide="plus" class="w-4 h-4"></i>
                             <span>Add Role</span>
@@ -1489,6 +1493,24 @@
             roleMappings.push({ role: name, label: name, modules: { ...DEFAULT_MODULES } });
             renderRoleMappingTable();
             closeAddRoleModal();
+        }
+
+        async function cleanupDuplicateRoles() {
+            if (!confirm('This will remove old display-name role entries (e.g. "Product Owner") that have snake_case equivalents (e.g. "product_owner") in MongoDB. Continue?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/role-module-mappings/cleanup`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showSuccess(`Cleaned up: ${data.deleted.length ? data.deleted.join(', ') : 'nothing to clean'}`);
+                    roleMappings = [];
+                    loadRoleMappings();
+                } else {
+                    showError('Cleanup failed');
+                }
+            } catch (e) { showError('Connection error: ' + e.message); }
         }
 
         async function saveRoleMappings() {
