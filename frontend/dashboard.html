@@ -465,22 +465,31 @@
             // Helper function to extract JIRA issue key from URL
             function extractJiraKey(url) {
                 if (!url) return null;
-                const match = url.match(/[A-Z]+-\d+/);
-                return match ? match[0] : null;
+                const match = url.match(/\/browse\/([A-Z][A-Z0-9_]+-\d+)/i) || url.match(/([A-Z][A-Z0-9_]+-\d+)/i);
+                return match ? match[1].toUpperCase() : null;
             }
 
             const dependentSystemsHTML = initiative.dependentSystems && initiative.dependentSystems.length > 0
-                ? initiative.dependentSystems.map(sys => {
+                ? initiative.dependentSystems.map((sys, idx) => {
                     const jiraKey = extractJiraKey(sys.jiraUrl);
+                    const statusId = jiraKey ? `dash-jira-status-${jiraKey}-${idx}` : null;
                     return `
                     <div class="bg-gray-50 p-3 rounded-lg">
                         <p class="font-semibold text-gray-800">${sys.system}</p>
                         ${sys.pmSpoc ? `<p class="text-sm text-gray-600">PM/SPOC: ${sys.pmSpoc}</p>` : ''}
-                        ${jiraKey ? `<p class="text-sm"><a href="${sys.jiraUrl}" target="_blank" class="text-blue-600 hover:underline font-semibold">${jiraKey}</a></p>` : ''}
+                        ${jiraKey ? `
+                        <div class="flex items-center flex-wrap gap-2 mt-1">
+                            <a href="${sys.jiraUrl}" target="_blank"
+                               style="display:inline-flex;align-items:center;gap:4px;background:#1D4ED8;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;text-decoration:none;letter-spacing:0.3px;">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                                ${jiraKey}
+                            </a>
+                            <span id="${statusId}" class="text-xs text-gray-400 italic">Loading status...</span>
+                        </div>` : ''}
                     </div>
                 `;
                 }).join('')
-                : '<p class="text-gray-500">No dependent systems</p>';
+                : '<p class="text-gray-500">No dependent systems</p>'; 
             
             modalContent.innerHTML = `
                 <div class="space-y-6">
@@ -645,6 +654,38 @@
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             lucide.createIcons();
+
+            // Fetch JIRA statuses after modal is shown
+            if (initiative.dependentSystems && initiative.dependentSystems.length > 0) {
+                initiative.dependentSystems.forEach((sys, idx) => {
+                    const jiraKey = extractJiraKey(sys.jiraUrl);
+                    if (jiraKey) fetchJiraStatusDash(jiraKey, `dash-jira-status-${jiraKey}-${idx}`);
+                });
+            }
+        }
+
+        async function fetchJiraStatusDash(issueKey, containerId) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            try {
+                const res = await fetch(`https://carelonrx-roadmap.onrender.com/api/jira/issue/${encodeURIComponent(issueKey)}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                if (data.success && data.issue) {
+                    const status = data.issue.status || 'Unknown';
+                    const cat = (data.issue.statusCategory || '').toLowerCase();
+                    let bg = '#F3F4F6', color = '#374151';
+                    if (cat.includes('done') || cat.includes('complete')) { bg = '#D1FAE5'; color = '#065F46'; }
+                    else if (cat.includes('progress')) { bg = '#DBEAFE'; color = '#1E40AF'; }
+                    else if (cat.includes('blocked') || cat.includes('hold')) { bg = '#FEE2E2'; color = '#991B1B'; }
+                    el.innerHTML = `<span style="display:inline-block;background:${bg};color:${color};font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;">${status}</span>`;
+                } else {
+                    el.innerHTML = `<span style="font-size:10px;color:#9CA3AF;font-style:italic;">Unable to get status</span>`;
+                }
+            } catch (e) {
+                el.innerHTML = `<span style="font-size:10px;color:#9CA3AF;font-style:italic;">Unable to get status</span>`;
+            }
         }
 
         function closeModal() {

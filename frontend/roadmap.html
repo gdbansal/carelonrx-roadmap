@@ -895,17 +895,28 @@
             return 'bg-yellow-100 text-yellow-800';
         }
 
-        // JIRA status display - simplified to just show issue key badge
-        // Direct browser fetch blocked by CORS from internal JIRA server
         async function fetchJiraStatus(issueKey, containerId) {
             const el = document.getElementById(containerId);
             if (!el) return;
-            // Just display the issue key as a badge since CORS blocks direct fetch
-            el.innerHTML = `
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-800">
-                    ${issueKey}
-                </span>
-            `;
+            try {
+                const res = await fetch(`https://carelonrx-roadmap.onrender.com/api/jira/issue/${encodeURIComponent(issueKey)}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                if (data.success && data.issue) {
+                    const status = data.issue.status || 'Unknown';
+                    const cat = (data.issue.statusCategory || '').toLowerCase();
+                    let bg = '#F3F4F6', color = '#374151';
+                    if (cat.includes('done') || cat.includes('complete')) { bg = '#D1FAE5'; color = '#065F46'; }
+                    else if (cat.includes('progress')) { bg = '#DBEAFE'; color = '#1E40AF'; }
+                    else if (cat.includes('blocked') || cat.includes('hold')) { bg = '#FEE2E2'; color = '#991B1B'; }
+                    el.innerHTML = `<span style="display:inline-block;background:${bg};color:${color};font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;">${status}</span>`;
+                } else {
+                    el.innerHTML = `<span style="font-size:10px;color:#9CA3AF;font-style:italic;">Unable to get status</span>`;
+                }
+            } catch (e) {
+                el.innerHTML = `<span style="font-size:10px;color:#9CA3AF;font-style:italic;">Unable to get status</span>`;
+            }
         }
 
         function showInitiativeDetails(id) {
@@ -1001,11 +1012,12 @@
                                                 <div class="flex items-center flex-wrap gap-2 text-xs">
                                                     ${entry.pmSpoc ? `<span class="text-gray-600">PM: ${entry.pmSpoc}</span>` : ''}
                                                     ${entry.jiraUrl ? `
-                                                        <a href="${entry.jiraUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 underline flex items-center space-x-1">
-                                                            <i data-lucide="external-link" class="w-3 h-3"></i>
-                                                            <span>${jiraKey || 'JIRA ' + (idx + 1)}</span>
+                                                        <a href="${entry.jiraUrl}" target="_blank"
+                                                           style="display:inline-flex;align-items:center;gap:4px;background:#1D4ED8;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;text-decoration:none;letter-spacing:0.3px;">
+                                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                                                            ${jiraKey || 'JIRA ' + (idx + 1)}
                                                         </a>
-                                                        ${containerId ? `<span id="${containerId}" class="flex items-center gap-1"><span class="text-xs text-gray-400 italic">Loading...</span></span>` : ''}
+                                                        ${containerId ? `<span id="${containerId}"><span style="font-size:10px;color:#9CA3AF;font-style:italic;">Loading status...</span></span>` : ''}
                                                     ` : ''}
                                                 </div>`;
                                             }).join('')}
