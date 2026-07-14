@@ -1363,13 +1363,9 @@
 
         // ========== ROLE vs MODULE MAPPING ==========
         const MODULES = [
-            { key: 'dashboard',        label: 'Dashboard' },
             { key: 'roadmap',          label: 'Roadmap' },
-            { key: 'intake',           label: 'Initiative Intake' },
             { key: 'storyEstimations', label: 'Story Estimations' },
-            { key: 'capacityPlanning', label: 'Capacity Planning' },
-            { key: 'analytics',        label: 'Analytics' },
-            { key: 'adminPanel',       label: 'Admin Panel' }
+            { key: 'capacityPlanning', label: 'Capacity Planning' }
         ];
 
         let roleMappings = [];
@@ -1393,34 +1389,39 @@
 
         function getDefaultMappings() {
             return [
-                { role: 'admin',         modules: { dashboard: true,  roadmap: true,  intake: true,  storyEstimations: true,  capacityPlanning: true,  analytics: true,  adminPanel: true  } },
-                { role: 'user',          modules: { dashboard: true,  roadmap: true,  intake: true,  storyEstimations: false, capacityPlanning: false, analytics: false, adminPanel: false } },
-                { role: 'viewer',        modules: { dashboard: true,  roadmap: true,  intake: false, storyEstimations: false, capacityPlanning: false, analytics: false, adminPanel: false } },
-                { role: 'Product Owner', modules: { dashboard: true,  roadmap: true,  intake: true,  storyEstimations: true,  capacityPlanning: true,  analytics: true,  adminPanel: false } },
-                { role: 'Scrum Master',  modules: { dashboard: true,  roadmap: true,  intake: true,  storyEstimations: true,  capacityPlanning: true,  analytics: false, adminPanel: false } },
-                { role: 'Developer',     modules: { dashboard: true,  roadmap: false, intake: false, storyEstimations: true,  capacityPlanning: false, analytics: false, adminPanel: false } }
+                { role: 'admin',         modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
+                { role: 'user',          modules: { roadmap: true,  storyEstimations: false, capacityPlanning: false } },
+                { role: 'viewer',        modules: { roadmap: true,  storyEstimations: false, capacityPlanning: false } },
+                { role: 'Product Owner', modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
+                { role: 'Scrum Master',  modules: { roadmap: true,  storyEstimations: true,  capacityPlanning: true  } },
+                { role: 'Developer',     modules: { roadmap: false, storyEstimations: true,  capacityPlanning: false } }
             ];
         }
 
         function renderRoleMappingTable() {
             const thead = document.querySelector('#roleMappingTable thead tr');
             const tbody = document.getElementById('roleMappingBody');
-            thead.innerHTML = `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase border-b border-r border-gray-200 bg-gray-50" style="min-width:160px">Module \ Role</th>`;
-            roleMappings.forEach((rm, ri) => {
-                thead.innerHTML += `<th class="px-3 py-3 text-center text-xs font-semibold text-gray-700 border-b border-gray-200" style="min-width:110px">
-                    <div class="flex flex-col items-center gap-1">
-                        <span>${rm.role}</span>
-                        <button onclick="deleteRole(${ri})" class="text-red-400 hover:text-red-600" title="Remove role"><i data-lucide="x-circle" class="w-3 h-3"></i></button>
-                    </div></th>`;
+
+            // Header: Role column + one column per module
+            thead.innerHTML = `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase border-b border-r border-gray-200 bg-gray-50" style="min-width:160px">Role</th>`;
+            MODULES.forEach(mod => {
+                thead.innerHTML += `<th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 border-b border-gray-200" style="min-width:150px">${mod.label}</th>`;
             });
+            thead.innerHTML += `<th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 border-b border-gray-200" style="min-width:80px">Remove</th>`;
+
+            // Rows: one per role
             tbody.innerHTML = '';
-            MODULES.forEach((mod, mi) => {
-                const bg = mi % 2 === 0 ? 'bg-white' : 'bg-gray-50';
-                let row = `<tr class="${bg}"><td class="px-4 py-3 text-sm font-semibold text-gray-700 border-r border-b border-gray-200 ${bg}" style="min-width:160px">${mod.label}</td>`;
-                roleMappings.forEach((rm, ri) => {
+            roleMappings.forEach((rm, ri) => {
+                const bg = ri % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                let row = `<tr class="${bg}">`;
+                row += `<td class="px-4 py-3 text-sm font-semibold text-gray-700 border-r border-b border-gray-200 ${bg}">${rm.role}</td>`;
+                MODULES.forEach(mod => {
                     const chk = rm.modules[mod.key] ? 'checked' : '';
-                    row += `<td class="px-3 py-3 text-center border-b border-gray-100"><input type="checkbox" ${chk} onchange="toggleMapping(${ri},'${mod.key}',this.checked)" class="w-4 h-4 rounded accent-blue-600 cursor-pointer"></td>`;
+                    row += `<td class="px-4 py-3 text-center border-b border-gray-100"><input type="checkbox" ${chk} onchange="toggleMapping(${ri},'${mod.key}',this.checked)" class="w-5 h-5 rounded accent-blue-600 cursor-pointer"></td>`;
                 });
+                row += `<td class="px-4 py-3 text-center border-b border-gray-100">
+                    <button onclick="deleteRole(${ri})" class="text-red-400 hover:text-red-600" title="Remove role"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </td>`;
                 row += '</tr>';
                 tbody.innerHTML += row;
             });
