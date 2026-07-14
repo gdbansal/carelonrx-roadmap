@@ -395,12 +395,24 @@
                 </div>
 
                 <div>
-                    <label for="memberProject" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <label for="memberProjectSelect" class="block text-sm font-semibold text-gray-700 mb-2">
                         Project <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" id="memberProject" required maxlength="200"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter project name">
+                    <div class="flex gap-2 items-center mb-1">
+                        <select id="memberProjectSelect" required
+                            onchange="onProjectSelectChange()"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Loading projects from JIRA...</option>
+                        </select>
+                        <button type="button" onclick="loadJiraProjects(true)" title="Refresh from JIRA"
+                            class="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-500">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <input type="text" id="memberProject" maxlength="200" style="display:none"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-1"
+                        placeholder="Enter project name manually">
+                    <p class="text-xs text-gray-500 mt-1">Projects loaded from JIRA. Select <em>Other (enter manually)</em> to type a custom name.</p>
                 </div>
 
                 <div>
@@ -1183,6 +1195,83 @@
 
         // JIRA team list cache
         let jiraTeamList = [];
+        let jiraProjectList = [];
+        let jiraProjectsLoaded = false;
+
+        async function loadJiraProjects(force) {
+            if (jiraProjectsLoaded && !force) {
+                populateProjectDropdown();
+                return;
+            }
+            const sel = document.getElementById('memberProjectSelect');
+            sel.innerHTML = '<option value="">Loading from JIRA...</option>';
+            try {
+                const res = await fetch(`${API_BASE}/api/jira/projects`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                const projects = data.projects || [];
+                jiraProjectList = projects.map(p => ({ key: p.key, name: p.name })).filter(p => p.name).sort((a,b) => a.name.localeCompare(b.name));
+                jiraProjectsLoaded = true;
+            } catch(e) {
+                console.warn('JIRA projects fetch failed', e);
+            }
+            populateProjectDropdown();
+            lucide.createIcons();
+        }
+
+        function populateProjectDropdown() {
+            const sel = document.getElementById('memberProjectSelect');
+            sel.innerHTML = '<option value="">-- Select Project --</option>';
+            jiraProjectList.forEach(p => {
+                const o = document.createElement('option');
+                o.value = p.name;
+                o.textContent = `${p.key} - ${p.name}`;
+                sel.appendChild(o);
+            });
+            const other = document.createElement('option');
+            other.value = '__other__';
+            other.textContent = 'Other (enter manually)';
+            sel.appendChild(other);
+        }
+
+        function onProjectSelectChange() {
+            const sel = document.getElementById('memberProjectSelect');
+            const input = document.getElementById('memberProject');
+            if (sel.value === '__other__') {
+                input.style.display = 'block';
+                input.required = true;
+                input.focus();
+            } else {
+                input.style.display = 'none';
+                input.required = false;
+                input.value = '';
+            }
+        }
+
+        function getProjectValue() {
+            const sel = document.getElementById('memberProjectSelect');
+            if (sel.value === '__other__' || sel.value === '') {
+                return document.getElementById('memberProject').value.trim();
+            }
+            return sel.value;
+        }
+
+        function setProjectValue(val) {
+            const sel = document.getElementById('memberProjectSelect');
+            const input = document.getElementById('memberProject');
+            const opt = Array.from(sel.options).find(o => o.value === val);
+            if (opt && val !== '__other__') {
+                sel.value = val;
+                input.style.display = 'none';
+                input.required = false;
+            } else {
+                sel.value = '__other__';
+                input.style.display = 'block';
+                input.required = true;
+                input.value = val || '';
+            }
+        }
 
         async function loadJiraTeams() {
             const sel = document.getElementById('memberTeamSelect');
@@ -1258,8 +1347,11 @@
             document.getElementById('memberTeam').style.display = 'none';
             document.getElementById('memberTeam').required = false;
             document.getElementById('memberStatusContainer').classList.add('hidden');
+            document.getElementById('memberProject').style.display = 'none';
+            document.getElementById('memberProject').required = false;
             document.getElementById('teamMemberModal').classList.remove('hidden');
             loadJiraTeams();
+            loadJiraProjects();
             lucide.createIcons();
         }
 
@@ -1278,13 +1370,14 @@
                     document.getElementById('teamMemberModalTitle').textContent = 'Edit Team Member';
                     document.getElementById('memberName').value = data.member.name;
                     document.getElementById('memberRole').value = data.member.role;
-                    document.getElementById('memberProject').value = data.member.project || '';
                     document.getElementById('memberEmail').value = data.member.email || '';
                     document.getElementById('memberIsActive').checked = data.member.isActive;
                     document.getElementById('memberStatusContainer').classList.remove('hidden');
                     document.getElementById('teamMemberModal').classList.remove('hidden');
                     await loadJiraTeams();
                     setTeamValue(data.member.team);
+                    await loadJiraProjects();
+                    setProjectValue(data.member.project || '');
                     lucide.createIcons();
                 }
             } catch (error) {
@@ -1331,7 +1424,7 @@
                 name: document.getElementById('memberName').value.trim(),
                 role: document.getElementById('memberRole').value,
                 team: getTeamValue(),
-                project: document.getElementById('memberProject').value.trim(),
+                project: getProjectValue(),
                 email: document.getElementById('memberEmail').value.trim()
             };
 
