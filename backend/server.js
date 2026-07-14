@@ -127,11 +127,17 @@ app.post('/api/signup', async (req, res) => {
             });
         }
         
-        const allowedRoles = ['product_owner', 'product_manager', 'business_owner', 'stakeholder', 'rte', 'scrum_master'];
-        if (!allowedRoles.includes(role)) {
+        if (role === 'admin') {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid role selected. Admin role cannot be assigned during signup.'
+                message: 'Admin role cannot be assigned during signup.'
+            });
+        }
+        const validRoleDoc = await RoleModuleMapping.findOne({ role });
+        if (!validRoleDoc) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid role selected. Please choose a valid role.'
             });
         }
         
@@ -2706,9 +2712,29 @@ app.delete('/api/capacity-plans/:id', authMiddleware, async (req, res) => {
 // Public endpoint: returns list of roles from MongoDB (excludes admin; used by signup + user management dropdowns)
 app.get('/api/roles', async (req, res) => {
     try {
-        const mappings = await RoleModuleMapping.find({ role: { $ne: 'admin' } }).sort({ role: 1 });
+        let mappings = await RoleModuleMapping.find({ role: { $ne: 'admin' } }).sort({ role: 1 });
+
+        // If no roles in DB at all, seed the defaults so dropdowns are never empty
+        if (mappings.length === 0) {
+            const defaults = [
+                { role: 'product_owner',   label: 'Product Owner',   modules: { roadmap: true, storyEstimations: true,  capacityPlanning: true  } },
+                { role: 'product_manager', label: 'Product Manager',  modules: { roadmap: true, storyEstimations: false, capacityPlanning: false } },
+                { role: 'business_owner',  label: 'Business Owner',   modules: { roadmap: true, storyEstimations: false, capacityPlanning: false } },
+                { role: 'stakeholder',     label: 'Stakeholder',      modules: { roadmap: true, storyEstimations: false, capacityPlanning: false } },
+                { role: 'rte',             label: 'RTE (Release Train Engineer)', modules: { roadmap: true, storyEstimations: true, capacityPlanning: true } },
+                { role: 'scrum_master',    label: 'Scrum Master',     modules: { roadmap: true, storyEstimations: true,  capacityPlanning: true  } }
+            ];
+            for (const d of defaults) {
+                await RoleModuleMapping.findOneAndUpdate(
+                    { role: d.role },
+                    { label: d.label, modules: d.modules },
+                    { upsert: true, new: true, setDefaultsOnInsert: true }
+                );
+            }
+            mappings = await RoleModuleMapping.find({ role: { $ne: 'admin' } }).sort({ role: 1 });
+        }
+
         // Deduplicate: prefer snake_case entries over display-name duplicates
-        // Group by normalised key (lowercase, no spaces/underscores)
         const seen = new Map();
         mappings.forEach(m => {
             const norm = m.role.toLowerCase().replace(/[\s_]+/g, '');
