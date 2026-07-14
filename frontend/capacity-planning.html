@@ -43,6 +43,28 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Program Increment (PI) *</label>
                     <select id="piFilter" onchange="updatePIBanner()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </select>
+                    <script>
+                    (function(){
+                        var now = new Date();
+                        var year = now.getFullYear();
+                        var quarter = Math.floor(now.getMonth() / 3) + 1;
+                        var yyCur = String(year).slice(-2);
+                        var currentPI = yyCur + '.' + quarter;
+                        var sel = document.getElementById('piFilter');
+                        for (var offset = -2; offset <= 4; offset++) {
+                            var q = quarter + offset, y = year;
+                            while (q <= 0) { q += 4; y--; }
+                            while (q > 4)  { q -= 4; y++; }
+                            var yy = String(y).slice(-2);
+                            var val = yy + '.' + q;
+                            var opt = document.createElement('option');
+                            opt.value = val;
+                            opt.textContent = 'PI ' + val;
+                            if (val === currentPI) opt.selected = true;
+                            sel.appendChild(opt);
+                        }
+                    })();
+                    </script>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Line of Business *</label>
@@ -218,16 +240,12 @@
         }
 
         function populatePIDropdown() {
+            // Options already injected inline at page load; just ensure correct value is selected
             const select = document.getElementById('piFilter');
-            select.innerHTML = '';
             const current = getCurrentPI();
-            generatePIOptions().forEach(pi => {
-                const opt = document.createElement('option');
-                opt.value = pi;
-                opt.textContent = `PI ${pi}`;
-                select.appendChild(opt);
-            });
-            select.value = current;
+            if (select.value !== current) {
+                select.value = current;
+            }
             updatePIBanner();
         }
 
@@ -743,13 +761,10 @@
 
         // Initialize
         checkAuth();
+        populatePIDropdown();
         loadLOBs();
         loadTeams();
         lucide.createIcons();
-        // Use requestAnimationFrame to guarantee select is rendered before setting value
-        requestAnimationFrame(function() {
-            populatePIDropdown();
-        });
     </script>
 </body>
 </html>
