@@ -1226,7 +1226,7 @@
             jiraProjectList.forEach(p => {
                 const o = document.createElement('option');
                 o.value = p.name;
-                o.textContent = `${p.key} - ${p.name}`;
+                o.textContent = `${p.name} (${p.key})`;
                 sel.appendChild(o);
             });
             const other = document.createElement('option');
