@@ -2216,8 +2216,10 @@ app.delete('/api/line-of-business/:id', authMiddleware, async (req, res) => {
 // Get all team members
 app.get('/api/team-members', authMiddleware, async (req, res) => {
     try {
-        const { team } = req.query;
-        const query = team ? { team, isActive: true } : {};
+        const { team, project } = req.query;
+        const query = { isActive: true };
+        if (team) query.team = team;
+        if (project) query.project = project;
         
         const members = await TeamMember.find(query).sort({ team: 1, name: 1 });
         res.json({
@@ -2229,6 +2231,27 @@ app.get('/api/team-members', authMiddleware, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to retrieve team members',
+            error: error.message
+        });
+    }
+});
+
+// Get unique project names
+app.get('/api/team-members/projects', authMiddleware, async (req, res) => {
+    try {
+        const { team } = req.query;
+        const query = { isActive: true, project: { $exists: true, $ne: '' } };
+        if (team) query.team = team;
+        const projects = await TeamMember.distinct('project', query);
+        res.json({
+            success: true,
+            projects: projects.filter(Boolean).sort()
+        });
+    } catch (error) {
+        console.error('Get projects error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve projects',
             error: error.message
         });
     }
