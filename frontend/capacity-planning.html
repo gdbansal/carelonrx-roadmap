@@ -97,7 +97,7 @@
         <!-- Capacity Matrix -->
         <div id="capacityMatrix" class="hidden bg-white rounded-lg shadow-lg p-6">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-800">Capacity Matrix</h2>
+                <h2 class="text-xl font-bold text-gray-800" id="capacityMatrixTitle">Capacity Matrix</h2>
                 <button onclick="saveCapacityPlan()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
                     <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
                     Save Capacity Plan
@@ -108,7 +108,7 @@
                 <table class="w-full border-collapse" id="capacityTable">
                     <thead>
                         <tr>
-                            <td colspan="11" id="piBannerRow"
+                            <td colspan="10" id="piBannerRow"
                                 class="text-center font-bold text-white py-2 text-base tracking-wide"
                                 style="background-color:#c45c1a;">
                                 PI —
@@ -117,7 +117,6 @@
                         <tr class="bg-gray-100">
                             <th class="border border-gray-300 px-4 py-2 text-left">Resource Name</th>
                             <th class="border border-gray-300 px-4 py-2 text-left">Role</th>
-                            <th class="border border-gray-300 px-4 py-2 text-left">Team</th>
                             <th class="border border-gray-300 px-4 py-2 text-center" colspan="2">Sprint 1</th>
                             <th class="border border-gray-300 px-4 py-2 text-center" colspan="2">Sprint 2</th>
                             <th class="border border-gray-300 px-4 py-2 text-center" colspan="2">Sprint 3</th>
@@ -126,7 +125,6 @@
                         <tr class="bg-gray-50">
                             <th class="border border-gray-300 px-4 py-2"></th>
                             <th class="border border-gray-300 px-4 py-2"></th>
-                            <th class="border border-gray-300 px-4 py-2"></th>
                             <th class="border border-gray-300 px-2 py-1 text-xs">Start Date</th>
                             <th class="border border-gray-300 px-2 py-1 text-xs">End Date</th>
                             <th class="border border-gray-300 px-2 py-1 text-xs">Start Date</th>
@@ -137,7 +135,6 @@
                             <th class="border border-gray-300 px-2 py-1 text-xs">End Date</th>
                         </tr>
                         <tr class="bg-gray-50">
-                            <th class="border border-gray-300 px-4 py-2"></th>
                             <th class="border border-gray-300 px-4 py-2"></th>
                             <th class="border border-gray-300 px-4 py-2"></th>
                             <th class="border border-gray-300 px-2 py-1">
@@ -171,14 +168,14 @@
                     </tbody>
                     <tfoot>
                         <tr class="bg-yellow-50 font-bold">
-                            <td class="border border-gray-300 px-4 py-2" colspan="3">Average Working Days/ Sprint</td>
+                            <td class="border border-gray-300 px-4 py-2" colspan="2">Average Working Days/ Sprint</td>
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="avgSprint1">0</td>
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="avgSprint2">0</td>
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="avgSprint3">0</td>
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="avgSprint4">0</td>
                         </tr>
                         <tr class="bg-gray-100 font-bold">
-                            <td class="border border-gray-300 px-4 py-2" colspan="3">Resources available/ Sprint <span class="text-xs font-normal text-gray-500">(excl. Dev Lead)</span></td>
+                            <td class="border border-gray-300 px-4 py-2" colspan="2">Resources available/ Sprint <span class="text-xs font-normal text-gray-500">(excl. Dev Lead)</span></td>
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="totalSprint1">0</td>
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="totalSprint2">0</td>
                             <td class="border border-gray-300 px-4 py-2 text-center" colspan="2" id="totalSprint3">0</td>
@@ -436,6 +433,10 @@
             const tbody = document.getElementById('capacityTableBody');
             tbody.innerHTML = '';
 
+            // Update title with team name
+            const teamName = document.getElementById('teamFilter').value;
+            document.getElementById('capacityMatrixTitle').textContent = `Capacity Matrix — ${teamName}`;
+
             // Resources available = members excluding Dev Lead (constant across all sprints)
             const resourceCount = teamMembers.filter(m => m.role.toLowerCase() !== 'dev lead').length;
             for (let s = 1; s <= 4; s++) {
@@ -447,7 +448,6 @@
                 row.innerHTML = `
                     <td class="border border-gray-300 px-4 py-2">${member.name}</td>
                     <td class="border border-gray-300 px-4 py-2">${member.role}</td>
-                    <td class="border border-gray-300 px-4 py-2">${member.team}</td>
                     <td class="border border-gray-300 px-2 py-2 text-center" colspan="2">
                         <input type="number" min="0" max="10" step="0.5" 
                             class="w-20 px-2 py-1 border rounded text-center capacity-input" 
