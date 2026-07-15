@@ -12,12 +12,16 @@ const roleModuleMappingSchema = new mongoose.Schema({
         trim: true
     },
     modules: {
-        roadmap:          { type: Boolean, default: true },
-        storyEstimations: { type: Boolean, default: false },
-        capacityPlanning: { type: Boolean, default: false }
+        requirementsIntake: { type: Boolean, default: true },
+        roadmap:            { type: Boolean, default: true },
+        capacityPlanning:   { type: Boolean, default: false },
+        storyMapping:       { type: Boolean, default: false },
+        storyEstimations:   { type: Boolean, default: false }
     },
     updatedBy: { type: String },
     updatedAt: { type: Date, default: Date.now }
 });
+
+roleModuleMappingSchema.set('strict', false);
 
 module.exports = mongoose.model('RoleModuleMapping', roleModuleMappingSchema);

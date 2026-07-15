@@ -2924,7 +2924,7 @@ app.post('/api/role-module-mappings', authMiddleware, async (req, res) => {
         for (const m of mappings) {
             const doc = await RoleModuleMapping.findOneAndUpdate(
                 { role: m.role.trim() },
-                { label: m.label || m.role.trim(), modules: m.modules, updatedBy: req.user.username, updatedAt: new Date() },
+                { $set: { label: m.label || m.role.trim(), modules: m.modules, updatedBy: req.user.username, updatedAt: new Date() } },
                 { upsert: true, new: true, setDefaultsOnInsert: true }
             );
             results.push(doc);
