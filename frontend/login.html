@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -113,7 +113,7 @@
                 if (data.success) {
                     localStorage.setItem('user', JSON.stringify(data.user));
                     localStorage.setItem('token', data.token);
-                    window.location.href = 'dashboard.html';
+                    await redirectToFirstAllowedModule(data.user, data.token);
                 } else {
                     showError(data.message || 'Invalid credentials');
                 }
@@ -132,6 +132,27 @@
             setTimeout(() => {
                 errorDiv.classList.add('hidden');
             }, 5000);
+        }
+
+        const MODULE_ORDER = ['requirements-intake', 'roadmap', 'capacity-planning', 'story-estimations'];
+        const MODULE_KEY_MAP_LOGIN = { 'requirements-intake': 'requirementsIntake', 'roadmap': 'roadmap', 'capacity-planning': 'capacityPlanning', 'story-estimations': 'storyEstimations' };
+        const MODULE_DEFAULT_PAGE_LOGIN = { 'requirements-intake': 'dashboard.html', 'roadmap': 'roadmap.html', 'capacity-planning': 'capacity-planning.html', 'story-estimations': 'story-estimations.html' };
+
+        async function redirectToFirstAllowedModule(user, token) {
+            if (user.role === 'admin' || user.role === 'Admin') { window.location.href = 'dashboard.html'; return; }
+            try {
+                const res = await fetch('https://carelonrx-roadmap.onrender.com/api/role-module-mappings', { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                if (data.success && data.mappings) {
+                    const toDisplay = r => r.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    const roleMap = data.mappings.find(m => m.role === user.role || m.role === toDisplay(user.role) || m.role.toLowerCase().replace(/\s+/g, '_') === user.role);
+                    if (roleMap && roleMap.modules) {
+                        const firstAllowed = MODULE_ORDER.find(m => roleMap.modules[MODULE_KEY_MAP_LOGIN[m]] !== false);
+                        if (firstAllowed) { window.location.href = MODULE_DEFAULT_PAGE_LOGIN[firstAllowed]; return; }
+                    }
+                }
+            } catch (e) {}
+            window.location.href = 'dashboard.html';
         }
     </script>
 </body>

@@ -214,7 +214,16 @@
     // Set active link based on current page
     setActiveLink();
 
-    // Enforce role-module visibility
+    // Pre-hide all role-controlled links immediately to prevent flash
+    const roleUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (roleUser.username && roleUser.role !== 'admin' && roleUser.role !== 'Admin') {
+        document.querySelectorAll('.side-panel-link[data-module]').forEach(link => {
+            const attr = link.getAttribute('data-module');
+            if (MODULE_KEY_MAP[attr]) link.style.visibility = 'hidden';
+        });
+    }
+
+    // Enforce role-module visibility (async — reveals/hides after fetch)
     applyRoleModuleVisibility();
 })();
 
@@ -353,7 +362,9 @@ async function applyRoleModuleVisibility() {
         const data = await res.json();
         if (data.success) mappings = data.mappings;
     } catch (e) {
-        return; // fail open — show everything if API is down
+        // fail open — show everything if API is down
+        document.querySelectorAll('.side-panel-link[data-module]').forEach(l => l.style.visibility = 'visible');
+        return;
     }
 
     // Match role: try exact, then snake_case->display name conversion
@@ -363,24 +374,37 @@ async function applyRoleModuleVisibility() {
         m.role === toDisplay(user.role) ||
         m.role.toLowerCase().replace(/\s+/g, '_') === user.role
     );
-    if (!roleMap) return; // role not configured — show everything
+    if (!roleMap) {
+        // Role not configured — show everything
+        document.querySelectorAll('.side-panel-link[data-module]').forEach(l => l.style.visibility = 'visible');
+        return;
+    }
 
     // Admin always has full access — skip enforcement
-    if (user.role === 'admin' || user.role === 'Admin') return;
+    if (user.role === 'admin' || user.role === 'Admin') {
+        document.querySelectorAll('.side-panel-link[data-module]').forEach(l => l.style.visibility = 'visible');
+        return;
+    }
 
     const currentPage = window.location.pathname.split('/').pop();
 
-    // Build a set of denied modules
+    // Build a set of denied modules and apply visibility
     const deniedModules = new Set();
     document.querySelectorAll('.side-panel-link[data-module]').forEach(link => {
         const attr = link.getAttribute('data-module');
         const dbKey = MODULE_KEY_MAP[attr];
-        if (!dbKey) return; // user-guide etc — always show
+        if (!dbKey) {
+            link.style.visibility = 'visible'; // user-guide etc — always show
+            return;
+        }
         const allowed = roleMap.modules ? roleMap.modules[dbKey] : undefined;
         // Only hide if explicitly set to false — undefined/missing means show
         if (allowed === false) {
             link.style.display = 'none';
+            link.style.visibility = 'hidden';
             deniedModules.add(attr);
+        } else {
+            link.style.visibility = 'visible';
         }
     });
 
