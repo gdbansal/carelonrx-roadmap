@@ -322,6 +322,8 @@ const MODULE_KEY_MAP = {
 
 // page filename -> data-module
 const PAGE_MODULE_MAP = {
+    'dashboard.html':           'requirements-intake',
+    'intake.html':              'requirements-intake',
     'story-estimations.html':   'story-estimations',
     'capacity-planning.html':   'capacity-planning'
 };
@@ -365,10 +367,10 @@ async function applyRoleModuleVisibility() {
         // Only hide if explicitly set to false — undefined/missing means show
         if (allowed === false) {
             link.style.display = 'none';
-            // If user is currently on this restricted page, redirect to dashboard
+            // If user is currently on this restricted page, redirect to roadmap
             const linkedPage = PAGE_MODULE_MAP[currentPage];
             if (linkedPage === attr) {
-                window.location.href = 'dashboard.html';
+                window.location.href = 'roadmap.html';
             }
         }
     });
