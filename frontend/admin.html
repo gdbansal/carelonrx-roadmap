@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -467,10 +467,6 @@
                         <p class="text-sm text-gray-600 mt-1">Control which modules each role can access. Changes are saved to MongoDB.</p>
                     </div>
                     <div class="flex gap-3">
-                        <button onclick="cleanupDuplicateRoles()" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition flex items-center space-x-2">
-                            <i data-lucide="trash" class="w-4 h-4"></i>
-                            <span>Clean Duplicates</span>
-                        </button>
                         <button onclick="showAddRoleModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
                             <i data-lucide="plus" class="w-4 h-4"></i>
                             <span>Add Role</span>
@@ -762,7 +758,7 @@
                     });
                 }
             } catch (e) {
-                sel.innerHTML = '<option value="">Failed to load roles — please refresh</option>';
+                sel.innerHTML = '<option value="">Failed to load roles â€” please refresh</option>';
             }
             if (selectedValue) sel.value = selectedValue;
         }
