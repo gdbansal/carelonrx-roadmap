@@ -324,8 +324,19 @@ const MODULE_KEY_MAP = {
 const PAGE_MODULE_MAP = {
     'dashboard.html':           'requirements-intake',
     'intake.html':              'requirements-intake',
+    'roadmap.html':             'roadmap',
+    'analytics.html':           'roadmap',
+    'admin.html':               'roadmap',
     'story-estimations.html':   'story-estimations',
     'capacity-planning.html':   'capacity-planning'
+};
+
+// data-module -> default landing page
+const MODULE_DEFAULT_PAGE = {
+    'requirements-intake': 'dashboard.html',
+    'roadmap':             'roadmap.html',
+    'capacity-planning':   'capacity-planning.html',
+    'story-estimations':   'story-estimations.html'
 };
 
 async function applyRoleModuleVisibility() {
@@ -359,6 +370,8 @@ async function applyRoleModuleVisibility() {
 
     const currentPage = window.location.pathname.split('/').pop();
 
+    // Build a set of denied modules
+    const deniedModules = new Set();
     document.querySelectorAll('.side-panel-link[data-module]').forEach(link => {
         const attr = link.getAttribute('data-module');
         const dbKey = MODULE_KEY_MAP[attr];
@@ -367,11 +380,17 @@ async function applyRoleModuleVisibility() {
         // Only hide if explicitly set to false — undefined/missing means show
         if (allowed === false) {
             link.style.display = 'none';
-            // If user is currently on this restricted page, redirect to roadmap
-            const linkedPage = PAGE_MODULE_MAP[currentPage];
-            if (linkedPage === attr) {
-                window.location.href = 'roadmap.html';
-            }
+            deniedModules.add(attr);
         }
     });
+
+    // If current page belongs to a denied module, redirect to first allowed module
+    const currentModule = PAGE_MODULE_MAP[currentPage];
+    if (currentModule && deniedModules.has(currentModule)) {
+        // Find first sidebar module that is NOT denied
+        const moduleOrder = ['requirements-intake', 'roadmap', 'capacity-planning', 'story-estimations'];
+        const firstAllowed = moduleOrder.find(m => !deniedModules.has(m));
+        const redirectPage = firstAllowed ? (MODULE_DEFAULT_PAGE[firstAllowed] || 'roadmap.html') : 'roadmap.html';
+        window.location.href = redirectPage;
+    }
 }
