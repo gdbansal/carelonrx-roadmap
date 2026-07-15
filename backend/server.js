@@ -2096,13 +2096,17 @@ app.get('/api/jira2/teams', authMiddleware, async (req, res) => {
         let startAt = 0;
         let total = 1;
         while (startAt < total && startAt < 500) {
-            const url = `${jiraBase}/rest/api/2/search?jql=project=${encodeURIComponent(projectKey)}+AND+sprint+in+openSprints()&maxResults=100&startAt=${startAt}&fields=customfield_10317`;
+            const url = `${jiraBase}/rest/api/2/search?jql=project=${encodeURIComponent(projectKey)}+AND+sprint+in+openSprints()&maxResults=100&startAt=${startAt}&fields=customfield_12479`;
             const { status, body } = await jiraRequest2(url);
             if (status !== 200) break;
             total = body.total || 0;
             (body.issues || []).forEach(issue => {
-                const t = issue.fields && issue.fields.customfield_10317;
-                if (t && t.value) teamsMap[t.value] = true;
+                const raw = issue.fields && issue.fields.customfield_12479;
+                if (!raw) return;
+                const items = Array.isArray(raw) ? raw : [raw];
+                items.forEach(item => {
+                    if (item && item.value && !item.disabled) teamsMap[item.value] = true;
+                });
             });
             startAt += 100;
         }
