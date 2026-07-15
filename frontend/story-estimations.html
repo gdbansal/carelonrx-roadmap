@@ -104,10 +104,6 @@
                                 <i data-lucide="shield" class="w-4 h-4"></i>
                                 <span>Admin Panel</span>
                             </a>
-                            <a id="auditLogLink" href="estimation-audit.html" class="hidden px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                                <i data-lucide="file-text" class="w-4 h-4"></i>
-                                <span>View Audit Log</span>
-                            </a>
                             <hr class="my-2">
                             <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
                                 <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -261,12 +257,6 @@
                     adminLink.classList.add('block');
                 }
                 
-                // Show audit log link if user has PO privileges (PO, SM, Admin)
-                const auditLogLink = document.getElementById('auditLogLink');
-                if (auditLogLink && (state.user.role === 'PO' || state.user.role === 'SM' || state.user.role === 'Admin')) {
-                    auditLogLink.classList.remove('hidden');
-                    auditLogLink.classList.add('block');
-                }
             }
         }
 
