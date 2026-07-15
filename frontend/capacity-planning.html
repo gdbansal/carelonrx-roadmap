@@ -484,9 +484,35 @@
 
                 if (data.success && data.members.length > 0) {
                     teamMembers = data.members;
-                    isViewMode = false;
-                    document.getElementById('saveBtn').classList.remove('hidden');
-                    document.getElementById('editBtn').classList.add('hidden');
+
+                    // Load previously saved capacity plan data
+                    try {
+                        const pi = document.getElementById('piFilter').value;
+                        const planRes = await fetch(`${API_BASE}/api/capacity-plans?lineOfBusiness=${encodeURIComponent(lob)}&project=${encodeURIComponent(project)}&team=${encodeURIComponent(team)}&pi=${encodeURIComponent(pi)}`, {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        const planData = await planRes.json();
+                        if (planData.success && planData.plans && planData.plans.length > 0) {
+                            planData.plans.forEach(plan => {
+                                const member = teamMembers.find(m => String(m._id) === String(plan.teamMemberId?._id || plan.teamMemberId));
+                                if (member) {
+                                    member._savedCapacity = plan.sprints.sort((a, b) => a.sprintNumber - b.sprintNumber).map(s => s.capacity);
+                                    member._savedCapacityPct = plan.capacityPercentage !== undefined ? plan.capacityPercentage : 100;
+                                }
+                            });
+                            isViewMode = true;
+                            document.getElementById('saveBtn').classList.add('hidden');
+                            document.getElementById('editBtn').classList.remove('hidden');
+                        } else {
+                            isViewMode = false;
+                            document.getElementById('saveBtn').classList.remove('hidden');
+                            document.getElementById('editBtn').classList.add('hidden');
+                        }
+                    } catch (e) {
+                        isViewMode = false;
+                        document.getElementById('saveBtn').classList.remove('hidden');
+                        document.getElementById('editBtn').classList.add('hidden');
+                    }
                     renderCapacityMatrix();
                     document.getElementById('emptyState').classList.add('hidden');
                     document.getElementById('capacityMatrix').classList.remove('hidden');
