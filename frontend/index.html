@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,164 +7,177 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="assets/carelon-theme.css">
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #5009B5 0%, #3d0891 60%, #2B1B49 100%);
+        }
+        .module-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(80, 9, 181, 0.15);
+        }
+    </style>
 </head>
-<body class="bg-white min-h-screen">
-    <div class="container mx-auto px-6 py-12">
-        <div class="max-w-4xl mx-auto">
-            <div class="text-center mb-12">
-                <h1 class="text-5xl font-bold text-gray-800 mb-4">Product 360</h1>
-                <p class="text-xl text-gray-600">Integrated Product Suite</p>
-            </div>
+<body class="bg-gray-50 min-h-screen">
 
-            <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl shadow-2xl p-8 mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Welcome to Product 360</h2>
-                <p class="text-gray-600 mb-6">
-                    An integrated product suite combining roadmap management, story estimations, capacity planning, and agile planning tools in one unified platform.
-                </p>
+    <!-- Hero Header -->
+    <div class="hero-gradient text-white py-16 px-6 text-center">
+        <h1 class="text-5xl font-bold mb-3">Product 360</h1>
+        <p class="text-xl text-white text-opacity-80 mb-2">Integrated Product Suite</p>
+        <p class="text-sm text-white text-opacity-60">Built for CarelonRx Product Management Team</p>
+    </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-purple-50 rounded-lg p-6 border-2 border-purple-200">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-purple-600 w-12 h-12 rounded-full flex items-center justify-center mr-4">
-                                <i data-lucide="map" class="w-6 h-6 text-white"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-gray-800 text-lg">Roadmap Module</h3>
-                                <span class="text-xs text-green-600 font-semibold">✓ AVAILABLE NOW</span>
-                            </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-3">Comprehensive product initiative management with visual timeline, tracking, and analytics.</p>
-                        <ul class="text-xs text-gray-600 space-y-1">
-                            <li>• Initiative intake and tracking</li>
-                            <li>• Visual roadmap timeline</li>
-                            <li>• Dashboard and analytics</li>
-                            <li>• WSJF prioritization</li>
-                        </ul>
+    <div class="container mx-auto px-6 py-12 max-w-6xl">
+
+        <!-- Welcome card -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-10 text-center border-t-4 border-carelon-purple">
+            <h2 class="text-2xl font-bold text-gray-800 mb-3">Welcome to Product 360</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto mb-6">
+                An integrated suite combining requirements intake, roadmap management, capacity planning, story mapping, and story estimations — all in one unified platform.
+            </p>
+            <button onclick="window.location.href='login.html'"
+                class="btn-carelon-primary text-white px-10 py-4 rounded-lg text-lg font-semibold shadow-lg inline-flex items-center space-x-3">
+                <span>Get Started</span>
+                <i data-lucide="arrow-right" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Module Cards -->
+        <h2 class="text-xl font-bold text-gray-700 mb-6">Available Modules</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+
+            <!-- Requirements Intake -->
+            <div class="module-card bg-white rounded-xl p-6 shadow border-l-4 border-carelon-purple">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-carelon-purple">
+                        <i data-lucide="file-plus" class="w-6 h-6 text-white"></i>
                     </div>
-
-                    <div class="bg-green-50 rounded-lg p-6 border-2 border-green-200">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-green-600 w-12 h-12 rounded-full flex items-center justify-center mr-4">
-                                <i data-lucide="calculator" class="w-6 h-6 text-white"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-gray-800 text-lg">Story Estimations</h3>
-                                <span class="text-xs text-green-600 font-semibold">✓ AVAILABLE NOW</span>
-                            </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-3">Agile story point estimation tool using Fibonacci sequence for sprint planning.</p>
-                        <ul class="text-xs text-gray-600 space-y-1">
-                            <li>• Fibonacci point system (0-55)</li>
-                            <li>• Add/Edit/Remove stories</li>
-                            <li>• Real-time summary</li>
-                            <li>• Local storage persistence</li>
-                        </ul>
-                    </div>
-
-                    <div class="bg-blue-50 rounded-lg p-6 border-2 border-blue-200">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center mr-4">
-                                <i data-lucide="users-2" class="w-6 h-6 text-white"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-gray-800 text-lg">Capacity Planning</h3>
-                                <span class="text-xs text-green-600 font-semibold">✓ AVAILABLE NOW</span>
-                            </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-3">Sprint capacity planning with team member management and resource allocation.</p>
-                        <ul class="text-xs text-gray-600 space-y-1">
-                            <li>• Team member management</li>
-                            <li>• Multi-sprint capacity matrix</li>
-                            <li>• Auto-calculate averages</li>
-                            <li>• Resource availability tracking</li>
-                        </ul>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Requirements Intake</h3>
+                        <span class="text-xs text-green-600 font-semibold">&#10003; AVAILABLE NOW</span>
                     </div>
                 </div>
-
-                <div class="text-center">
-                    <button onclick="window.location.href='login.html'" 
-                        class="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-flex items-center space-x-3">
-                        <span>Get Started</span>
-                        <i data-lucide="arrow-right" class="w-6 h-6"></i>
-                    </button>
-                </div>
+                <p class="text-sm text-gray-600 mb-3">Structured intake form to capture product initiatives with WSJF scoring and dependency tracking.</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                    <li>&#8226; Initiative capture &amp; classification</li>
+                    <li>&#8226; WSJF prioritization scoring</li>
+                    <li>&#8226; Budget &amp; dependency tracking</li>
+                    <li>&#8226; Role-based submission</li>
+                </ul>
             </div>
 
-            <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl shadow-xl p-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Product 360 Features</h2>
-                
-                <div class="space-y-4">
-                    <div class="flex items-start space-x-4">
-                        <div class="bg-purple-100 p-2 rounded-lg">
-                            <i data-lucide="layout-dashboard" class="w-6 h-6 text-purple-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-800">Unified Side Panel Navigation</h3>
-                            <p class="text-gray-600 text-sm">Seamless navigation between Roadmap and Story Estimations modules with persistent sidebar</p>
-                        </div>
+            <!-- Roadmap -->
+            <div class="module-card bg-white rounded-xl p-6 shadow border-l-4" style="border-color:#794CFF">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4" style="background-color:#794CFF">
+                        <i data-lucide="map" class="w-6 h-6 text-white"></i>
                     </div>
-
-                    <div class="flex items-start space-x-4">
-                        <div class="bg-blue-100 p-2 rounded-lg">
-                            <i data-lucide="map" class="w-6 h-6 text-blue-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-800">Roadmap Module - Initiative Management</h3>
-                            <p class="text-gray-600 text-sm">Complete product initiative tracking with visual timeline, WSJF prioritization, and dependency management</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-4">
-                        <div class="bg-green-100 p-2 rounded-lg">
-                            <i data-lucide="bar-chart-3" class="w-6 h-6 text-green-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-800">Dashboard & Analytics</h3>
-                            <p class="text-gray-600 text-sm">Real-time statistics, charts, and filtering capabilities for data-driven decision making</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-4">
-                        <div class="bg-green-100 p-2 rounded-lg">
-                            <i data-lucide="calculator" class="w-6 h-6 text-green-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-800">Story Estimations Module</h3>
-                            <p class="text-gray-600 text-sm">Agile story point estimation using Fibonacci sequence with real-time tracking and local storage</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-4">
-                        <div class="bg-blue-100 p-2 rounded-lg">
-                            <i data-lucide="users-2" class="w-6 h-6 text-blue-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-800">Capacity Planning Module</h3>
-                            <p class="text-gray-600 text-sm">Sprint capacity planning with team member management, multi-sprint matrix, and automatic calculations</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-4">
-                        <div class="bg-orange-100 p-2 rounded-lg">
-                            <i data-lucide="users" class="w-6 h-6 text-orange-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-800">Role-Based Access Control</h3>
-                            <p class="text-gray-600 text-sm">Secure authentication with admin and user roles for team collaboration</p>
-                        </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Roadmap</h3>
+                        <span class="text-xs text-green-600 font-semibold">&#10003; AVAILABLE NOW</span>
                     </div>
                 </div>
+                <p class="text-sm text-gray-600 mb-3">Visual initiative timeline with dashboard, analytics, and full lifecycle tracking.</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                    <li>&#8226; Visual roadmap timeline</li>
+                    <li>&#8226; Dashboard &amp; analytics</li>
+                    <li>&#8226; Initiative management</li>
+                    <li>&#8226; Admin &amp; role controls</li>
+                </ul>
             </div>
 
-            <div class="mt-8 text-center text-gray-600">
-                <p class="text-sm">Built for CarelonRx Product Management Team</p>
+            <!-- Capacity Planning -->
+            <div class="module-card bg-white rounded-xl p-6 shadow border-l-4" style="border-color:#0C7DB6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4" style="background-color:#0C7DB6">
+                        <i data-lucide="users-2" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Capacity Planning</h3>
+                        <span class="text-xs text-green-600 font-semibold">&#10003; AVAILABLE NOW</span>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">PI-based sprint capacity matrix with JIRA integration and auto-computed story points.</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                    <li>&#8226; PI-based capacity matrix</li>
+                    <li>&#8226; JIRA sprint integration</li>
+                    <li>&#8226; Team availability tracking</li>
+                    <li>&#8226; Suggested points per sprint</li>
+                </ul>
             </div>
+
+            <!-- Story Mapping -->
+            <div class="module-card bg-white rounded-xl p-6 shadow border-l-4 border-yellow-400 opacity-80">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-yellow-400">
+                        <i data-lucide="git-branch" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Story Mapping</h3>
+                        <span class="text-xs text-yellow-600 font-semibold">&#9203; COMING SOON</span>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">Visual user story mapping to organise backlog items by user journey and release slices.</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                    <li>&#8226; User journey visualisation</li>
+                    <li>&#8226; Backlog organisation</li>
+                    <li>&#8226; Release slice planning</li>
+                    <li>&#8226; Team collaboration</li>
+                </ul>
+            </div>
+
+            <!-- Story Estimations -->
+            <div class="module-card bg-white rounded-xl p-6 shadow border-l-4" style="border-color:#00BBBA">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4" style="background-color:#00BBBA">
+                        <i data-lucide="calculator" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Story Estimations</h3>
+                        <span class="text-xs text-green-600 font-semibold">&#10003; AVAILABLE NOW</span>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">Collaborative Planning Poker with real-time sessions and audit analytics.</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                    <li>&#8226; Planning Poker sessions</li>
+                    <li>&#8226; Fibonacci estimation (0&#8211;55)</li>
+                    <li>&#8226; Real-time collaboration</li>
+                    <li>&#8226; Audit log &amp; analytics</li>
+                </ul>
+            </div>
+
+            <!-- Platform Features -->
+            <div class="module-card bg-white rounded-xl p-6 shadow border-l-4 border-gray-300">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-gray-600">
+                        <i data-lucide="shield" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Platform Features</h3>
+                        <span class="text-xs text-gray-500 font-semibold">ACROSS ALL MODULES</span>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">Enterprise-grade capabilities shared across every module.</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                    <li>&#8226; Unified sidebar navigation</li>
+                    <li>&#8226; Role-based access control</li>
+                    <li>&#8226; Module-level permissions</li>
+                    <li>&#8226; User profile management</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="text-center text-gray-400 text-xs pb-6">
+            &#169; 2026 Product 360 &nbsp;|&nbsp; Version 2.6 &nbsp;|&nbsp; CarelonRx Product Management
         </div>
     </div>
 
     <script>
         lucide.createIcons();
-
         const user = localStorage.getItem('user');
         if (user) {
             window.location.href = 'dashboard.html';
