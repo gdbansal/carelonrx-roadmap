@@ -2000,6 +2000,38 @@ app.get('/api/jira/projects', authMiddleware, async (req, res) => {
     }
 });
 
+app.get('/api/jira/teams', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA integration not configured', teams: [] });
+        }
+        const { projectKey } = req.query;
+        if (!projectKey) {
+            return res.status(400).json({ success: false, message: 'projectKey is required', teams: [] });
+        }
+        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
+        const teamsMap = {};
+        let startAt = 0;
+        let total = 1;
+        while (startAt < total && startAt < 500) {
+            const url = `${jiraBase}/rest/api/2/search?jql=project=${encodeURIComponent(projectKey)}+AND+sprint+in+openSprints()&maxResults=100&startAt=${startAt}&fields=customfield_10317`;
+            const { status, body } = await jiraRequest(url);
+            if (status !== 200) break;
+            total = body.total || 0;
+            (body.issues || []).forEach(issue => {
+                const t = issue.fields && issue.fields.customfield_10317;
+                if (t && t.value) teamsMap[t.value] = true;
+            });
+            startAt += 100;
+        }
+        const teams = Object.keys(teamsMap).sort();
+        res.json({ success: true, teams });
+    } catch (error) {
+        console.error('JIRA teams error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch JIRA teams', teams: [] });
+    }
+});
+
 app.get('/api/jira/test', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {

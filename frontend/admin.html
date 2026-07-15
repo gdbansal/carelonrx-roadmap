@@ -1309,18 +1309,18 @@
             }
             sel.innerHTML = '<option value="">Loading teams from JIRA...</option>';
             try {
-                const res = await fetch(`${API_BASE}/api/jira/boards?projectKey=${encodeURIComponent(projectKey)}`, {
+                const res = await fetch(`${API_BASE}/api/jira/teams?projectKey=${encodeURIComponent(projectKey)}`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await res.json();
-                jiraTeamList = (data.boards || []).map(b => b.name).filter(Boolean);
+                jiraTeamList = (data.teams || []).filter(Boolean);
             } catch(e) {
-                console.warn('JIRA boards fetch failed', e);
+                console.warn('JIRA teams fetch failed', e);
                 jiraTeamList = [];
             }
             sel.innerHTML = '<option value="">-- Select Team --</option>';
             if (jiraTeamList.length === 0) {
-                sel.innerHTML += '<option value="" disabled>No teams found for this project</option>';
+                sel.innerHTML += '<option value="" disabled>No active teams found for this project</option>';
             }
             jiraTeamList.forEach(name => {
                 const o = document.createElement('option');
