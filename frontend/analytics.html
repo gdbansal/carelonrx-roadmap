@@ -26,17 +26,17 @@
                     <button onclick="window.location.href='dashboard.html'" 
                         class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                        <span>Dashboard</span>
+                        <span class="nav-button-text">Dashboard</span>
                     </button>
                     <button onclick="window.location.href='intake.html'" 
                         class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span>New Initiative</span>
+                        <span class="nav-button-text">New Initiative</span>
                     </button>
                     <button onclick="window.location.href='roadmap.html'" 
                         class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                        <span>View Roadmap</span>
+                        <span class="nav-button-text">View Roadmap</span>
                     </button>
                     <!-- Profile Dropdown -->
                     <div class="relative">
@@ -85,15 +85,15 @@
         <div class="bg-white rounded-lg shadow-lg mb-6">
             <div class="border-b border-gray-200">
                 <nav class="flex space-x-8 px-6" aria-label="Tabs">
-                    <button onclick="switchTab('roadmap')" id="roadmapTab" class="analytics-tab active border-b-2 border-blue-600 py-4 px-1 text-sm font-semibold text-blue-600 flex items-center space-x-2">
+                    <button onclick="switchTab('roadmap')" id="roadmapTab" class="analytics-tab active border-b-2 border-carelon-purple py-4 px-1 text-sm font-semibold text-carelon-purple flex items-center space-x-2">
                         <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
                         <span>Roadmap</span>
                     </button>
-                    <button onclick="switchTab('story')" id="storyTab" class="analytics-tab border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                    <button onclick="switchTab('story')" id="storyTab" class="analytics-tab border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-carelon-purple hover:border-carelon-purple flex items-center space-x-2">
                         <i data-lucide="book-open" class="w-4 h-4"></i>
                         <span>Story Estimations</span>
                     </button>
-                    <button onclick="switchTab('capacity')" id="capacityTab" class="analytics-tab border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                    <button onclick="switchTab('capacity')" id="capacityTab" class="analytics-tab border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-carelon-purple hover:border-carelon-purple flex items-center space-x-2">
                         <i data-lucide="table-2" class="w-4 h-4"></i>
                         <span>Capacity Planning</span>
                     </button>
@@ -106,47 +106,47 @@
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-carelon-purple">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color:#f3e8ff">
+                        <i data-lucide="users" class="w-6 h-6 text-carelon-purple"></i>
                     </div>
                 </div>
                 <h3 class="text-gray-600 text-sm font-semibold mb-1">Total Users</h3>
-                <p id="totalUsers" class="text-3xl font-bold text-gray-800">0</p>
+                <p id="totalUsers" class="text-3xl font-bold text-carelon-purple">0</p>
                 <p class="text-xs text-gray-500 mt-2">Registered accounts</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4" style="border-color:#794CFF">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i data-lucide="folder" class="w-6 h-6 text-green-600"></i>
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color:#ede9fe">
+                        <i data-lucide="folder" class="w-6 h-6" style="color:#794CFF"></i>
                     </div>
                 </div>
                 <h3 class="text-gray-600 text-sm font-semibold mb-1">Total Initiatives</h3>
-                <p id="totalInitiatives" class="text-3xl font-bold text-gray-800">0</p>
+                <p id="totalInitiatives" class="text-3xl font-bold" style="color:#794CFF">0</p>
                 <p class="text-xs text-gray-500 mt-2">All projects</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4" style="border-color:#0C7DB6">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i data-lucide="activity" class="w-6 h-6 text-purple-600"></i>
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color:#E6F7FD">
+                        <i data-lucide="activity" class="w-6 h-6" style="color:#0C7DB6"></i>
                     </div>
                 </div>
                 <h3 class="text-gray-600 text-sm font-semibold mb-1">Active Initiatives</h3>
-                <p id="activeInitiatives" class="text-3xl font-bold text-gray-800">0</p>
+                <p id="activeInitiatives" class="text-3xl font-bold" style="color:#0C7DB6">0</p>
                 <p class="text-xs text-gray-500 mt-2">Not on hold</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 border-l-4" style="border-color:#00BBBA">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <i data-lucide="calendar" class="w-6 h-6 text-orange-600"></i>
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color:#e0fafa">
+                        <i data-lucide="calendar" class="w-6 h-6" style="color:#028283"></i>
                     </div>
                 </div>
                 <h3 class="text-gray-600 text-sm font-semibold mb-1">This Year</h3>
-                <p id="thisYearInitiatives" class="text-3xl font-bold text-gray-800">0</p>
+                <p id="thisYearInitiatives" class="text-3xl font-bold" style="color:#028283">0</p>
                 <p class="text-xs text-gray-500 mt-2">2026 initiatives</p>
             </div>
         </div>
@@ -156,7 +156,7 @@
             <!-- Priority Distribution -->
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                    <i data-lucide="pie-chart" class="w-5 h-5 mr-2"></i>
+                    <i data-lucide="pie-chart" class="w-5 h-5 mr-2 text-carelon-purple"></i>
                     Priority Distribution
                 </h3>
                 <canvas id="priorityChart"></canvas>
@@ -165,7 +165,7 @@
             <!-- Initiatives by Year -->
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                    <i data-lucide="bar-chart" class="w-5 h-5 mr-2"></i>
+                    <i data-lucide="bar-chart" class="w-5 h-5 mr-2 text-carelon-purple"></i>
                     Initiatives by Year
                 </h3>
                 <canvas id="yearChart"></canvas>
@@ -177,7 +177,7 @@
             <!-- Program Distribution -->
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                    <i data-lucide="layers" class="w-5 h-5 mr-2"></i>
+                    <i data-lucide="layers" class="w-5 h-5 mr-2 text-carelon-purple"></i>
                     Program Distribution
                 </h3>
                 <canvas id="programChart"></canvas>
@@ -186,7 +186,7 @@
             <!-- Quarter Distribution -->
             <div class="bg-white rounded-lg shadow-lg p-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                    <i data-lucide="calendar-days" class="w-5 h-5 mr-2"></i>
+                    <i data-lucide="calendar-days" class="w-5 h-5 mr-2 text-carelon-purple"></i>
                     Quarter Distribution (2026)
                 </h3>
                 <canvas id="quarterChart"></canvas>
@@ -196,7 +196,7 @@
         <!-- System Usage Table -->
         <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
             <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <i data-lucide="server" class="w-5 h-5 mr-2"></i>
+                <i data-lucide="server" class="w-5 h-5 mr-2 text-carelon-purple"></i>
                 System Usage Statistics
             </h3>
             <div class="overflow-x-auto">
@@ -219,7 +219,7 @@
         <!-- User Activity Table -->
         <div class="bg-white rounded-lg shadow-lg p-6">
             <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <i data-lucide="user-check" class="w-5 h-5 mr-2"></i>
+                <i data-lucide="user-check" class="w-5 h-5 mr-2 text-carelon-purple"></i>
                 User Activity
             </h3>
             <div class="overflow-x-auto">
@@ -247,40 +247,40 @@
 
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-600">
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-carelon-purple">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 font-semibold">Total Log Entries</p>
-                            <p id="se-totalLogs" class="text-3xl font-bold text-blue-600">0</p>
+                            <p id="se-totalLogs" class="text-3xl font-bold text-carelon-purple">0</p>
                         </div>
-                        <i data-lucide="file-text" class="w-10 h-10 text-blue-600 opacity-20"></i>
+                        <i data-lucide="file-text" class="w-10 h-10 text-carelon-purple opacity-20"></i>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-600">
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4" style="border-color:#794CFF">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 font-semibold">Total Sessions</p>
-                            <p id="se-totalSessions" class="text-3xl font-bold text-green-600">0</p>
+                            <p id="se-totalSessions" class="text-3xl font-bold" style="color:#794CFF">0</p>
                         </div>
-                        <i data-lucide="layers" class="w-10 h-10 text-green-600 opacity-20"></i>
+                        <i data-lucide="layers" class="w-10 h-10 opacity-20" style="color:#794CFF"></i>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-600">
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4" style="border-color:#0C7DB6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 font-semibold">Unique Users</p>
-                            <p id="se-totalUsers" class="text-3xl font-bold text-purple-600">0</p>
+                            <p id="se-totalUsers" class="text-3xl font-bold" style="color:#0C7DB6">0</p>
                         </div>
-                        <i data-lucide="users" class="w-10 h-10 text-purple-600 opacity-20"></i>
+                        <i data-lucide="users" class="w-10 h-10 opacity-20" style="color:#0C7DB6"></i>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-orange-600">
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4" style="border-color:#00BBBA">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 font-semibold">Last Activity</p>
-                            <p id="se-lastActivity" class="text-lg font-bold text-orange-600">-</p>
+                            <p id="se-lastActivity" class="text-lg font-bold" style="color:#028283">-</p>
                         </div>
-                        <i data-lucide="clock" class="w-10 h-10 text-orange-600 opacity-20"></i>
+                        <i data-lucide="clock" class="w-10 h-10 opacity-20" style="color:#028283"></i>
                     </div>
                 </div>
             </div>
@@ -288,31 +288,31 @@
             <!-- Filters -->
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                    <i data-lucide="filter" class="w-5 h-5 mr-2 text-purple-600"></i>
+                    <i data-lucide="filter" class="w-5 h-5 mr-2 text-carelon-purple"></i>
                     Filters
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Date From</label>
-                        <input type="date" id="se-filterDateFrom" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" onchange="seLoadSessionIds()">
+                        <input type="date" id="se-filterDateFrom" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-carelon-purple text-sm" onchange="seLoadSessionIds()">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Date To</label>
-                        <input type="date" id="se-filterDateTo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" onchange="seLoadSessionIds()">
+                        <input type="date" id="se-filterDateTo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-carelon-purple text-sm" onchange="seLoadSessionIds()">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Session ID</label>
-                        <select id="se-filterSessionId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
+                        <select id="se-filterSessionId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-carelon-purple text-sm">
                             <option value="">All Sessions</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">User ID</label>
-                        <input type="text" id="se-filterUserId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" placeholder="John_PO">
+                        <input type="text" id="se-filterUserId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-carelon-purple text-sm" placeholder="John_PO">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Event Type</label>
-                        <select id="se-filterEventType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
+                        <select id="se-filterEventType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-carelon-purple text-sm">
                             <option value="">All Events</option>
                             <option value="SESSION_CREATED">Session Created</option>
                             <option value="SESSION_JOINED">Session Joined</option>
@@ -331,23 +331,23 @@
                     </div>
                 </div>
                 <div class="mt-4 flex gap-2 flex-wrap">
-                    <button onclick="seClearFilters()" class="bg-gray-500 text-white px-3 py-2 rounded-lg hover:bg-gray-600 text-sm flex items-center space-x-1">
+                    <button onclick="seClearFilters()" class="btn-carelon-secondary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
                         <i data-lucide="x" class="w-4 h-4"></i>
                         <span>Clear Filters</span>
                     </button>
-                    <button onclick="seRefreshLogs()" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm flex items-center space-x-1">
+                    <button onclick="seRefreshLogs()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                         <span>Refresh</span>
                     </button>
-                    <button onclick="seExportLogs()" class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm flex items-center space-x-1">
+                    <button onclick="seExportLogs()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
                         <i data-lucide="download" class="w-4 h-4"></i>
                         <span>Export Audit CSV</span>
                     </button>
-                    <button onclick="seExportEstimationAnalysis()" class="bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 text-sm flex items-center space-x-1">
+                    <button onclick="seExportEstimationAnalysis()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
                         <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
                         <span>Export Deviation Analysis</span>
                     </button>
-                    <button onclick="seExportSessionsSummary()" class="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 text-sm flex items-center space-x-1">
+                    <button onclick="seExportSessionsSummary()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
                         <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
                         <span>Export Sessions Summary</span>
                     </button>
@@ -357,7 +357,7 @@
             <!-- Event Distribution -->
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                    <i data-lucide="pie-chart" class="w-5 h-5 mr-2 text-purple-600"></i>
+                    <i data-lucide="pie-chart" class="w-5 h-5 mr-2 text-carelon-purple"></i>
                     Event Distribution
                 </h3>
                 <div id="se-eventStats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -370,7 +370,7 @@
                 <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                     <div>
                         <h3 class="text-xl font-bold text-gray-800 flex items-center">
-                            <i data-lucide="list" class="w-5 h-5 mr-2 text-purple-600"></i>
+                            <i data-lucide="list" class="w-5 h-5 mr-2 text-carelon-purple"></i>
                             Audit Logs
                         </h3>
                         <p class="text-sm text-gray-500 mt-1">Showing last <span id="se-logCount">0</span> entries</p>
@@ -392,7 +392,7 @@
                     </table>
                 </div>
                 <div id="se-loadingState" class="p-8 text-center text-gray-500 hidden">
-                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-carelon-purple"></div>
                     <p class="mt-2">Loading audit logs...</p>
                 </div>
                 <div id="se-noLogsState" class="p-8 text-center text-gray-500 hidden">
@@ -409,26 +409,26 @@
         <!-- Capacity Planning Matrix -->
         <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
             <h3 class="text-xl font-bold text-gray-800 mb-1 flex items-center">
-                <i data-lucide="table-2" class="w-5 h-5 mr-2"></i>
+                <i data-lucide="table-2" class="w-5 h-5 mr-2 text-carelon-purple"></i>
                 Capacity Planning Matrix
             </h3>
             <p class="text-sm text-gray-500 mb-4">View saved capacity plans by PI, Project and Team</p>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">PI</label>
-                    <select id="cpPI" onchange="loadCapacityMatrix()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                    <select id="cpPI" onchange="loadCapacityMatrix()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-carelon-purple">
                         <option value="">All PIs</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Project</label>
-                    <select id="cpProject" onchange="loadCapacityMatrix()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                    <select id="cpProject" onchange="loadCapacityMatrix()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-carelon-purple">
                         <option value="">All Projects</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Team</label>
-                    <select id="cpTeam" onchange="loadCapacityMatrix()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                    <select id="cpTeam" onchange="loadCapacityMatrix()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-carelon-purple">
                         <option value="">All Teams</option>
                     </select>
                 </div>
@@ -484,14 +484,14 @@
         // ── Tab Switching ─────────────────────────────────────────────
         function switchTab(tab) {
             document.querySelectorAll('.analytics-tab').forEach(btn => {
-                btn.classList.remove('active', 'border-blue-600', 'text-blue-600');
+                btn.classList.remove('active', 'border-carelon-purple', 'text-carelon-purple');
                 btn.classList.add('border-transparent', 'text-gray-500');
             });
             document.querySelectorAll('.analytics-content').forEach(c => c.classList.add('hidden'));
 
             const tabBtn = document.getElementById(tab + 'Tab');
             const tabContent = document.getElementById(tab + 'Content');
-            tabBtn.classList.add('active', 'border-blue-600', 'text-blue-600');
+            tabBtn.classList.add('active', 'border-carelon-purple', 'text-carelon-purple');
             tabBtn.classList.remove('border-transparent', 'text-gray-500');
             tabContent.classList.remove('hidden');
 
