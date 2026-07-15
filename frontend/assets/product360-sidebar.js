@@ -361,8 +361,9 @@ async function applyRoleModuleVisibility() {
         const attr = link.getAttribute('data-module');
         const dbKey = MODULE_KEY_MAP[attr];
         if (!dbKey) return; // user-guide etc — always show
-        const allowed = roleMap.modules[dbKey];
-        if (!allowed) {
+        const allowed = roleMap.modules ? roleMap.modules[dbKey] : undefined;
+        // Only hide if explicitly set to false — undefined/missing means show
+        if (allowed === false) {
             link.style.display = 'none';
             // If user is currently on this restricted page, redirect to dashboard
             const linkedPage = PAGE_MODULE_MAP[currentPage];
