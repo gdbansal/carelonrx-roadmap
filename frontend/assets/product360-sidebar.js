@@ -215,11 +215,13 @@
     setActiveLink();
 
     // Pre-hide all role-controlled links immediately to prevent flash
+    // (MODULE_KEY_MAP not yet defined here, so inline the controlled module attrs)
+    const _roleControlled = ['requirements-intake','roadmap','capacity-planning','story-mapping','story-estimations'];
     const roleUser = JSON.parse(localStorage.getItem('user') || '{}');
     if (roleUser.username && roleUser.role !== 'admin' && roleUser.role !== 'Admin') {
         document.querySelectorAll('.side-panel-link[data-module]').forEach(link => {
             const attr = link.getAttribute('data-module');
-            if (MODULE_KEY_MAP[attr]) link.style.visibility = 'hidden';
+            if (_roleControlled.includes(attr)) link.style.visibility = 'hidden';
         });
     }
 
