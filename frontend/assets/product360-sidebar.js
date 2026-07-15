@@ -351,6 +351,9 @@ async function applyRoleModuleVisibility() {
     );
     if (!roleMap) return; // role not configured — show everything
 
+    // Admin always has full access — skip enforcement
+    if (user.role === 'admin' || user.role === 'Admin') return;
+
     const currentPage = window.location.pathname.split('/').pop();
 
     document.querySelectorAll('.side-panel-link[data-module]').forEach(link => {
