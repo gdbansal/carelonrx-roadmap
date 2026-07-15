@@ -414,7 +414,8 @@ async function applyRoleModuleVisibility() {
         // Find first sidebar module that is NOT denied
         const moduleOrder = ['requirements-intake', 'roadmap', 'capacity-planning', 'story-estimations'];
         const firstAllowed = moduleOrder.find(m => !deniedModules.has(m));
-        const redirectPage = firstAllowed ? (MODULE_DEFAULT_PAGE[firstAllowed] || 'roadmap.html') : 'roadmap.html';
+        // If no module is allowed, redirect to user guide
+        const redirectPage = firstAllowed ? (MODULE_DEFAULT_PAGE[firstAllowed]) : 'user-guide.html';
         window.location.href = redirectPage;
     }
 }
