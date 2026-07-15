@@ -244,46 +244,163 @@
 
         <!-- ===== STORY ESTIMATIONS TAB ===== -->
         <div id="storyContent" class="analytics-content hidden">
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h3 class="text-xl font-bold text-gray-800 mb-2 flex items-center">
-                    <i data-lucide="book-open" class="w-5 h-5 mr-2"></i>
-                    Story Estimations Analytics
-                </h3>
-                <p class="text-sm text-gray-500 mb-6">Analytics for story estimations will appear here once data is available.</p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white border border-gray-200 rounded-lg p-6 text-center">
-                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="layers" class="w-6 h-6 text-blue-600"></i>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 font-semibold">Total Log Entries</p>
+                            <p id="se-totalLogs" class="text-3xl font-bold text-blue-600">0</p>
                         </div>
-                        <h4 class="text-gray-600 text-sm font-semibold mb-1">Total Stories</h4>
-                        <p id="seTotal" class="text-3xl font-bold text-gray-800">—</p>
-                        <p class="text-xs text-gray-400 mt-1">Coming soon</p>
-                    </div>
-                    <div class="bg-white border border-gray-200 rounded-lg p-6 text-center">
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
-                        </div>
-                        <h4 class="text-gray-600 text-sm font-semibold mb-1">Estimated</h4>
-                        <p id="seEstimated" class="text-3xl font-bold text-gray-800">—</p>
-                        <p class="text-xs text-gray-400 mt-1">Coming soon</p>
-                    </div>
-                    <div class="bg-white border border-gray-200 rounded-lg p-6 text-center">
-                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="alert-circle" class="w-6 h-6 text-orange-600"></i>
-                        </div>
-                        <h4 class="text-gray-600 text-sm font-semibold mb-1">Avg Story Points</h4>
-                        <p id="seAvgPoints" class="text-3xl font-bold text-gray-800">—</p>
-                        <p class="text-xs text-gray-400 mt-1">Coming soon</p>
+                        <i data-lucide="file-text" class="w-10 h-10 text-blue-600 opacity-20"></i>
                     </div>
                 </div>
-                <div class="flex items-center justify-center py-16 text-gray-300">
-                    <div class="text-center">
-                        <i data-lucide="bar-chart-2" class="w-16 h-16 mx-auto mb-4"></i>
-                        <p class="text-lg font-semibold text-gray-400">Story Estimation analytics coming soon</p>
-                        <p class="text-sm text-gray-400 mt-1">Charts and breakdowns will appear here once story estimation data is recorded.</p>
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 font-semibold">Total Sessions</p>
+                            <p id="se-totalSessions" class="text-3xl font-bold text-green-600">0</p>
+                        </div>
+                        <i data-lucide="layers" class="w-10 h-10 text-green-600 opacity-20"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 font-semibold">Unique Users</p>
+                            <p id="se-totalUsers" class="text-3xl font-bold text-purple-600">0</p>
+                        </div>
+                        <i data-lucide="users" class="w-10 h-10 text-purple-600 opacity-20"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-orange-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 font-semibold">Last Activity</p>
+                            <p id="se-lastActivity" class="text-lg font-bold text-orange-600">-</p>
+                        </div>
+                        <i data-lucide="clock" class="w-10 h-10 text-orange-600 opacity-20"></i>
                     </div>
                 </div>
             </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i data-lucide="filter" class="w-5 h-5 mr-2 text-purple-600"></i>
+                    Filters
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Date From</label>
+                        <input type="date" id="se-filterDateFrom" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" onchange="seLoadSessionIds()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Date To</label>
+                        <input type="date" id="se-filterDateTo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" onchange="seLoadSessionIds()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Session ID</label>
+                        <select id="se-filterSessionId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
+                            <option value="">All Sessions</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">User ID</label>
+                        <input type="text" id="se-filterUserId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" placeholder="John_PO">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Event Type</label>
+                        <select id="se-filterEventType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
+                            <option value="">All Events</option>
+                            <option value="SESSION_CREATED">Session Created</option>
+                            <option value="SESSION_JOINED">Session Joined</option>
+                            <option value="ESTIMATION_PROVIDED">Estimation Provided</option>
+                            <option value="STORY_CREATED">Story Created</option>
+                            <option value="STORY_UPDATED">Story Updated</option>
+                            <option value="STORY_DELETED">Story Deleted</option>
+                            <option value="USER_LOGIN">User Login</option>
+                            <option value="USER_LOGOUT">User Logout</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="seApplyFilters()" class="w-full btn-carelon-primary text-white px-4 py-2 rounded-lg text-sm transition font-medium">
+                            Apply Filters
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-4 flex gap-2 flex-wrap">
+                    <button onclick="seClearFilters()" class="bg-gray-500 text-white px-3 py-2 rounded-lg hover:bg-gray-600 text-sm flex items-center space-x-1">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                        <span>Clear Filters</span>
+                    </button>
+                    <button onclick="seRefreshLogs()" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm flex items-center space-x-1">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        <span>Refresh</span>
+                    </button>
+                    <button onclick="seExportLogs()" class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm flex items-center space-x-1">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Export Audit CSV</span>
+                    </button>
+                    <button onclick="seExportEstimationAnalysis()" class="bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 text-sm flex items-center space-x-1">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                        <span>Export Deviation Analysis</span>
+                    </button>
+                    <button onclick="seExportSessionsSummary()" class="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 text-sm flex items-center space-x-1">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                        <span>Export Sessions Summary</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Event Distribution -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <i data-lucide="pie-chart" class="w-5 h-5 mr-2 text-purple-600"></i>
+                    Event Distribution
+                </h3>
+                <div id="se-eventStats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Audit Logs Table -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                            <i data-lucide="list" class="w-5 h-5 mr-2 text-purple-600"></i>
+                            Audit Logs
+                        </h3>
+                        <p class="text-sm text-gray-500 mt-1">Showing last <span id="se-logCount">0</span> entries</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Timestamp</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Event Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">User</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Session</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Details</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody id="se-logsTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+                <div id="se-loadingState" class="p-8 text-center text-gray-500 hidden">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    <p class="mt-2">Loading audit logs...</p>
+                </div>
+                <div id="se-noLogsState" class="p-8 text-center text-gray-500 hidden">
+                    <i data-lucide="inbox" class="w-16 h-16 mx-auto text-gray-400 mb-4"></i>
+                    <p>No audit logs found matching the current filters.</p>
+                </div>
+            </div>
+
         </div><!-- end #storyContent -->
 
         <!-- ===== CAPACITY PLANNING TAB ===== -->
@@ -380,6 +497,7 @@
 
             if (tab === 'roadmap' && allInitiatives.length === 0) loadAnalytics();
             if (tab === 'capacity') initCapacityFilters();
+            if (tab === 'story' && !seInitialised) seInit();
             lucide.createIcons();
         }
 
@@ -865,6 +983,220 @@
         // Load analytics on page load (default tab: roadmap)
         loadAnalytics();
         lucide.createIcons();
+
+        // ── Story Estimations Audit ────────────────────────────────────
+        const SE_API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://127.0.0.1:5000/api'
+            : 'https://carelonrx-roadmap.onrender.com/api';
+
+        let seInitialised = false;
+
+        function seInit() {
+            seInitialised = true;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('se-filterDateFrom').value = today;
+            seLoadStats();
+            seLogs();
+            seLoadSessionIds();
+        }
+
+        async function seLoadStats() {
+            try {
+                const res = await fetch(`${SE_API}/audit-logs/stats`);
+                if (res.ok) {
+                    const stats = await res.json();
+                    document.getElementById('se-totalLogs').textContent     = stats.totalLogs     || 0;
+                    document.getElementById('se-totalSessions').textContent = stats.totalSessions || 0;
+                    document.getElementById('se-totalUsers').textContent    = stats.totalUsers    || 0;
+                    const ec = document.getElementById('se-eventStats');
+                    if (stats.eventTypeStats && stats.eventTypeStats.length > 0) {
+                        ec.innerHTML = stats.eventTypeStats.map(s => `
+                            <div class="text-center p-3 border border-gray-200 rounded-lg">
+                                <div class="text-lg font-bold text-purple-600">${s.count}</div>
+                                <div class="text-xs text-gray-600">${s.event_type.replace(/_/g, ' ')}</div>
+                            </div>`).join('');
+                    } else {
+                        ec.innerHTML = '<p class="col-span-4 text-center text-gray-500 text-sm">No event data available</p>';
+                    }
+                } else {
+                    await seStatsFromSessions();
+                }
+            } catch(e) {
+                await seStatsFromSessions();
+            }
+        }
+
+        async function seStatsFromSessions() {
+            try {
+                const res  = await fetch(`${SE_API}/sessions`);
+                const data = await res.json();
+                if (data.success) {
+                    const sessions = data.sessions || [];
+                    const uniqueUsers = new Set();
+                    sessions.forEach(s => (s.participants || []).forEach(p => uniqueUsers.add(`${p.name}_${p.role}`)));
+                    document.getElementById('se-totalLogs').textContent     = '-';
+                    document.getElementById('se-totalSessions').textContent = sessions.length;
+                    document.getElementById('se-totalUsers').textContent    = uniqueUsers.size;
+                    if (sessions.length > 0) {
+                        document.getElementById('se-lastActivity').textContent =
+                            new Date(sessions[0].createdAt).toLocaleTimeString();
+                    }
+                    document.getElementById('se-eventStats').innerHTML =
+                        '<p class="col-span-4 text-center text-gray-500 text-sm">Event tracking will be available soon</p>';
+                }
+            } catch(e) { console.error('seStatsFromSessions error', e); }
+        }
+
+        async function seLoadSessionIds() {
+            try {
+                const qp = new URLSearchParams();
+                const df = document.getElementById('se-filterDateFrom').value;
+                const dt = document.getElementById('se-filterDateTo').value;
+                if (df) qp.append('dateFrom', df);
+                if (dt) qp.append('dateTo',   dt);
+
+                let res = await fetch(`${SE_API}/audit-logs/session-ids?${qp}`);
+                if (!res.ok) {
+                    res = await fetch(`${SE_API}/sessions`);
+                    const data = await res.json();
+                    if (data.success) {
+                        const sel = document.getElementById('se-filterSessionId');
+                        sel.innerHTML = '<option value="">All Sessions</option>';
+                        data.sessions.forEach(s => {
+                            const o = document.createElement('option');
+                            o.value = s.sessionId;
+                            o.textContent = `${s.sessionId} - ${s.teamName}`;
+                            sel.appendChild(o);
+                        });
+                    }
+                    return;
+                }
+                const data = await res.json();
+                const sel  = document.getElementById('se-filterSessionId');
+                const cur  = sel.value;
+                sel.innerHTML = '<option value="">All Sessions</option>';
+                (data.sessionIds || []).forEach(id => {
+                    const o = document.createElement('option');
+                    o.value = id; o.textContent = id;
+                    if (id === cur) o.selected = true;
+                    sel.appendChild(o);
+                });
+            } catch(e) { console.error('seLoadSessionIds error', e); }
+        }
+
+        async function seLogs(filters = {}) {
+            const loading = document.getElementById('se-loadingState');
+            const empty   = document.getElementById('se-noLogsState');
+            const tbody   = document.getElementById('se-logsTableBody');
+            loading.classList.remove('hidden');
+            empty.classList.add('hidden');
+            tbody.innerHTML = '';
+            try {
+                const qp = new URLSearchParams();
+                Object.entries(filters).forEach(([k, v]) => { if (v) qp.append(k, v); });
+                const res = await fetch(`${SE_API}/audit-logs?${qp}`);
+                if (!res.ok) throw new Error('Audit logs API not available');
+                const logs = await res.json();
+                loading.classList.add('hidden');
+                if (!logs.length) { empty.classList.remove('hidden'); document.getElementById('se-logCount').textContent = '0'; return; }
+                document.getElementById('se-logCount').textContent = logs.length;
+                document.getElementById('se-lastActivity').textContent = new Date(logs[0].timestamp).toLocaleString();
+                tbody.innerHTML = logs.map(log => {
+                    const color = seEventColor(log.event_type);
+                    return `<tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(log.timestamp).toLocaleString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full ${color}">${log.event_type}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.user_id || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600 font-mono">${log.session_id ? log.session_id.substring(0,15)+'...' : '-'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">
+                            <div style="max-height:80px;overflow-y:auto;font-family:monospace;font-size:12px;">
+                                <strong>${log.details.action || 'N/A'}</strong>
+                                ${Object.entries(log.details).filter(([k]) => k !== 'action').map(([k,v]) =>
+                                    `<br><span class="text-gray-500">${k}:</span> ${JSON.stringify(v)}`).join('')}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${log.ip_address || '-'}</td>
+                    </tr>`;
+                }).join('');
+                lucide.createIcons();
+            } catch(e) {
+                console.error('seLogs error', e);
+                loading.classList.add('hidden');
+                empty.classList.remove('hidden');
+            }
+        }
+
+        function seEventColor(t) {
+            return ({
+                SESSION_CREATED:      'bg-green-100 text-green-800',
+                SESSION_JOINED:       'bg-blue-100 text-blue-800',
+                ESTIMATION_PROVIDED:  'bg-purple-100 text-purple-800',
+                STORY_CREATED:        'bg-indigo-100 text-indigo-800',
+                STORY_UPDATED:        'bg-orange-100 text-orange-800',
+                STORY_DELETED:        'bg-red-100 text-red-800',
+                USER_LOGIN:           'bg-emerald-100 text-emerald-800',
+                USER_LOGOUT:          'bg-gray-100 text-gray-800'
+            })[t] || 'bg-gray-100 text-gray-800';
+        }
+
+        function seApplyFilters() {
+            seLogs({
+                sessionId: document.getElementById('se-filterSessionId').value,
+                userId:    document.getElementById('se-filterUserId').value,
+                eventType: document.getElementById('se-filterEventType').value,
+                dateFrom:  document.getElementById('se-filterDateFrom').value,
+                dateTo:    document.getElementById('se-filterDateTo').value
+            });
+        }
+
+        function seClearFilters() {
+            ['se-filterSessionId','se-filterUserId','se-filterEventType','se-filterDateFrom','se-filterDateTo']
+                .forEach(id => document.getElementById(id).value = '');
+            seLoadSessionIds();
+            seLogs();
+        }
+
+        function seRefreshLogs() { seLoadStats(); seApplyFilters(); }
+
+        function seExportLogs() {
+            const qp = new URLSearchParams();
+            ['sessionId','userId','eventType','dateFrom','dateTo'].forEach(k => {
+                const id = `se-filter${k.charAt(0).toUpperCase()+k.slice(1)}`;
+                const v  = document.getElementById(id) ? document.getElementById(id).value : '';
+                if (v) qp.append(k, v);
+            });
+            window.open(`${SE_API}/audit-logs/export?${qp}`, '_blank');
+        }
+
+        function seExportEstimationAnalysis() {
+            const sessionId = document.getElementById('se-filterSessionId').value;
+            if (!sessionId) { alert('Please select a specific session to export estimation deviation analysis.'); return; }
+            window.open(`${SE_API}/estimation-analysis/export?sessionId=${sessionId}`, '_blank');
+        }
+
+        async function seExportSessionsSummary() {
+            try {
+                const res  = await fetch(`${SE_API}/sessions`);
+                const data = await res.json();
+                if (data.success) {
+                    const sessions = data.sessions || [];
+                    const csv = [
+                        ['Session ID','Team Name','Sprint','Created By','Created At','Participants','Stories','Status'].join(','),
+                        ...sessions.map(s => [
+                            s.sessionId, s.teamName||'N/A', s.sprintValue||'N/A', s.createdBy||'Unknown',
+                            new Date(s.createdAt).toLocaleString(),
+                            s.participants?.length||0, s.stories?.length||0, s.status
+                        ].join(','))
+                    ].join('\n');
+                    const a    = document.createElement('a');
+                    a.href     = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+                    a.download = `sessions-summary-${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                }
+            } catch(e) { alert('Failed to export sessions summary'); }
+        }
     </script>
 </body>
 </html>
