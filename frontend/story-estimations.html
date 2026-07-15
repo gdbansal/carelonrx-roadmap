@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -231,32 +231,19 @@
         }
 
         function updateHeaderProfile() {
-            if (state.user) {
+            const profileUser = state.user || JSON.parse(localStorage.getItem('user') || 'null');
+            if (profileUser) {
                 const headerButtons = document.getElementById('headerButtons');
                 const userNameDisplay = document.getElementById('userNameDisplay');
                 const userInitials = document.getElementById('userInitials');
                 const adminLink = document.getElementById('adminDropdownLink');
-                
-                // Show header buttons when user is logged in
-                if (headerButtons) {
-                    headerButtons.classList.remove('hidden');
-                    headerButtons.classList.add('flex');
-                }
-                
-                if (userNameDisplay) {
-                    userNameDisplay.textContent = state.user.name;
-                }
-                
-                if (userInitials) {
-                    userInitials.textContent = state.user.name.charAt(0).toUpperCase();
-                }
-                
-                // Show admin link if user is admin
-                if (adminLink && state.user.role === 'Admin') {
+                if (headerButtons) { headerButtons.classList.remove('hidden'); headerButtons.classList.add('flex'); }
+                if (userNameDisplay) { userNameDisplay.textContent = profileUser.name || profileUser.username; }
+                if (userInitials) { userInitials.textContent = (profileUser.name || profileUser.username || 'U').charAt(0).toUpperCase(); }
+                if (adminLink && (profileUser.role === 'Admin' || profileUser.role === 'admin')) {
                     adminLink.classList.remove('hidden');
                     adminLink.classList.add('block');
                 }
-                
             }
         }
 
@@ -278,15 +265,15 @@
         });
 
         function logout() {
-            stopPolling(); // Stop polling when logging out
-            localStorage.removeItem('storyEstimatorUser'); // Remove Story Estimations user
+            stopPolling();
+            localStorage.removeItem('storyEstimatorUser');
             localStorage.removeItem('storyPointEstimatorSessionId');
-            state.user = null;
-            state.sessionId = '';
-            state.currentSession = null;
-            state.stories = [];
-            render();
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
         }
+
+
 
         async function leaveSession() {
             if (!confirm('Are you sure you want to leave this session?')) {
@@ -692,7 +679,7 @@
 
         function getUserEstimation(storyId) {
             if (!state.currentSession || !state.user) {
-                console.log('❌ getUserEstimation: No session or user');
+                console.log('âŒ getUserEstimation: No session or user');
                 return null;
             }
             
@@ -791,7 +778,7 @@
             
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert('✅ Share URL copied to clipboard!\n\nShare this link with your team members to join the session.');
+                    alert('âœ… Share URL copied to clipboard!\n\nShare this link with your team members to join the session.');
                 }).catch(() => {
                     prompt('Copy this URL to share:', shareUrl);
                 });
@@ -1209,7 +1196,7 @@
                                 <div class="text-center py-8 text-gray-500">
                                     <p>No stories available for dashboard display.</p>
                                     <p class="text-xs mt-2">
-                                        Stories: ${state.stories.length} | Session: ✓ | Estimations: ✓
+                                        Stories: ${state.stories.length} | Session: âœ“ | Estimations: âœ“
                                     </p>
                                 </div>
                             ` : `
@@ -1235,7 +1222,7 @@
                                                         <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">${story.number}</span>
                                                     `}
                                                     <span class="font-medium text-gray-900">${story.summary}</span>
-                                                    ${completed ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Complete</span>' : ''}
+                                                    ${completed ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">âœ… Complete</span>' : ''}
                                                 </div>
                                                 <div class="text-sm text-gray-600">
                                                     ${estimatedCount}/${totalParticipants} estimated
@@ -1416,7 +1403,7 @@
                                                         <span class="bg-green-200 text-green-800 px-2 py-1 rounded text-sm font-medium">${story.number}</span>
                                                     `}
                                                     <span class="text-gray-900 font-medium">${story.summary}</span>
-                                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Complete</span>
+                                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">âœ… Complete</span>
                                                 </div>
                                                 <div class="flex items-center gap-3">
                                                     ${averageEstimation > 0 ? `
@@ -1484,10 +1471,10 @@
                                     ` : `
                                         <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">${story.number}</span>
                                     `}
-                                    ${story.restrictions?.devOnly ? '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">👨‍💻 Dev Only</span>' : ''}
-                                    ${story.restrictions?.qaOnly ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">🧪 QA Only</span>' : ''}
-                                    ${revealed ? '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">👁️ Revealed</span>' : '<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">🔒 Hidden</span>'}
-                                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">⏳ In Progress</span>
+                                    ${story.restrictions?.devOnly ? '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">ðŸ‘¨â€ðŸ’» Dev Only</span>' : ''}
+                                    ${story.restrictions?.qaOnly ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">ðŸ§ª QA Only</span>' : ''}
+                                    ${revealed ? '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">ðŸ‘ï¸ Revealed</span>' : '<span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">ðŸ”’ Hidden</span>'}
+                                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">â³ In Progress</span>
                                 </div>
                                 <h4 class="font-medium text-gray-900">${story.summary}</h4>
                             </div>
@@ -1540,12 +1527,12 @@
                                     <div class="flex items-center gap-3">
                                         ${Object.keys(estimations).length > 0 ? `
                                             <span class="text-green-700 font-medium">
-                                                ✅ ${Object.keys(estimations).length} estimated
+                                                âœ… ${Object.keys(estimations).length} estimated
                                             </span>
                                         ` : ''}
                                         ${state.currentSession.participants.length - Object.keys(estimations).length > 0 ? `
                                             <span class="text-orange-700 font-medium">
-                                                ⏳ ${state.currentSession.participants.length - Object.keys(estimations).length} waiting
+                                                â³ ${state.currentSession.participants.length - Object.keys(estimations).length} waiting
                                             </span>
                                         ` : ''}
                                         ${Object.keys(estimations).length === state.currentSession.participants.length && state.currentSession.participants.length > 0 ? `
@@ -1554,7 +1541,7 @@
                                             </span>
                                         ` : ''}
                                     </div>
-                                    <span class="text-purple-600 font-medium">🔒 Hidden</span>
+                                    <span class="text-purple-600 font-medium">ðŸ”’ Hidden</span>
                                 </div>
                             </div>
                         </div>
@@ -1815,11 +1802,11 @@
             try {
                 const session = await getSession(state.sessionId);
                 if (session) {
-                    console.log('🔄 Polling - Session status:', session.status);
+                    console.log('ðŸ”„ Polling - Session status:', session.status);
                     
                     // Check if session has been closed
                     if (session.status === 'closed') {
-                        console.log('🛑 Session closed detected!');
+                        console.log('ðŸ›‘ Session closed detected!');
                         stopPolling();
                         state.currentSession = null;
                         state.sessionId = '';
@@ -1868,7 +1855,7 @@
             if (pollInterval) {
                 clearInterval(pollInterval);
                 pollInterval = null;
-                console.log('⏹️ Stopped polling');
+                console.log('â¹ï¸ Stopped polling');
             }
         }
 
