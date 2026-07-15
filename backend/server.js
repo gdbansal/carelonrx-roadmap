@@ -2032,6 +2032,160 @@ app.get('/api/jira/teams', authMiddleware, async (req, res) => {
     }
 });
 
+// ========== JIRA2 INTEGRATION (Elevance Health) ==========
+
+function jiraRequest2(url) {
+    return new Promise((resolve, reject) => {
+        const parsedUrl = new URL(url);
+        const options = {
+            hostname: parsedUrl.hostname,
+            path: parsedUrl.pathname + parsedUrl.search,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${process.env.JIRA2_API_TOKEN}`,
+                'Accept': 'application/json'
+            }
+        };
+        const req = https.request(options, (resp) => {
+            let data = '';
+            resp.on('data', chunk => data += chunk);
+            resp.on('end', () => {
+                try {
+                    resolve({ status: resp.statusCode, body: JSON.parse(data) });
+                } catch (e) {
+                    resolve({ status: resp.statusCode, body: { errorMessages: [`Non-JSON response: ${data.substring(0, 200)}`] } });
+                }
+            });
+        });
+        req.on('error', reject);
+        req.end();
+    });
+}
+
+app.get('/api/jira2/projects', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.JIRA2_BASE_URL || !process.env.JIRA2_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA2 integration not configured', projects: [] });
+        }
+        const jiraBase = process.env.JIRA2_BASE_URL.replace(/\/$/, '');
+        const url = `${jiraBase}/rest/api/2/project?maxResults=200`;
+        const { status, body } = await jiraRequest2(url);
+        if (status !== 200 || !Array.isArray(body)) {
+            return res.json({ success: true, projects: [] });
+        }
+        const projects = body.map(p => ({ key: p.key, name: p.name }))
+                             .sort((a, b) => a.name.localeCompare(b.name));
+        res.json({ success: true, projects });
+    } catch (error) {
+        console.error('JIRA2 projects error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch JIRA2 projects', projects: [] });
+    }
+});
+
+app.get('/api/jira2/teams', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.JIRA2_BASE_URL || !process.env.JIRA2_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA2 integration not configured', teams: [] });
+        }
+        const { projectKey } = req.query;
+        if (!projectKey) {
+            return res.status(400).json({ success: false, message: 'projectKey is required', teams: [] });
+        }
+        const jiraBase = process.env.JIRA2_BASE_URL.replace(/\/$/, '');
+        const teamsMap = {};
+        let startAt = 0;
+        let total = 1;
+        while (startAt < total && startAt < 500) {
+            const url = `${jiraBase}/rest/api/2/search?jql=project=${encodeURIComponent(projectKey)}+AND+sprint+in+openSprints()&maxResults=100&startAt=${startAt}&fields=customfield_10317`;
+            const { status, body } = await jiraRequest2(url);
+            if (status !== 200) break;
+            total = body.total || 0;
+            (body.issues || []).forEach(issue => {
+                const t = issue.fields && issue.fields.customfield_10317;
+                if (t && t.value) teamsMap[t.value] = true;
+            });
+            startAt += 100;
+        }
+        const teams = Object.keys(teamsMap).sort();
+        res.json({ success: true, teams });
+    } catch (error) {
+        console.error('JIRA2 teams error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch JIRA2 teams', teams: [] });
+    }
+});
+
+app.get('/api/jira2/boards', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.JIRA2_BASE_URL || !process.env.JIRA2_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA2 integration not configured', boards: [] });
+        }
+        const { projectKey } = req.query;
+        if (!projectKey) {
+            return res.status(400).json({ success: false, message: 'projectKey is required', boards: [] });
+        }
+        const jiraBase = process.env.JIRA2_BASE_URL.replace(/\/$/, '');
+        const url = `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=50`;
+        const { status, body } = await jiraRequest2(url);
+        if (status !== 200 || !body.values) {
+            return res.json({ success: true, boards: [] });
+        }
+        const boards = body.values.map(b => ({ id: b.id, name: b.name, type: b.type }))
+                                  .sort((a, b) => a.name.localeCompare(b.name));
+        res.json({ success: true, boards });
+    } catch (error) {
+        console.error('JIRA2 boards error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch JIRA2 boards', boards: [] });
+    }
+});
+
+app.get('/api/jira2/sprints', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.JIRA2_BASE_URL || !process.env.JIRA2_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA2 integration not configured' });
+        }
+        const { projectKey } = req.query;
+        if (!projectKey) {
+            return res.status(400).json({ success: false, message: 'projectKey query param is required' });
+        }
+        const jiraBase = process.env.JIRA2_BASE_URL.replace(/\/$/, '');
+        const boardsUrl = `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=10`;
+        const { status: bs, body: boardsBody } = await jiraRequest2(boardsUrl);
+        if (bs !== 200 || !boardsBody.values || boardsBody.values.length === 0) {
+            return res.json({ success: true, sprints: [] });
+        }
+        let sprints = [];
+        for (const board of boardsBody.values) {
+            if (board.type === 'kanban') continue;
+            const sprintsUrl = `${jiraBase}/rest/agile/1.0/board/${board.id}/sprint?state=active,future&maxResults=20`;
+            const { status: ss, body: sprintsBody } = await jiraRequest2(sprintsUrl);
+            if (ss === 200 && sprintsBody.values && sprintsBody.values.length > 0) {
+                sprints = sprintsBody.values.map(s => ({
+                    id: s.id, name: s.name, state: s.state,
+                    startDate: s.startDate, endDate: s.endDate
+                }));
+                break;
+            }
+        }
+        res.json({ success: true, sprints });
+    } catch (error) {
+        console.error('JIRA2 sprints error:', error);
+        res.status(500).json({ success: false, message: `Failed to fetch JIRA2 sprints: ${error.message}` });
+    }
+});
+
+app.get('/api/jira2/test', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.JIRA2_BASE_URL || !process.env.JIRA2_API_TOKEN) {
+            return res.json({ success: false, message: 'JIRA2 env vars missing', vars: { JIRA2_BASE_URL: !!process.env.JIRA2_BASE_URL, JIRA2_API_TOKEN: !!process.env.JIRA2_API_TOKEN } });
+        }
+        const url = `${process.env.JIRA2_BASE_URL}/rest/api/2/myself`;
+        const { status, body } = await jiraRequest2(url);
+        res.json({ success: status === 200, httpStatus: status, jiraUser: body.displayName || body.name, jiraEmail: body.emailAddress, error: status !== 200 ? body : undefined });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
 app.get('/api/jira/test', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {

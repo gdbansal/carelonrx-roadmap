@@ -347,6 +347,20 @@
 
             <form id="teamMemberForm" class="space-y-4">
                 <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">JIRA Source</label>
+                    <div class="flex rounded-lg border border-gray-300 overflow-hidden">
+                        <button type="button" id="jiraSource1Btn" onclick="setJiraSource('jira1')"
+                            class="flex-1 px-4 py-2 text-sm font-medium bg-blue-600 text-white transition">
+                            CarelonRx
+                        </button>
+                        <button type="button" id="jiraSource2Btn" onclick="setJiraSource('jira2')"
+                            class="flex-1 px-4 py-2 text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition">
+                            Elevance Health
+                        </button>
+                    </div>
+                </div>
+
+                <div>
                     <label for="memberName" class="block text-sm font-semibold text-gray-700 mb-2">
                         Name <span class="text-red-500">*</span>
                     </label>
@@ -1197,6 +1211,28 @@
         let jiraTeamList = [];
         let jiraProjectList = [];
         let jiraProjectsLoaded = false;
+        let activeJiraSource = 'jira1';
+
+        function setJiraSource(source) {
+            activeJiraSource = source;
+            const btn1 = document.getElementById('jiraSource1Btn');
+            const btn2 = document.getElementById('jiraSource2Btn');
+            if (source === 'jira1') {
+                btn1.className = 'flex-1 px-4 py-2 text-sm font-medium bg-blue-600 text-white transition';
+                btn2.className = 'flex-1 px-4 py-2 text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition';
+            } else {
+                btn2.className = 'flex-1 px-4 py-2 text-sm font-medium bg-blue-600 text-white transition';
+                btn1.className = 'flex-1 px-4 py-2 text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition';
+            }
+            jiraProjectsLoaded = false;
+            jiraProjectList = [];
+            jiraTeamList = [];
+            loadJiraProjects(true);
+        }
+
+        function getJiraApiBase() {
+            return activeJiraSource === 'jira2' ? `${API_BASE}/api/jira2` : `${API_BASE}/api/jira`;
+        }
 
         async function loadJiraProjects(force) {
             if (jiraProjectsLoaded && !force) {
@@ -1206,7 +1242,7 @@
             const sel = document.getElementById('memberProjectSelect');
             sel.innerHTML = '<option value="">Loading from JIRA...</option>';
             try {
-                const res = await fetch(`${API_BASE}/api/jira/projects`, {
+                const res = await fetch(`${getJiraApiBase()}/projects`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await res.json();
@@ -1309,7 +1345,7 @@
             }
             sel.innerHTML = '<option value="">Loading teams from JIRA...</option>';
             try {
-                const res = await fetch(`${API_BASE}/api/jira/teams?projectKey=${encodeURIComponent(projectKey)}`, {
+                const res = await fetch(`${getJiraApiBase()}/teams?projectKey=${encodeURIComponent(projectKey)}`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await res.json();
@@ -1384,6 +1420,12 @@
             document.getElementById('memberProject').style.display = 'none';
             document.getElementById('memberProject').required = false;
             document.getElementById('teamMemberModal').classList.remove('hidden');
+            activeJiraSource = 'jira1';
+            jiraProjectsLoaded = false;
+            jiraProjectList = [];
+            jiraTeamList = [];
+            document.getElementById('jiraSource1Btn').className = 'flex-1 px-4 py-2 text-sm font-medium bg-blue-600 text-white transition';
+            document.getElementById('jiraSource2Btn').className = 'flex-1 px-4 py-2 text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition';
             loadJiraProjects();
             lucide.createIcons();
         }
