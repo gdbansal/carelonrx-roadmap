@@ -41,7 +41,7 @@
             
             <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-white border-opacity-20">
                 <div class="text-white text-opacity-60 text-xs">
-                    <p class="font-semibold mb-1">Version 2.4</p>
+                    <p class="font-semibold mb-1">Version 2.5</p>
                     <p>© 2026 Product 360</p>
                 </div>
             </div>
