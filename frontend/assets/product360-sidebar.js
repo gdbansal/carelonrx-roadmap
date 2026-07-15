@@ -19,11 +19,11 @@
                 <p class="text-white text-opacity-70 text-sm">Integrated Product Suite</p>
             </div>
             <nav class="mt-6">
-                <a href="intake.html" class="side-panel-link" data-module="requirements-intake">
+                <a href="dashboard.html" class="side-panel-link" data-module="requirements-intake">
                     <i data-lucide="file-plus" class="w-5 h-5"></i>
                     <span>Requirements Intake</span>
                 </a>
-                <a href="dashboard.html" class="side-panel-link" data-module="roadmap">
+                <a href="roadmap.html" class="side-panel-link" data-module="roadmap">
                     <i data-lucide="map" class="w-5 h-5"></i>
                     <span>Roadmap</span>
                 </a>
@@ -272,10 +272,6 @@ function setActiveLink() {
         else if (currentPage === '' && href === 'dashboard.html') {
             link.classList.add('active');
         }
-        // Handle requirements-intake page
-        else if (currentPage === 'intake.html' && module === 'requirements-intake') {
-            link.classList.add('active');
-        }
         // Handle story-estimations page
         else if (currentPage === 'story-estimations.html' && module === 'story-estimations') {
             link.classList.add('active');
@@ -288,9 +284,15 @@ function setActiveLink() {
         else if (currentPage === 'user-guide.html' && module === 'user-guide') {
             link.classList.add('active');
         }
-        // Handle all roadmap module pages (dashboard, analytics, admin, etc.)
+        // Handle requirements-intake module pages (dashboard, intake)
+        else if (module === 'requirements-intake' && (
+            currentPage.includes('dashboard') ||
+            currentPage.includes('intake')
+        )) {
+            link.classList.add('active');
+        }
+        // Handle all roadmap module pages (roadmap, analytics, admin, etc.)
         else if (module === 'roadmap' && (
-            currentPage.includes('dashboard') || 
             currentPage.includes('analytics') || 
             currentPage.includes('admin') || 
             currentPage.includes('roadmap') || 
@@ -320,7 +322,6 @@ const MODULE_KEY_MAP = {
 
 // page filename -> data-module
 const PAGE_MODULE_MAP = {
-    'intake.html':              'requirements-intake',
     'story-estimations.html':   'story-estimations',
     'capacity-planning.html':   'capacity-planning'
 };
