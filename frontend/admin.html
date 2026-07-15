@@ -1549,14 +1549,16 @@
 
         // ========== ROLE vs MODULE MAPPING ==========
         const MODULES = [
-            { key: 'roadmap',          label: 'Roadmap' },
-            { key: 'storyEstimations', label: 'Story Estimations' },
-            { key: 'capacityPlanning', label: 'Capacity Planning' }
+            { key: 'requirementsIntake', label: 'Requirements Intake' },
+            { key: 'roadmap',            label: 'Roadmap' },
+            { key: 'capacityPlanning',   label: 'Capacity Planning' },
+            { key: 'storyMapping',       label: 'Story Mapping' },
+            { key: 'storyEstimations',   label: 'Story Estimations' }
         ];
 
         let roleMappings = [];
 
-        const DEFAULT_MODULES = { roadmap: true, storyEstimations: false, capacityPlanning: false };
+        const DEFAULT_MODULES = { requirementsIntake: true, roadmap: true, storyEstimations: false, capacityPlanning: false, storyMapping: false };
 
         async function loadRoleMappings() {
             // Fetch all known roles and saved mappings in parallel

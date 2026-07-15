@@ -19,17 +19,25 @@
                 <p class="text-white text-opacity-70 text-sm">Integrated Product Suite</p>
             </div>
             <nav class="mt-6">
+                <a href="intake.html" class="side-panel-link" data-module="requirements-intake">
+                    <i data-lucide="file-plus" class="w-5 h-5"></i>
+                    <span>Requirements Intake</span>
+                </a>
                 <a href="dashboard.html" class="side-panel-link" data-module="roadmap">
                     <i data-lucide="map" class="w-5 h-5"></i>
                     <span>Roadmap</span>
                 </a>
-                <a href="story-estimations.html" class="side-panel-link" data-module="story-estimations">
-                    <i data-lucide="calculator" class="w-5 h-5"></i>
-                    <span>Story Estimations</span>
-                </a>
                 <a href="capacity-planning.html" class="side-panel-link" data-module="capacity-planning">
                     <i data-lucide="users-2" class="w-5 h-5"></i>
                     <span>Capacity Planning</span>
+                </a>
+                <a href="#" onclick="showComingSoon(event)" class="side-panel-link" data-module="story-mapping">
+                    <i data-lucide="git-branch" class="w-5 h-5"></i>
+                    <span>Story Mapping <span class="coming-soon-badge">Soon</span></span>
+                </a>
+                <a href="story-estimations.html" class="side-panel-link" data-module="story-estimations">
+                    <i data-lucide="calculator" class="w-5 h-5"></i>
+                    <span>Story Estimations</span>
                 </a>
                 <div class="mt-6 pt-6 border-t border-white border-opacity-20">
                     <a href="user-guide.html" class="side-panel-link" data-module="user-guide">
@@ -59,7 +67,7 @@
                     <i data-lucide="clock" class="w-10 h-10 text-yellow-600"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">Coming Soon</h2>
-                <p class="text-gray-600 mb-6">Story Estimations module is under development and will be available soon.</p>
+                <p class="text-gray-600 mb-6">This module is under development and will be available soon.</p>
                 <button onclick="closeComingSoonModal()" class="btn-carelon-primary text-white px-6 py-2 rounded-lg">
                     Got it
                 </button>
@@ -264,6 +272,10 @@ function setActiveLink() {
         else if (currentPage === '' && href === 'dashboard.html') {
             link.classList.add('active');
         }
+        // Handle requirements-intake pages
+        else if ((currentPage === 'intake.html') && module === 'requirements-intake') {
+            link.classList.add('active');
+        }
         // Handle story-estimations page
         else if (currentPage === 'story-estimations.html' && module === 'story-estimations') {
             link.classList.add('active');
@@ -282,7 +294,6 @@ function setActiveLink() {
             currentPage.includes('analytics') || 
             currentPage.includes('admin') || 
             currentPage.includes('roadmap') || 
-            currentPage.includes('intake') || 
             currentPage.includes('profile')
         )) {
             link.classList.add('active');
@@ -300,15 +311,18 @@ document.addEventListener('click', function(e) {
 
 // data-module attr -> DB key mapping
 const MODULE_KEY_MAP = {
-    'roadmap':          'roadmap',
-    'story-estimations': 'storyEstimations',
-    'capacity-planning': 'capacityPlanning'
+    'requirements-intake': 'requirementsIntake',
+    'roadmap':             'roadmap',
+    'capacity-planning':   'capacityPlanning',
+    'story-mapping':       'storyMapping',
+    'story-estimations':   'storyEstimations'
 };
 
 // page filename -> data-module
 const PAGE_MODULE_MAP = {
-    'story-estimations.html': 'story-estimations',
-    'capacity-planning.html': 'capacity-planning'
+    'intake.html':              'requirements-intake',
+    'story-estimations.html':   'story-estimations',
+    'capacity-planning.html':   'capacity-planning'
 };
 
 async function applyRoleModuleVisibility() {
