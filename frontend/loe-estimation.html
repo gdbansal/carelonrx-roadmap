@@ -193,6 +193,21 @@
 
     let allInitiatives = []; // cache for LOB filtering
 
+    // ── MOCK DATA TOGGLE ─────────────────────────────────────────────────────
+    // Set true  → use sample data below (no backend needed)
+    // Set false → use live APIs
+    const USE_MOCK = false;
+
+    const MOCK_LOBS = ['CarelonRx', 'Digital', 'IngenioRX'];
+
+    const MOCK_INITIATIVES = [
+        { id: 'mock-1', name: 'Member Portal Redesign', businessUnit: 'Digital',     dependentSystems: ['Digital','CPDL','SOA'] },
+        { id: 'mock-2', name: 'RxSmart Enrollment',     businessUnit: 'CarelonRx',   dependentSystems: ['IRX','CPDL','IE'] },
+        { id: 'mock-3', name: 'API Gateway Upgrade',    businessUnit: 'IngenioRX',   dependentSystems: ['ISOA','DIG'] },
+        { id: 'mock-4', name: 'Claims Processing 2.0',  businessUnit: 'CarelonRx',   dependentSystems: ['CPDL','RDM','SOA','Digital'] },
+    ];
+    // ─────────────────────────────────────────────────────────────────────────
+
     function authHeaders() {
         const token = localStorage.getItem('token');
         return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
@@ -205,16 +220,25 @@
     }
 
     async function loadLinesOfBusiness() {
+        const sel = document.getElementById('lobSelect');
+
+        if (USE_MOCK) {
+            MOCK_LOBS.sort().forEach(lob => {
+                const opt = document.createElement('option');
+                opt.value = lob; opt.textContent = lob;
+                sel.appendChild(opt);
+            });
+            return;
+        }
+
         try {
             const res = await fetch(`${API_BASE.replace('/api','')}/api/line-of-business/active`);
             const data = await res.json();
-            const sel = document.getElementById('lobSelect');
             if (data.success && data.lobs && data.lobs.length > 0) {
                 data.lobs.sort().forEach(lob => {
                     if (!lob?.trim()) return;
                     const opt = document.createElement('option');
-                    opt.value = lob.trim();
-                    opt.textContent = lob.trim();
+                    opt.value = lob.trim(); opt.textContent = lob.trim();
                     sel.appendChild(opt);
                 });
             }
@@ -226,7 +250,6 @@
     function onLobChange() {
         const lob = document.getElementById('lobSelect').value;
         const sel = document.getElementById('initiativeSelect');
-        // Reset LOE area
         document.getElementById('loeArea').classList.add('hidden');
         document.getElementById('emptyState').classList.remove('hidden');
         state.initiativeId = null;
@@ -244,6 +267,10 @@
     }
 
     async function loadInitiatives() {
+        if (USE_MOCK) {
+            allInitiatives = MOCK_INITIATIVES;
+            return;
+        }
         try {
             const res = await fetch(`${API_BASE}/initiatives`, { headers: authHeaders() });
             const data = await res.json();
@@ -258,6 +285,23 @@
         if (!id) { document.getElementById('loeArea').classList.add('hidden'); document.getElementById('emptyState').classList.remove('hidden'); return; }
 
         state.initiativeId = id;
+
+        if (USE_MOCK) {
+            const mock = MOCK_INITIATIVES.find(i => i.id === id);
+            if (!mock) return;
+            state.initiativeName = mock.name;
+            state.systems = mock.dependentSystems.map(s => ({ system: s, devEffort: 0, qaEffort: 0, supportEffort: 0, confidencePct: 0 }));
+            state.blendedRate = 150; state.hoursPerSp = 8; state.dirty = false;
+            document.getElementById('initiativeNameDisplay').textContent = mock.name;
+            document.getElementById('lastSavedBadge').textContent = 'Mock data — not saved';
+            document.getElementById('removedWarning').classList.add('hidden');
+            document.getElementById('noSystemsMsg').classList.toggle('hidden', mock.dependentSystems.length > 0);
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('loeArea').classList.remove('hidden');
+            renderTable(); lucide.createIcons();
+            return;
+        }
+
         try {
             const res = await fetch(`${API_BASE}/loe/${id}`, { headers: authHeaders() });
             const data = await res.json();
