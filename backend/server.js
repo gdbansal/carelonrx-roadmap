@@ -1,6 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
 const connectDB = require('./config/database');
 const User = require('./models/User');
@@ -17,24 +20,50 @@ const LoeEstimation = require('./models/LoeEstimation');
 const { logAuditEvent } = require('./middleware/auditLogger');
 const crypto = require('crypto');
 
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Trust proxy only in production (Render, EC2 behind Nginx)
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+}
 
 // Connect to MongoDB
 connectDB();
 
-// CORS configuration for production
+// Security headers
+app.use(helmet({ contentSecurityPolicy: false }));
+
+// CORS - S6: no wildcard fallback
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:8080')
+    .split(',').map(o => o.trim());
+allowedOrigins.push('https://carelonrx-roadmap.onrender.com');
+
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || '*',
+    origin: function(origin, callback) {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin) || /^http:\/\/(10|192\.168|172\.(1[6-9]|2\d|3[01]))\./i.test(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
-    optionsSuccessStatus: 200
+    optionsSuccessOptions: 200
 };
 
 app.use(cors(corsOptions));
-app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.json({ limit: '2mb' }));
 
-// Trust proxy to get correct IP addresses (for Render, Heroku, etc.)
-app.set('trust proxy', true);
+// S4: Rate limiting on auth endpoints
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: { success: false, message: 'Too many attempts. Please try again in 15 minutes.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
 
 // Helper function to get client IP address
 function getClientIp(req) {
@@ -53,13 +82,18 @@ function getClientIp(req) {
            'unknown';
 }
 
+// S1: Signed JWT tokens (replaces plain base64)
 function generateToken(user) {
-    return Buffer.from(JSON.stringify({ id: user._id || user.id, username: user.username })).toString('base64');
+    return jwt.sign(
+        { id: String(user._id || user.id), username: user.username },
+        JWT_SECRET,
+        { expiresIn: '8h' }
+    );
 }
 
 async function verifyToken(token) {
     try {
-        const decoded = JSON.parse(Buffer.from(token.replace('Bearer ', ''), 'base64').toString());
+        const decoded = jwt.verify(token.replace('Bearer ', ''), JWT_SECRET);
         const user = await User.findById(decoded.id);
         return user;
     } catch {
@@ -87,15 +121,17 @@ async function initializeDefaultData() {
     try {
         const userCount = await User.countDocuments();
         if (userCount === 0) {
-            console.log('📝 Initializing default admin user...');
+            const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || crypto.randomBytes(16).toString('hex');
+            console.log('ðŸ“ Initializing default admin user...');
             await User.create({
                 username: 'admin',
-                password: 'admin123',
+                password: defaultPassword,
                 name: 'Administrator',
                 email: 'admin@carelon.com',
                 role: 'admin'
             });
-            console.log('✅ Default admin user created');
+            console.log(`âœ… Default admin user created. Password: ${defaultPassword}`);
+            console.log('âš ï¸  Set ADMIN_DEFAULT_PASSWORD in .env before first deploy, or change password immediately.');
         }
     } catch (error) {
         console.error('Error initializing default data:', error);
@@ -107,7 +143,7 @@ setTimeout(initializeDefaultData, 2000);
 
 // ========== AUTH ENDPOINTS ==========
 
-app.post('/api/signup', async (req, res) => {
+app.post('/api/signup', authLimiter, async (req, res) => {
     try {
         const { name, username, email, role, password } = req.body;
         
@@ -187,9 +223,9 @@ app.post('/api/signup', async (req, res) => {
     }
 });
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', authLimiter, async (req, res) => {
     try {
-        console.log('Login request received:', req.body);
+        console.log('Login attempt for user:', req.body?.username);
         const { username, password } = req.body;
         
         // Find user by username only
@@ -396,7 +432,7 @@ app.post('/api/initiatives', authMiddleware, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error creating initiative',
-            error: error.message || 'Unknown error'
+            error: 'An internal error occurred'
         });
     }
 });
@@ -529,9 +565,7 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
         console.error('Error updating initiative:', error);
         res.status(500).json({
             success: false,
-            message: 'Error updating initiative',
-            error: error.message
-        });
+            message: 'Error updating initiative' });
     }
 });
 
@@ -932,7 +966,12 @@ app.put('/api/profile', authMiddleware, async (req, res) => {
         
         if (name) user.name = name;
         if (password) user.password = password;
-        if (profileImage !== undefined) user.profileImage = profileImage;
+        if (profileImage !== undefined) {
+            if (profileImage && Buffer.byteLength(profileImage, 'utf8') > 1.5 * 1024 * 1024) {
+                return res.status(400).json({ success: false, message: 'Profile image must be under 1.5MB' });
+            }
+            user.profileImage = profileImage;
+        }
         
         await user.save();
         
@@ -992,10 +1031,10 @@ app.post('/api/migrate-passwords', authMiddleware, async (req, res) => {
                     { $set: { password: hashedPassword } }
                 );
                 
-                results.push(`✅ Hashed password for: ${user.username}`);
+                results.push(`âœ… Hashed password for: ${user.username}`);
                 migratedCount++;
             } else {
-                results.push(`⏭️ Skipped (already hashed): ${user.username}`);
+                results.push(`â­ï¸ Skipped (already hashed): ${user.username}`);
             }
         }
 
@@ -1019,9 +1058,7 @@ app.post('/api/migrate-passwords', authMiddleware, async (req, res) => {
         console.error('Migration error:', error);
         res.status(500).json({
             success: false,
-            message: 'Migration failed',
-            error: error.message
-        });
+            message: 'Migration failed' });
     }
 });
 
@@ -1053,7 +1090,8 @@ app.post('/api/update-user-role', authMiddleware, async (req, res) => {
         
         if (!user) {
             // Try by email
-            user = await User.findOne({ email: new RegExp(username, 'i') });
+            const escapedUsername = username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            user = await User.findOne({ email: new RegExp('^' + escapedUsername + '$', 'i') });
         }
 
         if (!user) {
@@ -1096,9 +1134,7 @@ app.post('/api/update-user-role', authMiddleware, async (req, res) => {
         console.error('Role update error:', error);
         res.status(500).json({
             success: false,
-            message: 'Role update failed',
-            error: error.message
-        });
+            message: 'Role update failed' });
     }
 });
 
@@ -1132,7 +1168,7 @@ app.post('/api/estimation-auth/login', async (req, res) => {
         
         // Generate session token
         const token = crypto.randomBytes(32).toString('hex');
-        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+        const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000); // 8 hours
         
         // Create user session
         const userSession = new UserSession({
@@ -1173,9 +1209,7 @@ app.post('/api/estimation-auth/login', async (req, res) => {
         console.error('Login error:', error);
         res.status(500).json({
             success: false,
-            message: 'Login failed',
-            error: error.message
-        });
+            message: 'Login failed' });
     }
 });
 
@@ -1219,9 +1253,7 @@ app.get('/api/estimation-auth/me', async (req, res) => {
         console.error('Get user error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to get user info',
-            error: error.message
-        });
+            message: 'Failed to get user info' });
     }
 });
 
@@ -1260,9 +1292,7 @@ app.post('/api/estimation-auth/logout', async (req, res) => {
         console.error('Logout error:', error);
         res.status(500).json({
             success: false,
-            message: 'Logout failed',
-            error: error.message
-        });
+            message: 'Logout failed' });
     }
 });
 
@@ -1300,9 +1330,7 @@ app.put('/api/estimation-auth/last-session', async (req, res) => {
         console.error('Update last session error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to update last session',
-            error: error.message
-        });
+            message: 'Failed to update last session' });
     }
 });
 
@@ -1337,9 +1365,7 @@ app.get('/api/estimation-auth/session-history', async (req, res) => {
         console.error('Get session history error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to get session history',
-            error: error.message
-        });
+            message: 'Failed to get session history' });
     }
 });
 
@@ -1348,7 +1374,7 @@ app.get('/api/estimation-auth/session-history', async (req, res) => {
 // Create a new estimation session
 app.post('/api/sessions', async (req, res) => {
     try {
-        console.log('📥 Received create session request');
+        console.log('ðŸ“¥ Received create session request');
         console.log('Request body keys:', Object.keys(req.body));
         console.log('Request body:', JSON.stringify(req.body, null, 2));
         
@@ -1362,7 +1388,7 @@ app.post('/api/sessions', async (req, res) => {
         // Check if session already exists
         const existingSession = await EstimationSession.findOne({ sessionId });
         if (existingSession) {
-            console.log('⚠️ Session already exists:', sessionId);
+            console.log('âš ï¸ Session already exists:', sessionId);
             return res.status(409).json({
                 success: false,
                 message: 'Session already exists'
@@ -1374,9 +1400,9 @@ app.post('/api/sessions', async (req, res) => {
             ...dataToSave
         });
         
-        console.log('💾 Saving session to database...');
+        console.log('ðŸ’¾ Saving session to database...');
         await session.save();
-        console.log('✅ Session saved successfully:', sessionId);
+        console.log('âœ… Session saved successfully:', sessionId);
         
         // Log audit event
         await logAuditEvent(
@@ -1397,13 +1423,11 @@ app.post('/api/sessions', async (req, res) => {
             session: session.toObject()
         });
     } catch (error) {
-        console.error('❌ Create session error:', error);
+        console.error('âŒ Create session error:', error);
         console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
-            message: 'Failed to create session',
-            error: error.message
-        });
+            message: 'Failed to create session' });
     }
 });
 
@@ -1435,16 +1459,14 @@ app.get('/api/sessions/:sessionId', async (req, res) => {
             sessionObj.revealedStories = Object.fromEntries(sessionObj.revealedStories);
         }
         
-        console.log('📤 Sending session with estimations:', JSON.stringify(sessionObj.estimations));
+        console.log('ðŸ“¤ Sending session with estimations:', JSON.stringify(sessionObj.estimations));
         
         res.json(sessionObj);
     } catch (error) {
         console.error('Get session error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve session',
-            error: error.message
-        });
+            message: 'Failed to retrieve session' });
     }
 });
 
@@ -1454,10 +1476,10 @@ app.put('/api/sessions/:sessionId', async (req, res) => {
         const { sessionId } = req.params;
         const { sessionData } = req.body;
         
-        console.log('📝 Updating session:', sessionId);
-        console.log('📦 Request body keys:', Object.keys(req.body));
-        console.log('📦 SessionData keys:', sessionData ? Object.keys(sessionData) : 'undefined');
-        console.log('📦 Received estimations:', JSON.stringify(sessionData?.estimations));
+        console.log('ðŸ“ Updating session:', sessionId);
+        console.log('ðŸ“¦ Request body keys:', Object.keys(req.body));
+        console.log('ðŸ“¦ SessionData keys:', sessionData ? Object.keys(sessionData) : 'undefined');
+        console.log('ðŸ“¦ Received estimations:', JSON.stringify(sessionData?.estimations));
         
         // Find the session first
         const session = await EstimationSession.findOne({ sessionId });
@@ -1483,7 +1505,7 @@ app.put('/api/sessions/:sessionId', async (req, res) => {
         
         await session.save();
         
-        console.log('✅ Session updated, estimations:', JSON.stringify(Object.fromEntries(session.estimations)));
+        console.log('âœ… Session updated, estimations:', JSON.stringify(Object.fromEntries(session.estimations)));
         
         res.json({
             success: true,
@@ -1491,12 +1513,10 @@ app.put('/api/sessions/:sessionId', async (req, res) => {
             session: session.toObject()
         });
     } catch (error) {
-        console.error('❌ Update session error:', error);
+        console.error('âŒ Update session error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to update session',
-            error: error.message
-        });
+            message: 'Failed to update session' });
     }
 });
 
@@ -1550,9 +1570,7 @@ app.post('/api/sessions/:sessionId/participants', async (req, res) => {
         console.error('Add participant error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to add participant',
-            error: error.message
-        });
+            message: 'Failed to add participant' });
     }
 });
 
@@ -1572,9 +1590,7 @@ app.get('/api/sessions', async (req, res) => {
         console.error('Get sessions error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve sessions',
-            error: error.message
-        });
+            message: 'Failed to retrieve sessions' });
     }
 });
 
@@ -1624,9 +1640,7 @@ app.delete('/api/sessions/:sessionId', async (req, res) => {
         console.error('Close session error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to close session',
-            error: error.message
-        });
+            message: 'Failed to close session' });
     }
 });
 
@@ -1635,7 +1649,10 @@ app.delete('/api/sessions/:sessionId', async (req, res) => {
 // Get audit logs with filters
 app.get('/api/audit-logs', async (req, res) => {
     try {
-        const { sessionId, userId, eventType, dateFrom, dateTo, limit = 100 } = req.query;
+        const rawLimit = parseInt(req.query.limit) || 100;
+        const safeLimit = Math.min(rawLimit, 500);
+        const { sessionId, userId, eventType, dateFrom, dateTo } = req.query;
+        const limit = safeLimit;
         
         const query = {};
         
@@ -1662,9 +1679,7 @@ app.get('/api/audit-logs', async (req, res) => {
         console.error('Get audit logs error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve audit logs',
-            error: error.message
-        });
+            message: 'Failed to retrieve audit logs' });
     }
 });
 
@@ -1692,9 +1707,7 @@ app.get('/api/audit-logs/stats', async (req, res) => {
         console.error('Get audit stats error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve audit statistics',
-            error: error.message
-        });
+            message: 'Failed to retrieve audit statistics' });
     }
 });
 
@@ -1722,9 +1735,7 @@ app.get('/api/audit-logs/session-ids', async (req, res) => {
         console.error('Get session IDs error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve session IDs',
-            error: error.message
-        });
+            message: 'Failed to retrieve session IDs' });
     }
 });
 
@@ -1767,9 +1778,7 @@ app.get('/api/audit-logs/export', async (req, res) => {
         console.error('Export audit logs error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to export audit logs',
-            error: error.message
-        });
+            message: 'Failed to export audit logs' });
     }
 });
 
@@ -1836,9 +1845,7 @@ app.get('/api/estimation-analysis/export', async (req, res) => {
         console.error('Export estimation analysis error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to export estimation analysis',
-            error: error.message
-        });
+            message: 'Failed to export estimation analysis' });
     }
 });
 
@@ -2093,7 +2100,7 @@ app.get('/api/jira/active-teams', async (req, res) => {
             const batch = allBoards.slice(i, i + batchSize);
             await Promise.all(batch.map(async (board) => {
                 if (board.type === 'kanban') {
-                    // Kanban boards don't have sprints — check recent issues instead
+                    // Kanban boards don't have sprints â€” check recent issues instead
                     const projectKey = board.location && board.location.projectKey;
                     if (!projectKey) return;
                     if (!activeBoardsByProject[projectKey]) activeBoardsByProject[projectKey] = [];
@@ -2114,7 +2121,7 @@ app.get('/api/jira/active-teams', async (req, res) => {
             }));
         }
 
-        // Step 4: Build result — only active projects that have active teams
+        // Step 4: Build result â€” only active projects that have active teams
         const projectMap = {};
         activeProjects.forEach(p => { projectMap[p.key] = p.name; });
 
@@ -2755,9 +2762,7 @@ app.get('/api/line-of-business', authMiddleware, async (req, res) => {
         console.error('Get LOBs error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve Lines of Business',
-            error: error.message
-        });
+            message: 'Failed to retrieve Lines of Business' });
     }
 });
 
@@ -2773,9 +2778,7 @@ app.get('/api/line-of-business/active', async (req, res) => {
         console.error('Get active LOBs error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve active Lines of Business',
-            error: error.message
-        });
+            message: 'Failed to retrieve active Lines of Business' });
     }
 });
 
@@ -2799,9 +2802,7 @@ app.get('/api/line-of-business/:id', authMiddleware, async (req, res) => {
         console.error('Get LOB error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve Line of Business',
-            error: error.message
-        });
+            message: 'Failed to retrieve Line of Business' });
     }
 });
 
@@ -2850,9 +2851,7 @@ app.post('/api/line-of-business', authMiddleware, async (req, res) => {
         console.error('Create LOB error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to create Line of Business',
-            error: error.message
-        });
+            message: 'Failed to create Line of Business' });
     }
 });
 
@@ -2906,9 +2905,7 @@ app.put('/api/line-of-business/:id', authMiddleware, async (req, res) => {
         console.error('Update LOB error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to update Line of Business',
-            error: error.message
-        });
+            message: 'Failed to update Line of Business' });
     }
 });
 
@@ -2951,9 +2948,7 @@ app.delete('/api/line-of-business/:id', authMiddleware, async (req, res) => {
         console.error('Delete LOB error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to delete Line of Business',
-            error: error.message
-        });
+            message: 'Failed to delete Line of Business' });
     }
 });
 
@@ -2976,9 +2971,7 @@ app.get('/api/team-members', authMiddleware, async (req, res) => {
         console.error('Get team members error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve team members',
-            error: error.message
-        });
+            message: 'Failed to retrieve team members' });
     }
 });
 
@@ -2997,9 +2990,7 @@ app.get('/api/team-members/projects', authMiddleware, async (req, res) => {
         console.error('Get projects error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve projects',
-            error: error.message
-        });
+            message: 'Failed to retrieve projects' });
     }
 });
 
@@ -3015,9 +3006,7 @@ app.get('/api/team-members/teams', authMiddleware, async (req, res) => {
         console.error('Get teams error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve teams',
-            error: error.message
-        });
+            message: 'Failed to retrieve teams' });
     }
 });
 
@@ -3041,9 +3030,7 @@ app.get('/api/team-members/:id', authMiddleware, async (req, res) => {
         console.error('Get team member error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve team member',
-            error: error.message
-        });
+            message: 'Failed to retrieve team member' });
     }
 });
 
@@ -3086,9 +3073,7 @@ app.post('/api/team-members', authMiddleware, async (req, res) => {
         console.error('Create team member error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to create team member',
-            error: error.message
-        });
+            message: 'Failed to create team member' });
     }
 });
 
@@ -3134,9 +3119,7 @@ app.put('/api/team-members/:id', authMiddleware, async (req, res) => {
         console.error('Update team member error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to update team member',
-            error: error.message
-        });
+            message: 'Failed to update team member' });
     }
 });
 
@@ -3179,9 +3162,7 @@ app.delete('/api/team-members/:id', authMiddleware, async (req, res) => {
         console.error('Delete team member error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to delete team member',
-            error: error.message
-        });
+            message: 'Failed to delete team member' });
     }
 });
 
@@ -3211,9 +3192,7 @@ app.get('/api/capacity-plans', authMiddleware, async (req, res) => {
         console.error('Get capacity plans error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve capacity plans',
-            error: error.message
-        });
+            message: 'Failed to retrieve capacity plans' });
     }
 });
 
@@ -3279,9 +3258,7 @@ app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
         console.error('Save capacity plans error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to save capacity plans',
-            error: error.message
-        });
+            message: 'Failed to save capacity plans' });
     }
 });
 
@@ -3341,9 +3318,7 @@ app.get('/api/capacity-plans/summary', authMiddleware, async (req, res) => {
         console.error('Get capacity summary error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve capacity summary',
-            error: error.message
-        });
+            message: 'Failed to retrieve capacity summary' });
     }
 });
 
@@ -3369,9 +3344,7 @@ app.delete('/api/capacity-plans/:id', authMiddleware, async (req, res) => {
         console.error('Delete capacity plan error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to delete capacity plan',
-            error: error.message
-        });
+            message: 'Failed to delete capacity plan' });
     }
 });
 
@@ -3469,7 +3442,7 @@ app.post('/api/role-module-mappings', authMiddleware, async (req, res) => {
         res.json({ success: true, message: 'Mappings saved successfully', mappings: results });
     } catch (error) {
         console.error('Save role-module mappings error:', error);
-        res.status(500).json({ success: false, message: 'Failed to save mappings', error: error.message });
+        res.status(500).json({ success: false, message: 'Failed to save mappings' });
     }
 });
 
@@ -3496,17 +3469,17 @@ app.get('/api/health', (req, res) => {
 
 // ========== LOE ESTIMATION MODULE ==========
 
-// GET /api/loe — list all saved LOE initiatives (for dropdown)
+// GET /api/loe â€” list all saved LOE initiatives (for dropdown)
 app.get('/api/loe', authMiddleware, async (req, res) => {
     try {
         const loes = await LoeEstimation.find({}, 'initiativeId initiativeName lastUpdatedAt lastUpdatedBy').sort({ lastUpdatedAt: -1 });
         res.json({ success: true, loes });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Failed to fetch LOE list', error: error.message });
+        res.status(500).json({ success: false, message: 'Failed to fetch LOE list' });
     }
 });
 
-// GET /api/loe/:initiativeId — get LOE for an initiative (merges latest dependent systems)
+// GET /api/loe/:initiativeId â€” get LOE for an initiative (merges latest dependent systems)
 app.get('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
     try {
         const initiative = await Initiative.findById(req.params.initiativeId);
@@ -3516,7 +3489,7 @@ app.get('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
         let loe = await LoeEstimation.findOne({ initiativeId: req.params.initiativeId });
 
         if (!loe) {
-            // First time — build skeleton from initiative's dependent systems
+            // First time â€” build skeleton from initiative's dependent systems
             return res.json({
                 success: true,
                 initiativeId: req.params.initiativeId,
@@ -3555,11 +3528,11 @@ app.get('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
             lastUpdatedAt: loe.lastUpdatedAt
         });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Failed to fetch LOE', error: error.message });
+        res.status(500).json({ success: false, message: 'Failed to fetch LOE' });
     }
 });
 
-// PUT /api/loe/:initiativeId — save/update LOE
+// PUT /api/loe/:initiativeId â€” save/update LOE
 app.put('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
     try {
         const { systems, blendedRate, hoursPerSp } = req.body;
@@ -3581,11 +3554,11 @@ app.put('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
         );
         res.json({ success: true, message: 'LOE saved', loe });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Failed to save LOE', error: error.message });
+        res.status(500).json({ success: false, message: 'Failed to save LOE' });
     }
 });
 
-// GET /api/loe/:initiativeId/export — export LOE as CSV (for Excel)
+// GET /api/loe/:initiativeId/export â€” export LOE as CSV (for Excel)
 app.get('/api/loe/:initiativeId/export', authMiddleware, async (req, res) => {
     try {
         const initiative = await Initiative.findById(req.params.initiativeId);
@@ -3596,7 +3569,7 @@ app.get('/api/loe/:initiativeId/export', authMiddleware, async (req, res) => {
         const blendedRate = loe?.blendedRate || 150;
         const hoursPerSp = loe?.hoursPerSp || 8;
 
-        let csv = `LOE Estimation — ${initiative.name}\n`;
+        let csv = `LOE Estimation â€” ${initiative.name}\n`;
         csv += `Blended Rate: $${blendedRate}/hr | Hours per SP: ${hoursPerSp}\n\n`;
         csv += `Dependent System,Dev Effort (SP),QA Effort (SP),Support Effort (SP),Total SP,Dev $(USD),QA $(USD),Support $(USD),Total $(USD),Confidence %\n`;
 
@@ -3619,7 +3592,7 @@ app.get('/api/loe/:initiativeId/export', authMiddleware, async (req, res) => {
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.send(csv);
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Export failed', error: error.message });
+        res.status(500).json({ success: false, message: 'Export failed' });
     }
 });
 
@@ -3661,7 +3634,7 @@ function makeAuthRequest(url, token) {
     });
 }
 
-// POST /api/story-mapping/fetch-jira — fetch JIRA feature issue content (uses same jiraRequest as active-teams/sprint-for-team)
+// POST /api/story-mapping/fetch-jira â€” fetch JIRA feature issue content (uses same jiraRequest as active-teams/sprint-for-team)
 app.post('/api/story-mapping/fetch-jira', async (req, res) => {
     try {
         const { url } = req.body;
@@ -3713,11 +3686,11 @@ app.post('/api/story-mapping/fetch-jira', async (req, res) => {
         });
     } catch (error) {
         console.error('Story mapping fetch-jira error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch JIRA issue', error: error.message });
+        res.status(500).json({ success: false, message: 'Failed to fetch JIRA issue' });
     }
 });
 
-// POST /api/story-mapping/fetch-confluence — fetch Confluence page content (uses same token as JIRA)
+// POST /api/story-mapping/fetch-confluence â€” fetch Confluence page content (uses same token as JIRA)
 app.post('/api/story-mapping/fetch-confluence', async (req, res) => {
     try {
         const { url } = req.body;
@@ -3726,7 +3699,7 @@ app.post('/api/story-mapping/fetch-confluence', async (req, res) => {
             return res.status(503).json({ success: false, message: 'JIRA token not configured on server' });
         }
 
-        // Extract page ID from URL — supports /pages/123456 and /display/SPACE/Title?pageId=123456
+        // Extract page ID from URL â€” supports /pages/123456 and /display/SPACE/Title?pageId=123456
         let pageId = null;
         const pageIdMatch = url.match(/\/pages\/(\d+)/) || url.match(/[?&]pageId=(\d+)/);
         if (pageIdMatch) pageId = pageIdMatch[1];
@@ -3736,7 +3709,7 @@ app.post('/api/story-mapping/fetch-confluence', async (req, res) => {
             ? process.env.CONFLUENCE_BASE_URL.replace(/\/$/, '')
             : 'https://confluence.carelonrx.com';
 
-        // Use same jiraRequest pattern — reuse helper with confluence base
+        // Use same jiraRequest pattern â€” reuse helper with confluence base
         const { status, body } = await jiraRequest(
             `${confBase}/rest/api/content/${pageId}?expand=body.view,body.storage`
         );
@@ -3754,7 +3727,7 @@ app.post('/api/story-mapping/fetch-confluence', async (req, res) => {
         });
     } catch (error) {
         console.error('Story mapping fetch-confluence error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch Confluence page', error: error.message });
+        res.status(500).json({ success: false, message: 'Failed to fetch Confluence page' });
     }
 });
 
@@ -3775,12 +3748,12 @@ function analyzeWithRules(featureData, confluenceData) {
     }
 
     function makeSummary(text, maxLen = 80) {
-        const clean = text.replace(/^\s*[-•*\d.]+\s*/, '').trim();
+        const clean = text.replace(/^\s*[-â€¢*\d.]+\s*/, '').trim();
         return clean.length > maxLen ? clean.substring(0, maxLen).trim() + '...' : clean;
     }
 
     function makeAcceptanceCriteria(text, type) {
-        const clean = text.replace(/^\s*[-•*\d.]+\s*/, '').trim();
+        const clean = text.replace(/^\s*[-â€¢*\d.]+\s*/, '').trim();
         if (type === 'Story') return `Given the feature is implemented,\nWhen ${clean.toLowerCase()},\nThen the system should behave as expected.`;
         return `Complete the following: ${clean}`;
     }
@@ -3850,11 +3823,11 @@ app.post('/api/story-mapping/analyze', async (req, res) => {
         });
     } catch (error) {
         console.error('Story mapping analyze error:', error);
-        res.status(500).json({ success: false, message: 'Analysis failed', error: error.message });
+        res.status(500).json({ success: false, message: 'Analysis failed' });
     }
 });
 
-// POST /api/story-mapping/create-tickets — create approved tickets in JIRA
+// POST /api/story-mapping/create-tickets â€” create approved tickets in JIRA
 app.post('/api/story-mapping/create-tickets', async (req, res) => {
     try {
         const { items, projectKey, jiraBaseUrl } = req.body;
@@ -3915,15 +3888,15 @@ app.post('/api/story-mapping/create-tickets', async (req, res) => {
         res.json({ success: true, created, failed, totalCreated: created.length, totalFailed: failed.length });
     } catch (error) {
         console.error('Story mapping create-tickets error:', error);
-        res.status(500).json({ success: false, message: 'Failed to create tickets', error: error.message });
+        res.status(500).json({ success: false, message: 'Failed to create tickets' });
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`\n🚀 CarelonRx Product 360 API Server`);
-    console.log(`📡 Server running on http://localhost:${PORT}`);
-    console.log(`\n📋 Available endpoints:`);
-    console.log(`\n   🗺️  ROADMAP MODULE:`);
+    console.log(`\nðŸš€ CarelonRx Product 360 API Server`);
+    console.log(`ðŸ“¡ Server running on http://localhost:${PORT}`);
+    console.log(`\nðŸ“‹ Available endpoints:`);
+    console.log(`\n   ðŸ—ºï¸  ROADMAP MODULE:`);
     console.log(`   POST   /api/signup`);
     console.log(`   POST   /api/login`);
     console.log(`   GET    /api/initiatives`);
@@ -3939,7 +3912,7 @@ app.listen(PORT, () => {
     console.log(`   GET    /api/profile`);
     console.log(`   PUT    /api/profile`);
     console.log(`   GET    /api/stats`);
-    console.log(`\n   🧮 STORY ESTIMATIONS MODULE:`);
+    console.log(`\n   ðŸ§® STORY ESTIMATIONS MODULE:`);
     console.log(`   POST   /api/estimation-auth/login`);
     console.log(`   POST   /api/estimation-auth/logout`);
     console.log(`   GET    /api/estimation-auth/me`);
@@ -3951,18 +3924,18 @@ app.listen(PORT, () => {
     console.log(`   PUT    /api/sessions/:sessionId`);
     console.log(`   DELETE /api/sessions/:sessionId`);
     console.log(`   POST   /api/sessions/:sessionId/participants`);
-    console.log(`\n   📊 AUDIT LOGS MODULE:`);
+    console.log(`\n   ðŸ“Š AUDIT LOGS MODULE:`);
     console.log(`   GET    /api/audit-logs`);
     console.log(`   GET    /api/audit-logs/stats`);
     console.log(`   GET    /api/audit-logs/session-ids`);
     console.log(`   GET    /api/audit-logs/export`);
     console.log(`   GET    /api/estimation-analysis/export`);
-    console.log(`\n   🗺️  STORY MAPPING:`);
+    console.log(`\n   ðŸ—ºï¸  STORY MAPPING:`);
     console.log(`   POST   /api/story-mapping/fetch-jira`);
     console.log(`   POST   /api/story-mapping/fetch-confluence`);
     console.log(`   POST   /api/story-mapping/analyze`);
     console.log(`   POST   /api/story-mapping/create-tickets`);
-    console.log(`\n   ❤️  HEALTH:`);
+    console.log(`\n   â¤ï¸  HEALTH:`);
     console.log(`   GET    /api/health`);
-    console.log(`\n✅ Ready to accept requests!\n`);
+    console.log(`\nâœ… Ready to accept requests!\n`);
 });
