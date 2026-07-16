@@ -31,9 +31,9 @@
                     <i data-lucide="users-2" class="w-5 h-5"></i>
                     <span>Capacity Planning</span>
                 </a>
-                <a href="#" onclick="showComingSoon(event)" class="side-panel-link" data-module="story-mapping">
+                <a href="story-mapping.html" class="side-panel-link" data-module="story-mapping">
                     <i data-lucide="git-branch" class="w-5 h-5"></i>
-                    <span>Story Mapping <span class="coming-soon-badge">Soon</span></span>
+                    <span>Story Mapping</span>
                 </a>
                 <a href="story-estimations.html" class="side-panel-link" data-module="story-estimations">
                     <i data-lucide="calculator" class="w-5 h-5"></i>

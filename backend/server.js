@@ -3233,6 +3233,309 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// ========== STORY MAPPING MODULE ==========
+
+// Helper: detect JIRA instance from URL
+function getJiraCredentials(url) {
+    if (url.includes('elevancehealth.com')) {
+        return { base: process.env.JIRA2_BASE_URL, token: process.env.JIRA2_API_TOKEN };
+    }
+    return { base: process.env.JIRA_BASE_URL, token: process.env.JIRA_API_TOKEN };
+}
+
+// Helper: make authenticated request to any JIRA/Confluence instance
+function makeAuthRequest(url, token) {
+    return new Promise((resolve, reject) => {
+        const parsedUrl = new URL(url);
+        const options = {
+            hostname: parsedUrl.hostname,
+            path: parsedUrl.pathname + parsedUrl.search,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        };
+        const https = require('https');
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
+                catch(e) { resolve({ status: res.statusCode, body: data }); }
+            });
+        });
+        req.on('error', reject);
+        req.end();
+    });
+}
+
+// POST /api/story-mapping/fetch-jira — fetch JIRA feature issue content
+app.post('/api/story-mapping/fetch-jira', async (req, res) => {
+    try {
+        const { url } = req.body;
+        if (!url) return res.status(400).json({ success: false, message: 'JIRA URL is required' });
+        const { base, token } = getJiraCredentials(url);
+        if (!base || !token) return res.status(503).json({ success: false, message: 'JIRA not configured for this instance' });
+
+        // Extract issue key from URL (e.g. VPIE-1234)
+        const match = url.match(/\/browse\/([A-Z]+-\d+)/) || url.match(/([A-Z]+-\d+)/);
+        if (!match) return res.status(400).json({ success: false, message: 'Could not extract issue key from URL' });
+        const issueKey = match[1];
+        const jiraBase = base.replace(/\/$/, '');
+
+        const { status, body } = await makeAuthRequest(
+            `${jiraBase}/rest/api/2/issue/${issueKey}?expand=renderedFields&fields=*all`,
+            token
+        );
+        if (status !== 200) return res.status(status).json({ success: false, message: `JIRA returned ${status}`, body });
+
+        // Find Acceptance Criteria field dynamically
+        const fields = body.fields || {};
+        let acceptanceCriteria = '';
+        let featureName = fields.summary || '';
+        let description = fields.description || '';
+
+        // Search all fields for one named "Acceptance Criteria"
+        const fieldsMeta = body.names || {};
+        for (const [fieldId, fieldName] of Object.entries(fieldsMeta)) {
+            if (fieldName && fieldName.toLowerCase().includes('acceptance criteria')) {
+                const val = fields[fieldId];
+                if (val && typeof val === 'string') acceptanceCriteria = val;
+                else if (val && val.content) acceptanceCriteria = JSON.stringify(val);
+                break;
+            }
+        }
+        // Also check rendered fields
+        if (!acceptanceCriteria && body.renderedFields) {
+            for (const [fieldId, fieldName] of Object.entries(fieldsMeta)) {
+                if (fieldName && fieldName.toLowerCase().includes('acceptance criteria')) {
+                    const rendered = body.renderedFields[fieldId];
+                    if (rendered) { acceptanceCriteria = rendered; break; }
+                }
+            }
+        }
+
+        res.json({
+            success: true,
+            issueKey,
+            featureName,
+            summary: featureName,
+            description,
+            acceptanceCriteria,
+            issueType: fields.issuetype?.name || 'Feature',
+            project: { key: fields.project?.key, name: fields.project?.name },
+            url
+        });
+    } catch (error) {
+        console.error('Story mapping fetch-jira error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch JIRA issue', error: error.message });
+    }
+});
+
+// POST /api/story-mapping/fetch-confluence — fetch Confluence page content
+app.post('/api/story-mapping/fetch-confluence', async (req, res) => {
+    try {
+        const { url } = req.body;
+        if (!url) return res.status(400).json({ success: false, message: 'Confluence URL is required' });
+
+        const token = url.includes('elevancehealth') ? process.env.JIRA2_API_TOKEN : process.env.JIRA_API_TOKEN;
+        const confBase = url.includes('elevancehealth')
+            ? 'https://confluence.elevancehealth.com'
+            : 'https://confluence.carelonrx.com';
+
+        // Extract page ID from URL
+        let pageId = null;
+        const pageIdMatch = url.match(/\/pages\/(\d+)/);
+        if (pageIdMatch) pageId = pageIdMatch[1];
+
+        if (!pageId) return res.status(400).json({ success: false, message: 'Could not extract page ID from Confluence URL' });
+
+        const { status, body } = await makeAuthRequest(
+            `${confBase}/rest/api/content/${pageId}?expand=body.storage,body.view`,
+            token
+        );
+        if (status !== 200) return res.status(status).json({ success: false, message: `Confluence returned ${status}` });
+
+        // Strip HTML tags for plain text
+        const htmlContent = body.body?.view?.value || body.body?.storage?.value || '';
+        const plainText = htmlContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+        res.json({
+            success: true,
+            pageId,
+            title: body.title || '',
+            content: plainText,
+            url
+        });
+    } catch (error) {
+        console.error('Story mapping fetch-confluence error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch Confluence page', error: error.message });
+    }
+});
+
+// Rule-based story analyzer
+function analyzeWithRules(featureData, confluenceData) {
+    const STORY_KEYWORDS = ['user can', 'user should', 'user must', 'should be able', 'must be able',
+        'display', 'show', 'view', 'verify', 'validate', 'notify', 'receive', 'see', 'access',
+        'able to', 'allow', 'provide', 'confirm', 'present'];
+    const TASK_KEYWORDS = ['implement', 'create', 'build', 'develop', 'integrate', 'configure',
+        'setup', 'set up', 'migrate', 'update', 'modify', 'refactor', 'add', 'remove', 'delete',
+        'api', 'service', 'database', 'schema', 'backend', 'script', 'deploy', 'infrastructure'];
+
+    function classify(text) {
+        const lower = text.toLowerCase();
+        let storyScore = STORY_KEYWORDS.filter(k => lower.includes(k)).length;
+        let taskScore = TASK_KEYWORDS.filter(k => lower.includes(k)).length;
+        return taskScore > storyScore ? 'Task' : 'Story';
+    }
+
+    function makeSummary(text, maxLen = 80) {
+        const clean = text.replace(/^\s*[-•*\d.]+\s*/, '').trim();
+        return clean.length > maxLen ? clean.substring(0, maxLen).trim() + '...' : clean;
+    }
+
+    function makeAcceptanceCriteria(text, type) {
+        const clean = text.replace(/^\s*[-•*\d.]+\s*/, '').trim();
+        if (type === 'Story') return `Given the feature is implemented,\nWhen ${clean.toLowerCase()},\nThen the system should behave as expected.`;
+        return `Complete the following: ${clean}`;
+    }
+
+    // Parse AC text into bullet points
+    const acText = featureData.acceptanceCriteria || featureData.description || '';
+    const confText = confluenceData?.content || '';
+    const combined = `${acText}\n${confText}`.trim();
+
+    // Split into individual items
+    const rawItems = combined
+        .split(/\n|<br\s*\/?>/i)
+        .map(l => l.replace(/<[^>]+>/g, '').replace(/&[a-z]+;/gi, ' ').trim())
+        .filter(l => l.length > 15);
+
+    // Deduplicate
+    const seen = new Set();
+    const items = rawItems.filter(l => { const k = l.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+
+    const results = [];
+    let epicAdded = false;
+
+    // Always add one Epic (hidden by default)
+    results.push({
+        id: `item-0`,
+        type: 'Epic',
+        summary: featureData.featureName || featureData.summary || 'Feature Epic',
+        acceptanceCriteria: '',
+        expectation: '',
+        approved: false,
+        hidden: true
+    });
+
+    items.slice(0, 20).forEach((item, i) => {
+        const type = classify(item);
+        results.push({
+            id: `item-${i + 1}`,
+            type,
+            summary: makeSummary(item),
+            acceptanceCriteria: type === 'Story' ? makeAcceptanceCriteria(item, type) : '',
+            expectation: type === 'Task' ? makeAcceptanceCriteria(item, type) : '',
+            approved: false,
+            hidden: false
+        });
+    });
+
+    return results;
+}
+
+// POST /api/story-mapping/analyze
+app.post('/api/story-mapping/analyze', async (req, res) => {
+    try {
+        const { featureData, confluenceData } = req.body;
+        if (!featureData) return res.status(400).json({ success: false, message: 'featureData is required' });
+
+        const mode = process.env.STORY_MAPPING_MODE || 'rule-based';
+        const items = analyzeWithRules(featureData, confluenceData);
+
+        res.json({
+            success: true,
+            mode,
+            total: items.length,
+            stories: items.filter(i => i.type === 'Story').length,
+            tasks: items.filter(i => i.type === 'Task').length,
+            epics: items.filter(i => i.type === 'Epic').length,
+            items
+        });
+    } catch (error) {
+        console.error('Story mapping analyze error:', error);
+        res.status(500).json({ success: false, message: 'Analysis failed', error: error.message });
+    }
+});
+
+// POST /api/story-mapping/create-tickets — create approved tickets in JIRA
+app.post('/api/story-mapping/create-tickets', async (req, res) => {
+    try {
+        const { items, projectKey, jiraBaseUrl } = req.body;
+        if (!items || !projectKey) return res.status(400).json({ success: false, message: 'items and projectKey are required' });
+
+        const { base, token } = getJiraCredentials(jiraBaseUrl || '');
+        if (!base || !token) return res.status(503).json({ success: false, message: 'JIRA not configured' });
+        const jiraBase = base.replace(/\/$/, '');
+
+        const created = [];
+        const failed = [];
+
+        for (const item of items) {
+            if (!item.approved || item.type === 'Epic') continue;
+            try {
+                const issueBody = {
+                    fields: {
+                        project: { key: projectKey },
+                        summary: item.summary,
+                        description: item.summary,
+                        issuetype: { name: item.type }
+                    }
+                };
+                const https = require('https');
+                const payload = JSON.stringify(issueBody);
+                const parsedUrl = new URL(`${jiraBase}/rest/api/2/issue`);
+                const result = await new Promise((resolve, reject) => {
+                    const options = {
+                        hostname: parsedUrl.hostname,
+                        path: parsedUrl.pathname,
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                            'Content-Length': Buffer.byteLength(payload)
+                        }
+                    };
+                    const req2 = https.request(options, (r) => {
+                        let d = '';
+                        r.on('data', c => d += c);
+                        r.on('end', () => { try { resolve({ status: r.statusCode, body: JSON.parse(d) }); } catch(e) { resolve({ status: r.statusCode, body: d }); } });
+                    });
+                    req2.on('error', reject);
+                    req2.write(payload);
+                    req2.end();
+                });
+
+                if (result.status === 201) {
+                    created.push({ itemId: item.id, key: result.body.key, url: `${jiraBase}/browse/${result.body.key}` });
+                } else {
+                    failed.push({ itemId: item.id, summary: item.summary, error: JSON.stringify(result.body) });
+                }
+            } catch (e) {
+                failed.push({ itemId: item.id, summary: item.summary, error: e.message });
+            }
+        }
+
+        res.json({ success: true, created, failed, totalCreated: created.length, totalFailed: failed.length });
+    } catch (error) {
+        console.error('Story mapping create-tickets error:', error);
+        res.status(500).json({ success: false, message: 'Failed to create tickets', error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`\n🚀 CarelonRx Product 360 API Server`);
     console.log(`📡 Server running on http://localhost:${PORT}`);
@@ -3271,6 +3574,11 @@ app.listen(PORT, () => {
     console.log(`   GET    /api/audit-logs/session-ids`);
     console.log(`   GET    /api/audit-logs/export`);
     console.log(`   GET    /api/estimation-analysis/export`);
+    console.log(`\n   🗺️  STORY MAPPING:`);
+    console.log(`   POST   /api/story-mapping/fetch-jira`);
+    console.log(`   POST   /api/story-mapping/fetch-confluence`);
+    console.log(`   POST   /api/story-mapping/analyze`);
+    console.log(`   POST   /api/story-mapping/create-tickets`);
     console.log(`\n   ❤️  HEALTH:`);
     console.log(`   GET    /api/health`);
     console.log(`\n✅ Ready to accept requests!\n`);
