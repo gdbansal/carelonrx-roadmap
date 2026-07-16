@@ -16,6 +16,7 @@ const roleModuleMappingSchema = new mongoose.Schema({
         roadmap:            { type: Boolean, default: true },
         capacityPlanning:   { type: Boolean, default: false },
         storyMapping:       { type: Boolean, default: false },
+        loeEstimation:      { type: Boolean, default: false },
         storyEstimations:   { type: Boolean, default: false }
     },
     updatedBy: { type: String },

@@ -220,7 +220,7 @@
 
     // Pre-hide all role-controlled links immediately to prevent flash
     // (MODULE_KEY_MAP not yet defined here, so inline the controlled module attrs)
-    const _roleControlled = ['requirements-intake','roadmap','capacity-planning','story-mapping','story-estimations'];
+    const _roleControlled = ['requirements-intake','roadmap','capacity-planning','story-mapping','loe-estimation','story-estimations'];
     const roleUser = JSON.parse(localStorage.getItem('user') || '{}');
     if (roleUser.username && roleUser.role !== 'admin' && roleUser.role !== 'Admin') {
         document.querySelectorAll('.side-panel-link[data-module]').forEach(link => {
@@ -332,6 +332,7 @@ const MODULE_KEY_MAP = {
     'roadmap':             'roadmap',
     'capacity-planning':   'capacityPlanning',
     'story-mapping':       'storyMapping',
+    'loe-estimation':      'loeEstimation',
     'story-estimations':   'storyEstimations'
 };
 
@@ -344,6 +345,7 @@ const PAGE_MODULE_MAP = {
     'admin.html':               'roadmap',
     'capacity-planning.html':   'capacity-planning',
     'story-mapping.html':       'story-mapping',
+    'loe-estimation.html':      'loe-estimation',
     'story-estimations.html':   'story-estimations'
 };
 
@@ -353,6 +355,7 @@ const MODULE_DEFAULT_PAGE = {
     'roadmap':             'roadmap.html',
     'capacity-planning':   'capacity-planning.html',
     'story-mapping':       'story-mapping.html',
+    'loe-estimation':      'loe-estimation.html',
     'story-estimations':   'story-estimations.html'
 };
 
@@ -420,7 +423,7 @@ async function applyRoleModuleVisibility() {
     const currentModule = PAGE_MODULE_MAP[currentPage];
     if (currentModule && deniedModules.has(currentModule)) {
         // Find first sidebar module that is NOT denied
-        const moduleOrder = ['requirements-intake', 'roadmap', 'capacity-planning', 'story-mapping', 'story-estimations'];
+        const moduleOrder = ['requirements-intake', 'roadmap', 'capacity-planning', 'story-mapping', 'loe-estimation', 'story-estimations'];
         const firstAllowed = moduleOrder.find(m => !deniedModules.has(m));
         // If no module is allowed, redirect to user guide
         const redirectPage = firstAllowed ? (MODULE_DEFAULT_PAGE[firstAllowed]) : 'user-guide.html';
