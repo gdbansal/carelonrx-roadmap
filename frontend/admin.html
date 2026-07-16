@@ -1595,7 +1595,7 @@
             // Header: Role column + one column per module
             thead.innerHTML = `<th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase border-b border-r border-gray-200 bg-gray-50" style="min-width:160px">Role</th>`;
             MODULES.forEach(mod => {
-                thead.innerHTML += `<th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 border-b border-gray-200" style="min-width:150px">${mod.label}</th>`;
+                const th = document.createElement('th'); th.className = "px-4 py-3 text-center text-xs font-semibold text-gray-700 border-b border-gray-200"; th.style.minWidth = "150px"; th.textContent = mod.label; thead.appendChild(th);
             });
             thead.innerHTML += `<th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 border-b border-gray-200" style="min-width:80px">Remove</th>`;
 

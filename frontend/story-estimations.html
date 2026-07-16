@@ -132,6 +132,11 @@
         // ============================================
         // STATE
         // ============================================
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
         const state = {
             user: null,
             sessionId: '',
@@ -1855,7 +1860,7 @@
                     const options = sorted.map(s => {
                         const badge = s.state === 'active' ? ' [Active]' : s.state === 'future' ? ' [Future]' : ' [Closed]';
                         const selected = s.id === data.preSelectedSprintId ? 'selected' : '';
-                        return `<option value="${s.name}" ${selected}>${s.name}${badge}</option>`;
+                        return `<option value="${escapeHtml(s.name)}" ${selected}>${escapeHtml(s.name)}${badge}</option>`;
                     }).join('');
                     container.innerHTML = `<select id="sprintValue" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">${options}</select>`;
                     if (hint) hint.textContent = `${data.sprints.length} sprints loaded — pre-selected: ${data.preSelectedSprintName || 'none'}`;
@@ -1978,17 +1983,17 @@
                             <input type="checkbox" class="jira-issue-cb mt-0.5 w-4 h-4 accent-purple-600" data-index="${i}" checked>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <a href="${issue.url}" target="_blank" class="text-sm font-semibold text-carelon-purple hover:underline shrink-0">${issue.key}</a>
-                                    <span class="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">${issue.issueType}</span>
-                                    <span class="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">${issue.status}</span>
+                                    <a href="${escapeHtml(issue.url)}" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-carelon-purple hover:underline shrink-0">${escapeHtml(issue.key)}</a>
+                                    <span class="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">${escapeHtml(issue.issueType)}</span>
+                                    <span class="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">${escapeHtml(issue.status)}</span>
                                 </div>
-                                <p class="text-sm text-gray-700 mt-0.5 truncate">${issue.summary}</p>
-                                <p class="text-xs text-gray-400">${issue.assignee}</p>
+                                <p class="text-sm text-gray-700 mt-0.5 truncate">${escapeHtml(issue.summary)}</p>
+                                <p class="text-xs text-gray-400">${escapeHtml(issue.assignee)}</p>
                             </div>
                         </label>
                     `).join('');
                 } else {
-                    content.innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">${data.message || 'No issues found for this sprint'}</div>`;
+                    content.innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">${escapeHtml(data.message || 'No issues found for this sprint')}</div>`;
                     if (countEl) countEl.textContent = '';
                 }
             } catch (e) {

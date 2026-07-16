@@ -15,6 +15,7 @@ const UserSession = require('./models/UserSession');
 const LineOfBusiness = require('./models/LineOfBusiness');
 const TeamMember = require('./models/TeamMember');
 const CapacityPlan = require('./models/CapacityPlan');
+const mongoose = require('mongoose');
 const RoleModuleMapping = require('./models/RoleModuleMapping');
 const LoeEstimation = require('./models/LoeEstimation');
 const { logAuditEvent } = require('./middleware/auditLogger');
@@ -34,7 +35,22 @@ if (process.env.NODE_ENV === 'production') {
 connectDB();
 
 // Security headers
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'none'"],
+            scriptSrc: ["'none'"],
+            styleSrc: ["'none'"],
+            imgSrc: ["'none'"],
+            connectSrc: ["'self'"],
+            frameSrc: ["'none'"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"]
+        }
+    },
+    crossOriginEmbedderPolicy: false
+}));
 
 // CORS - no wildcard fallback
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5000')
@@ -73,6 +89,14 @@ const authLimiter = rateLimit({
     legacyHeaders: false
 });
 
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+    message: { success: false, message: 'Too many requests. Please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
 // Helper function to get client IP address
 function getClientIp(req) {
     // Check X-Forwarded-For header first (for proxies/load balancers)
@@ -101,7 +125,7 @@ function generateToken(user) {
 
 async function verifyToken(token) {
     try {
-        const decoded = jwt.verify(token.replace('Bearer ', ''), JWT_SECRET);
+        const decoded = jwt.verify(token.replace('Bearer ', ''), JWT_SECRET, { algorithms: ['HS256'] });
         const user = await User.findById(decoded.id);
         return user;
     } catch {
@@ -123,6 +147,29 @@ async function authMiddleware(req, res, next) {
     req.user = user;
     next();
 }
+
+// V2: ObjectId validation helper
+function isValidObjectId(id) {
+    return mongoose.Types.ObjectId.isValid(id) && String(new mongoose.Types.ObjectId(id)) === id;
+}
+
+// V3: In-memory token blacklist (invalidated tokens until their natural expiry)
+const tokenBlacklist = new Set();
+
+// V3: Wrap verifyToken to reject blacklisted tokens
+const _originalVerifyToken = verifyToken;
+verifyToken = async function(token) {
+    const raw = token ? token.replace('Bearer ', '') : token;
+    if (tokenBlacklist.has(raw)) return null;
+    return _originalVerifyToken(token);
+};
+
+// V3: Main JWT logout endpoint
+app.post('/api/logout', authMiddleware, (req, res) => {
+    const raw = (req.headers.authorization || '').replace('Bearer ', '');
+    if (raw) tokenBlacklist.add(raw);
+    res.json({ success: true, message: 'Logged out successfully' });
+});
 
 // Initialize default admin user if database is empty
 async function initializeDefaultData() {
@@ -348,6 +395,7 @@ app.get('/api/initiatives', authMiddleware, async (req, res) => {
 
 app.get('/api/initiatives/:id', authMiddleware, async (req, res) => {
     try {
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const initiative = await Initiative.findById(req.params.id);
         
         if (initiative) {
@@ -417,8 +465,15 @@ app.post('/api/initiatives', authMiddleware, async (req, res) => {
         }
         
         const timestamp = new Date();
+        const allowedCreateFields = ['name', 'description', 'businessUnit', 'program', 'year', 'quarter',
+            'startDate', 'deliveryDate', 'sitStartDate', 'sitEndDate', 'uatStartDate', 'uatEndDate',
+            'businessCommitmentDate', 'budgetApproved', 'priority', 'holdReason', 'wsjf',
+            'userBusinessValue', 'timeCriticality', 'riskReduction', 'jobSize',
+            'owner', 'dependentSystems', 'businessValue', 'risks', 'dependencies'];
+        const safeBody = {};
+        allowedCreateFields.forEach(f => { if (req.body[f] !== undefined) safeBody[f] = req.body[f]; });
         const newInitiative = await Initiative.create({
-            ...req.body,
+            ...safeBody,
             createdAt: timestamp,
             createdBy: req.user.username,
             updatedAt: timestamp,
@@ -454,6 +509,7 @@ app.post('/api/initiatives', authMiddleware, async (req, res) => {
 
 app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
     try {
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const initiative = await Initiative.findById(req.params.id);
         
         if (!initiative) {
@@ -572,6 +628,7 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
 
 app.delete('/api/initiatives/:id', authMiddleware, async (req, res) => {
     try {
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const initiative = await Initiative.findById(req.params.id);
         
         if (!initiative) {
@@ -678,6 +735,7 @@ app.get('/api/users/:id', authMiddleware, async (req, res) => {
             });
         }
         
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const user = await User.findById(req.params.id).select('-password');
         
         if (user) {
@@ -788,6 +846,7 @@ app.put('/api/users/:id', authMiddleware, async (req, res) => {
             });
         }
         
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const user = await User.findById(req.params.id);
         
         if (!user) {
@@ -866,6 +925,7 @@ app.delete('/api/users/:id', authMiddleware, async (req, res) => {
             });
         }
         
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const user = await User.findById(req.params.id);
         
         if (!user) {
@@ -930,7 +990,7 @@ app.get('/api/profile', authMiddleware, async (req, res) => {
     }
 });
 
-app.put('/api/profile', authMiddleware, async (req, res) => {
+app.put('/api/profile', authMiddleware, apiLimiter, async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
         
@@ -1005,7 +1065,7 @@ app.put('/api/profile', authMiddleware, async (req, res) => {
 // ========== ESTIMATION USER AUTHENTICATION ==========
 
 // Login or create estimation user (simple name + role based)
-app.post('/api/estimation-auth/login', async (req, res) => {
+app.post('/api/estimation-auth/login', authLimiter, async (req, res) => {
     try {
         const { name, role } = req.body;
         
@@ -1501,7 +1561,7 @@ app.get('/api/audit-logs', authMiddleware, async (req, res) => {
         const query = {};
         
         if (sessionId) query.session_id = sessionId;
-        if (userId) query.user_id = new RegExp(userId, 'i');
+        if (userId) { const safeUid = userId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'); query.user_id = new RegExp(safeUid, 'i'); }
         if (eventType) query.event_type = eventType;
         
         if (dateFrom || dateTo) {
@@ -1591,7 +1651,7 @@ app.get('/api/audit-logs/export', authMiddleware, async (req, res) => {
         const query = {};
         
         if (sessionId) query.session_id = sessionId;
-        if (userId) query.user_id = new RegExp(userId, 'i');
+        if (userId) { const safeUid = userId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'); query.user_id = new RegExp(safeUid, 'i'); }
         if (eventType) query.event_type = eventType;
         
         if (dateFrom || dateTo) {
@@ -2627,6 +2687,7 @@ app.get('/api/line-of-business/active', authMiddleware, async (req, res) => {
 // Get single Line of Business
 app.get('/api/line-of-business/:id', authMiddleware, async (req, res) => {
     try {
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const lob = await LineOfBusiness.findById(req.params.id);
         
         if (!lob) {
@@ -2709,6 +2770,7 @@ app.put('/api/line-of-business/:id', authMiddleware, async (req, res) => {
         
         const { name, description, isActive } = req.body;
         
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const lob = await LineOfBusiness.findById(req.params.id);
         
         if (!lob) {
@@ -2761,6 +2823,7 @@ app.delete('/api/line-of-business/:id', authMiddleware, async (req, res) => {
             });
         }
         
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const lob = await LineOfBusiness.findById(req.params.id);
         
         if (!lob) {
@@ -2855,6 +2918,7 @@ app.get('/api/team-members/teams', authMiddleware, async (req, res) => {
 // Get single team member
 app.get('/api/team-members/:id', authMiddleware, async (req, res) => {
     try {
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const member = await TeamMember.findById(req.params.id);
         
         if (!member) {
@@ -2931,6 +2995,7 @@ app.put('/api/team-members/:id', authMiddleware, async (req, res) => {
         
         const { name, role, team, project, email, isActive } = req.body;
         
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const member = await TeamMember.findById(req.params.id);
         
         if (!member) {
@@ -2975,6 +3040,7 @@ app.delete('/api/team-members/:id', authMiddleware, async (req, res) => {
             });
         }
         
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const member = await TeamMember.findById(req.params.id);
         
         if (!member) {
@@ -3167,6 +3233,7 @@ app.get('/api/capacity-plans/summary', authMiddleware, async (req, res) => {
 // Delete capacity plan
 app.delete('/api/capacity-plans/:id', authMiddleware, async (req, res) => {
     try {
+        if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const plan = await CapacityPlan.findById(req.params.id);
         
         if (!plan) {

@@ -207,6 +207,11 @@
         let sortDirection = 'asc';
         let user = {};
 
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
         function logout() {
             localStorage.removeItem('user');
             localStorage.removeItem('token');
@@ -675,7 +680,7 @@
                     if (cat.includes('done') || cat.includes('complete')) { bg = '#D1FAE5'; color = '#065F46'; }
                     else if (cat.includes('progress')) { bg = '#DBEAFE'; color = '#1E40AF'; }
                     else if (cat.includes('blocked') || cat.includes('hold')) { bg = '#FEE2E2'; color = '#991B1B'; }
-                    el.innerHTML = `<span style="display:inline-block;background:${bg};color:${color};font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;">${status}</span>`;
+                    el.innerHTML = `<span style="display:inline-block;background:${bg};color:${color};font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;">${escapeHtml(status)}</span>`;
                 } else {
                     el.innerHTML = `<span style="font-size:10px;color:#9CA3AF;font-style:italic;">Unable to get status</span>`;
                 }
