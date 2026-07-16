@@ -151,6 +151,15 @@ setTimeout(initializeDefaultData, 2000);
 
 // ========== AUTH ENDPOINTS ==========
 
+function validatePasswordStrength(password) {
+    if (!password || password.length < 8) return 'Password must be at least 8 characters';
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
+    if (!/[!@#$%^&*]/.test(password)) return 'Password must contain at least one special character (!@#$%^&*)';
+    return null;
+}
+
 app.post('/api/signup', authLimiter, async (req, res) => {
     try {
         const { name, username, email, role, password } = req.body;
@@ -161,6 +170,9 @@ app.post('/api/signup', authLimiter, async (req, res) => {
                 message: 'All fields are required'
             });
         }
+
+        const pwError = validatePasswordStrength(password);
+        if (pwError) return res.status(400).json({ success: false, message: pwError });
         
         const allowedDomains = ['elevancehealth.com', 'carelon.com'];
         const emailDomain = email.split('@')[1]?.toLowerCase();
@@ -954,7 +966,11 @@ app.put('/api/profile', authMiddleware, async (req, res) => {
         }
         
         if (name) user.name = name;
-        if (password) user.password = password;
+        if (password) {
+            const pwError = validatePasswordStrength(password);
+            if (pwError) return res.status(400).json({ success: false, message: pwError });
+            user.password = password;
+        }
         if (profileImage !== undefined) {
             if (profileImage && Buffer.byteLength(profileImage, 'utf8') > 1.5 * 1024 * 1024) {
                 return res.status(400).json({ success: false, message: 'Profile image must be under 1.5MB' });
@@ -1475,7 +1491,7 @@ app.delete('/api/sessions/:sessionId', async (req, res) => {
 // ========== AUDIT LOGS ==========
 
 // Get audit logs with filters
-app.get('/api/audit-logs', async (req, res) => {
+app.get('/api/audit-logs', authMiddleware, async (req, res) => {
     try {
         const rawLimit = parseInt(req.query.limit) || 100;
         const safeLimit = Math.min(rawLimit, 500);
@@ -1512,7 +1528,7 @@ app.get('/api/audit-logs', async (req, res) => {
 });
 
 // Get audit log statistics
-app.get('/api/audit-logs/stats', async (req, res) => {
+app.get('/api/audit-logs/stats', authMiddleware, async (req, res) => {
     try {
         const totalLogs = await AuditLog.countDocuments();
         
@@ -1540,7 +1556,7 @@ app.get('/api/audit-logs/stats', async (req, res) => {
 });
 
 // Get session IDs for filter dropdown
-app.get('/api/audit-logs/session-ids', async (req, res) => {
+app.get('/api/audit-logs/session-ids', authMiddleware, async (req, res) => {
     try {
         const { dateFrom, dateTo } = req.query;
         
@@ -1568,7 +1584,7 @@ app.get('/api/audit-logs/session-ids', async (req, res) => {
 });
 
 // Export audit logs as CSV
-app.get('/api/audit-logs/export', async (req, res) => {
+app.get('/api/audit-logs/export', authMiddleware, async (req, res) => {
     try {
         const { sessionId, userId, eventType, dateFrom, dateTo } = req.query;
         
@@ -1867,7 +1883,7 @@ app.get('/api/jira/teams', authMiddleware, async (req, res) => {
 });
 
 // Active projects + active teams (boards with active sprints)
-app.get('/api/jira/projects', async (req, res) => {
+app.get('/api/jira/projects', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
             return res.status(503).json({ success: false, message: 'JIRA integration not configured', projects: [] });
@@ -1890,7 +1906,7 @@ app.get('/api/jira/projects', async (req, res) => {
     }
 });
 
-app.get('/api/jira/active-teams', async (req, res) => {
+app.get('/api/jira/active-teams', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
             return res.status(503).json({ success: false, message: 'JIRA integration not configured', data: [] });
@@ -1968,7 +1984,7 @@ app.get('/api/jira/active-teams', async (req, res) => {
 });
 
 // Sprints for a given team name (all: closed + active + future)
-app.get('/api/jira/sprint-for-team', async (req, res) => {
+app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
     try {
         const { teamName } = req.query;
         if (!teamName) {
@@ -2053,7 +2069,7 @@ app.get('/api/jira/sprint-for-team', async (req, res) => {
 });
 
 // Sprint issues for a given team + sprint name
-app.get('/api/jira/sprint-issues', async (req, res) => {
+app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
     try {
         const { teamName, sprintName } = req.query;
         if (!teamName || !sprintName) {
@@ -2593,7 +2609,7 @@ app.get('/api/line-of-business', authMiddleware, async (req, res) => {
 });
 
 // Get active Lines of Business (for dropdowns)
-app.get('/api/line-of-business/active', async (req, res) => {
+app.get('/api/line-of-business/active', authMiddleware, async (req, res) => {
     try {
         const lobs = await LineOfBusiness.find({ isActive: true }).sort({ name: 1 });
         res.json({
@@ -3177,7 +3193,7 @@ app.delete('/api/capacity-plans/:id', authMiddleware, async (req, res) => {
 // ========== ROLE MODULE MAPPING ==========
 
 // Public endpoint: returns list of roles from MongoDB (excludes admin; used by signup + user management dropdowns)
-app.get('/api/roles', async (req, res) => {
+app.get('/api/roles', authMiddleware, async (req, res) => {
     try {
         let mappings = await RoleModuleMapping.find({ role: { $ne: 'admin' } }).sort({ role: 1 });
 
@@ -3461,7 +3477,7 @@ function makeAuthRequest(url, token) {
 }
 
 // POST /api/story-mapping/fetch-jira â€” fetch JIRA feature issue content (uses same jiraRequest as active-teams/sprint-for-team)
-app.post('/api/story-mapping/fetch-jira', async (req, res) => {
+app.post('/api/story-mapping/fetch-jira', authMiddleware, async (req, res) => {
     try {
         const { url } = req.body;
         if (!url) return res.status(400).json({ success: false, message: 'JIRA URL is required' });
@@ -3517,7 +3533,7 @@ app.post('/api/story-mapping/fetch-jira', async (req, res) => {
 });
 
 // POST /api/story-mapping/fetch-confluence â€” fetch Confluence page content (uses same token as JIRA)
-app.post('/api/story-mapping/fetch-confluence', async (req, res) => {
+app.post('/api/story-mapping/fetch-confluence', authMiddleware, async (req, res) => {
     try {
         const { url } = req.body;
         if (!url) return res.status(400).json({ success: false, message: 'Confluence URL is required' });
@@ -3630,7 +3646,7 @@ function analyzeWithRules(featureData, confluenceData) {
 }
 
 // POST /api/story-mapping/analyze
-app.post('/api/story-mapping/analyze', async (req, res) => {
+app.post('/api/story-mapping/analyze', authMiddleware, async (req, res) => {
     try {
         const { featureData, confluenceData } = req.body;
         if (!featureData) return res.status(400).json({ success: false, message: 'featureData is required' });
@@ -3654,7 +3670,7 @@ app.post('/api/story-mapping/analyze', async (req, res) => {
 });
 
 // POST /api/story-mapping/create-tickets â€” create approved tickets in JIRA
-app.post('/api/story-mapping/create-tickets', async (req, res) => {
+app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) => {
     try {
         const { items, projectKey, jiraBaseUrl } = req.body;
         if (!items || !projectKey) return res.status(400).json({ success: false, message: 'items and projectKey are required' });

@@ -2,8 +2,15 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
-// Encryption key for sensitive data (should be in environment variable in production)
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'carelonrx-secure-key-2026-change-in-prod';
+// Encryption key for sensitive data - must be set via ENCRYPTION_KEY env variable
+if (!process.env.ENCRYPTION_KEY) {
+    if (process.env.NODE_ENV === 'production') {
+        throw new Error('ENCRYPTION_KEY environment variable is required in production');
+    } else {
+        console.warn('WARNING: ENCRYPTION_KEY not set. Set it in .env for consistent email encryption.');
+    }
+}
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'dev-only-key-set-ENCRYPTION_KEY-in-env-immediately';
 const ENCRYPTION_ALGORITHM = 'aes-256-cbc';
 
 // Helper functions for email encryption

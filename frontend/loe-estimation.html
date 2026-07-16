@@ -450,9 +450,26 @@
         lucide.createIcons();
     }
 
-    function exportLoe() {
+    async function exportLoe() {
         if (!state.initiativeId) return;
-        window.location.href = `${API_BASE}/loe/${state.initiativeId}/export?token=${localStorage.getItem('token') || ''}`;
+        try {
+            const token = localStorage.getItem('token') || '';
+            const res = await fetch(`${API_BASE}/loe/${state.initiativeId}/export`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) { alert('Export failed. Please try again.'); return; }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `LOE_${state.initiativeId}_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert('Export failed. Please try again.');
+        }
     }
 
     function toggleProfileDropdown() {

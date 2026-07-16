@@ -343,6 +343,11 @@
             window.location.href = 'login.html';
         }
 
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
         function logout() {
             localStorage.removeItem('user');
             localStorage.removeItem('token');
@@ -608,19 +613,14 @@
 
         function renderRoadmap() {
             const selectedYear = document.getElementById('yearFilter').value;
-            console.log('=== RENDER ROADMAP ===');
-            console.log('Selected year:', selectedYear);
-            console.log('All initiatives:', allInitiatives.map(i => ({name: i.name, year: i.year})));
             
             let initiatives = allInitiatives.filter(i => String(i.year) === String(selectedYear));
-            console.log('After year filter:', initiatives.length, 'initiatives');
             
             // Filter by selected LOBs
             if (selectedLobs.length > 0) {
                 initiatives = initiatives.filter(initiative => 
                     selectedLobs.includes(initiative.businessUnit)
                 );
-                console.log('After LOB filter:', initiatives.length, 'initiatives');
             }
             
             // Filter by selected systems
@@ -634,20 +634,16 @@
                         selectedSystems.includes(dep.system)
                     );
                 });
-                console.log('After system filter:', initiatives.length, 'initiatives');
             }
             
-            console.log('Final initiatives to render:', initiatives.length);
             
             if (initiatives.length === 0) {
-                console.log('No initiatives - showing no data message');
                 document.getElementById('roadmapGrid').parentElement.classList.add('hidden');
                 document.getElementById('noData').classList.remove('hidden');
                 lucide.createIcons();
                 return;
             }
             
-            console.log('Rendering roadmap grid...');
 
             document.getElementById('roadmapGrid').parentElement.classList.remove('hidden');
             document.getElementById('noData').classList.add('hidden');
@@ -808,7 +804,6 @@
             const endPosition = (endDay / totalDaysInYear) * 100;
             const width = endPosition - startPosition;
             
-            console.log(`${initiative.name}: Start day ${startDay}, End day ${endDay}, Position ${startPosition.toFixed(2)}%, Width ${width.toFixed(2)}%`);
             
             return { startPosition, width };
         }
@@ -844,7 +839,6 @@
             let duration = endMonth - startMonth + 1;
             duration = Math.max(1, Math.min(duration, 12 - startMonth));
             
-            console.log(`Initiative: ${initiative.name}, Start: ${startMonth}, End: ${endMonth}, Duration: ${duration}`);
             
             return { startMonth, duration };
         }
@@ -866,7 +860,6 @@
             });
             
             const result = Object.values(grouped);
-            console.log('Grouped systems:', result);
             return result;
         }
 
@@ -915,9 +908,6 @@
             if (!initiative) return;
 
             // Debug logging
-            console.log('Initiative details:', initiative);
-            console.log('Priority:', initiative.priority);
-            console.log('Hold Reason:', initiative.holdReason);
 
             document.getElementById('modalTitle').textContent = initiative.name;
             document.getElementById('modalContent').innerHTML = `
@@ -950,7 +940,7 @@
                             <i data-lucide="alert-circle" class="w-5 h-5 text-yellow-600 mt-0.5"></i>
                             <div>
                                 <p class="text-sm font-semibold text-yellow-800 mb-1">Hold Reason</p>
-                                <p class="text-sm text-yellow-700">${initiative.holdReason}</p>
+                                <p class="text-sm text-yellow-700">${escapeHtml(initiative.holdReason)}</p>
                             </div>
                         </div>
                     </div>
@@ -977,14 +967,14 @@
                         ${initiative.owner ? `
                         <div>
                             <p class="text-sm text-gray-500">Owner</p>
-                            <p class="font-semibold">${initiative.owner}</p>
+                            <p class="font-semibold">${escapeHtml(initiative.owner)}</p>
                         </div>
                         ` : ''}
                     </div>
                     ${initiative.description ? `
                     <div>
                         <p class="text-sm text-gray-500 mb-2">Description</p>
-                        <p class="text-gray-700">${initiative.description}</p>
+                        <p class="text-gray-700">${escapeHtml(initiative.description)}</p>
                     </div>
                     ` : ''}
                     ${initiative.dependentSystems && initiative.dependentSystems.length > 0 ? `
@@ -993,7 +983,7 @@
                         <div class="space-y-2">
                             ${groupDependentSystems(initiative.dependentSystems).map(group => `
                                 <div class="bg-gray-50 p-3 rounded-lg">
-                                    <p class="font-semibold text-sm">${group.system}</p>
+                                    <p class="font-semibold text-sm">${escapeHtml(group.system)}</p>
                                     ${group.entries.length > 0 ? `
                                         <div class="mt-2 space-y-2">
                                             ${group.entries.map((entry, idx) => {
@@ -1001,7 +991,7 @@
                                                 const containerId = jiraKey ? `jira-status-${jiraKey}-${idx}` : null;
                                                 return `
                                                 <div class="flex items-center flex-wrap gap-2 text-xs">
-                                                    ${entry.pmSpoc ? `<span class="text-gray-600">PM: ${entry.pmSpoc}</span>` : ''}
+                                                    ${entry.pmSpoc ? `<span class="text-gray-600">PM: ${escapeHtml(entry.pmSpoc)}</span>` : ''}
                                                     ${entry.jiraUrl ? `
                                                         <a href="${entry.jiraUrl}" target="_blank"
                                                            style="display:inline-flex;align-items:center;gap:4px;background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:700;padding:2px 8px;border-radius:9999px;text-decoration:none;">

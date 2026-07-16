@@ -923,15 +923,15 @@
                                 
                                 return `
                                     <div class="bg-white p-2 rounded border border-gray-200">
-                                        <p class="text-xs font-semibold text-gray-700 mb-1">${fieldName}</p>
+                                        <p class="text-xs font-semibold text-gray-700 mb-1">${escapeHtml(fieldName)}</p>
                                         <div class="grid grid-cols-2 gap-2 text-xs">
                                             <div>
                                                 <span class="text-gray-500">Old:</span>
-                                                <span class="text-red-600 line-through ml-1">${oldVal}</span>
+                                                <span class="text-red-600 line-through ml-1">${escapeHtml(oldVal)}</span>
                                             </div>
                                             <div>
                                                 <span class="text-gray-500">New:</span>
-                                                <span class="text-green-600 font-medium ml-1">${newVal}</span>
+                                                <span class="text-green-600 font-medium ml-1">${escapeHtml(newVal)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -948,10 +948,10 @@
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center justify-between">
-                                <p class="font-semibold text-gray-800">${entry.user}</p>
-                                <span class="text-xs text-gray-500">${formattedDate}</span>
+                                <p class="font-semibold text-gray-800">${escapeHtml(entry.user)}</p>
+                                <span class="text-xs text-gray-500">${escapeHtml(formattedDate)}</span>
                             </div>
-                            <p class="text-sm text-gray-600 mt-1">${entry.changes}</p>
+                            <p class="text-sm text-gray-600 mt-1">${escapeHtml(entry.changes)}</p>
                             <span class="inline-block mt-1 px-2 py-1 text-xs rounded-full ${
                                 entry.action === 'created' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
                             }">
@@ -964,6 +964,11 @@
             }).join('');
             
             lucide.createIcons();
+        }
+
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         }
 
         function formatFieldName(field) {
