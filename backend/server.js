@@ -3271,58 +3271,51 @@ function makeAuthRequest(url, token) {
     });
 }
 
-// POST /api/story-mapping/fetch-jira — fetch JIRA feature issue content
+// POST /api/story-mapping/fetch-jira — fetch JIRA feature issue content (uses same jiraRequest as active-teams/sprint-for-team)
 app.post('/api/story-mapping/fetch-jira', async (req, res) => {
     try {
         const { url } = req.body;
         if (!url) return res.status(400).json({ success: false, message: 'JIRA URL is required' });
-        const { base, token } = getJiraCredentials(url);
-        if (!base || !token) return res.status(503).json({ success: false, message: 'JIRA not configured for this instance' });
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA not configured on server' });
+        }
 
         // Extract issue key from URL (e.g. VPIE-1234)
         const match = url.match(/\/browse\/([A-Z]+-\d+)/) || url.match(/([A-Z]+-\d+)/);
         if (!match) return res.status(400).json({ success: false, message: 'Could not extract issue key from URL' });
         const issueKey = match[1];
-        const jiraBase = base.replace(/\/$/, '');
+        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
 
-        const { status, body } = await makeAuthRequest(
-            `${jiraBase}/rest/api/2/issue/${issueKey}?expand=renderedFields&fields=*all`,
-            token
+        // Use same jiraRequest helper as all other working JIRA endpoints
+        const { status, body } = await jiraRequest(
+            `${jiraBase}/rest/api/2/issue/${issueKey}?expand=names,renderedFields&fields=*all`
         );
-        if (status !== 200) return res.status(status).json({ success: false, message: `JIRA returned ${status}`, body });
+        if (status !== 200) return res.status(status).json({ success: false, message: `JIRA returned ${status}` });
 
-        // Find Acceptance Criteria field dynamically
         const fields = body.fields || {};
-        let acceptanceCriteria = '';
-        let featureName = fields.summary || '';
-        let description = fields.description || '';
-
-        // Search all fields for one named "Acceptance Criteria"
         const fieldsMeta = body.names || {};
+        let acceptanceCriteria = '';
+
+        // Find Acceptance Criteria field by name dynamically
         for (const [fieldId, fieldName] of Object.entries(fieldsMeta)) {
             if (fieldName && fieldName.toLowerCase().includes('acceptance criteria')) {
-                const val = fields[fieldId];
-                if (val && typeof val === 'string') acceptanceCriteria = val;
-                else if (val && val.content) acceptanceCriteria = JSON.stringify(val);
-                break;
-            }
-        }
-        // Also check rendered fields
-        if (!acceptanceCriteria && body.renderedFields) {
-            for (const [fieldId, fieldName] of Object.entries(fieldsMeta)) {
-                if (fieldName && fieldName.toLowerCase().includes('acceptance criteria')) {
-                    const rendered = body.renderedFields[fieldId];
-                    if (rendered) { acceptanceCriteria = rendered; break; }
+                const raw = fields[fieldId];
+                if (raw && typeof raw === 'string') { acceptanceCriteria = raw; break; }
+                const rendered = body.renderedFields?.[fieldId];
+                if (rendered) {
+                    acceptanceCriteria = rendered.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+                    break;
                 }
+                if (raw && typeof raw === 'object') { acceptanceCriteria = JSON.stringify(raw); break; }
             }
         }
 
         res.json({
             success: true,
             issueKey,
-            featureName,
-            summary: featureName,
-            description,
+            featureName: fields.summary || '',
+            summary: fields.summary || '',
+            description: fields.description || '',
             acceptanceCriteria,
             issueType: fields.issuetype?.name || 'Feature',
             project: { key: fields.project?.key, name: fields.project?.name },
@@ -3334,31 +3327,31 @@ app.post('/api/story-mapping/fetch-jira', async (req, res) => {
     }
 });
 
-// POST /api/story-mapping/fetch-confluence — fetch Confluence page content
+// POST /api/story-mapping/fetch-confluence — fetch Confluence page content (uses same token as JIRA)
 app.post('/api/story-mapping/fetch-confluence', async (req, res) => {
     try {
         const { url } = req.body;
         if (!url) return res.status(400).json({ success: false, message: 'Confluence URL is required' });
+        if (!process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA token not configured on server' });
+        }
 
-        const token = url.includes('elevancehealth') ? process.env.JIRA2_API_TOKEN : process.env.JIRA_API_TOKEN;
-        const confBase = url.includes('elevancehealth')
-            ? 'https://confluence.elevancehealth.com'
-            : 'https://confluence.carelonrx.com';
-
-        // Extract page ID from URL
+        // Extract page ID from URL — supports /pages/123456 and /display/SPACE/Title?pageId=123456
         let pageId = null;
-        const pageIdMatch = url.match(/\/pages\/(\d+)/);
+        const pageIdMatch = url.match(/\/pages\/(\d+)/) || url.match(/[?&]pageId=(\d+)/);
         if (pageIdMatch) pageId = pageIdMatch[1];
-
         if (!pageId) return res.status(400).json({ success: false, message: 'Could not extract page ID from Confluence URL' });
 
-        const { status, body } = await makeAuthRequest(
-            `${confBase}/rest/api/content/${pageId}?expand=body.storage,body.view`,
-            token
+        const confBase = process.env.CONFLUENCE_BASE_URL
+            ? process.env.CONFLUENCE_BASE_URL.replace(/\/$/, '')
+            : 'https://confluence.carelonrx.com';
+
+        // Use same jiraRequest pattern — reuse helper with confluence base
+        const { status, body } = await jiraRequest(
+            `${confBase}/rest/api/content/${pageId}?expand=body.view,body.storage`
         );
         if (status !== 200) return res.status(status).json({ success: false, message: `Confluence returned ${status}` });
 
-        // Strip HTML tags for plain text
         const htmlContent = body.body?.view?.value || body.body?.storage?.value || '';
         const plainText = htmlContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
