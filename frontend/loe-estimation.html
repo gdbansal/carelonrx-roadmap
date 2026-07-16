@@ -435,7 +435,36 @@
         window.location.href = `${API_BASE}/loe/${state.initiativeId}/export?token=${localStorage.getItem('token') || ''}`;
     }
 
+    function toggleProfileDropdown() {
+        const dropdown = document.getElementById('profileDropdown');
+        if (dropdown) dropdown.classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('profileDropdown');
+        const btn = document.querySelector('[onclick="toggleProfileDropdown()"]');
+        if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    function handleLogout() {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+    }
+
+    function populateProfile() {
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user) { window.location.href = 'login.html'; return; }
+        const nameEl = document.getElementById('userName');
+        const initialsEl = document.getElementById('userInitials');
+        if (nameEl) nameEl.textContent = user.name || user.username || '';
+        if (initialsEl) initialsEl.textContent = (user.name || user.username || 'U').charAt(0).toUpperCase();
+    }
+
     // Init on load
+    populateProfile();
     init();
 </script>
 </body>
