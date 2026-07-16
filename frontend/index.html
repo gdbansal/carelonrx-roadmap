@@ -36,7 +36,7 @@
         <div class="bg-white rounded-2xl shadow-lg p-8 mb-10 text-center border-t-4 border-carelon-purple">
             <h2 class="text-2xl font-bold text-gray-800 mb-3">Welcome to Product 360</h2>
             <p class="text-gray-600 max-w-2xl mx-auto mb-6">
-                An integrated suite combining requirements intake, roadmap management, capacity planning, story mapping, and story estimations — all in one unified platform.
+                An integrated suite combining requirements intake, roadmap management, capacity planning, story mapping, LOE estimation, and story estimations — all in one unified platform.
             </p>
             <button onclick="window.location.href='login.html'"
                 class="btn-carelon-primary text-white px-10 py-4 rounded-lg text-lg font-semibold shadow-lg inline-flex items-center space-x-3">
@@ -110,22 +110,42 @@
             </div>
 
             <!-- Story Mapping -->
-            <div class="module-card bg-white rounded-xl p-6 shadow border-l-4 border-yellow-400 opacity-80">
+            <div class="module-card bg-white rounded-xl p-6 shadow border-l-4 border-yellow-400">
                 <div class="flex items-center mb-4">
                     <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4 bg-yellow-400">
                         <i data-lucide="git-branch" class="w-6 h-6 text-white"></i>
                     </div>
                     <div>
                         <h3 class="font-bold text-gray-800 text-lg">Story Mapping</h3>
-                        <span class="text-xs text-yellow-600 font-semibold">&#9203; COMING SOON</span>
+                        <span class="text-xs text-green-600 font-semibold">&#10003; AVAILABLE NOW</span>
                     </div>
                 </div>
-                <p class="text-sm text-gray-600 mb-3">Visual user story mapping to organise backlog items by user journey and release slices.</p>
+                <p class="text-sm text-gray-600 mb-3">AI-powered INVEST story breakdown from JIRA epics and Confluence pages with JIRA ticket creation.</p>
                 <ul class="text-xs text-gray-500 space-y-1">
-                    <li>&#8226; User journey visualisation</li>
-                    <li>&#8226; Backlog organisation</li>
-                    <li>&#8226; Release slice planning</li>
-                    <li>&#8226; Team collaboration</li>
+                    <li>&#8226; JIRA epic &amp; Confluence fetch</li>
+                    <li>&#8226; AI-generated INVEST stories</li>
+                    <li>&#8226; Review &amp; approve stories</li>
+                    <li>&#8226; Create JIRA tickets in bulk</li>
+                </ul>
+            </div>
+
+            <!-- LOE Estimation -->
+            <div class="module-card bg-white rounded-xl p-6 shadow border-l-4" style="border-color:#2563eb">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center mr-4" style="background-color:#2563eb">
+                        <i data-lucide="bar-chart-2" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">LOE Estimation</h3>
+                        <span class="text-xs text-green-600 font-semibold">&#10003; AVAILABLE NOW</span>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">Per-initiative effort estimation by system with SP/Dollar toggle, confidence scoring, and CSV export.</p>
+                <ul class="text-xs text-gray-500 space-y-1">
+                    <li>&#8226; Dev, QA &amp; Support SP breakdown</li>
+                    <li>&#8226; SP / Dollar mode toggle</li>
+                    <li>&#8226; Confidence % per system</li>
+                    <li>&#8226; CSV export</li>
                 </ul>
             </div>
 
