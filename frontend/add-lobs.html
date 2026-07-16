@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,6 +6,7 @@
     <title>Add Lines of Business - Bulk Import</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script src="assets/api-config.js"></script>
 </head>
 <body class="bg-gray-50 p-8">
     <div class="max-w-4xl mx-auto">
@@ -60,7 +61,7 @@
     </div>
 
     <script>
-        const API_BASE = 'https://carelonrx-roadmap.onrender.com';
+        const API_BASE = window.PRODUCT360_API_BASE || 'https://carelonrx-roadmap.onrender.com';
 
         const lobs = [
             'Elevance Health Digital Experience Product Engineering (EDEPT)',

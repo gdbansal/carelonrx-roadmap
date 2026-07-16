@@ -12,6 +12,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="assets/session-manager.js?v=2.2"></script>
+    <script src="assets/api-config.js"></script>
     <script src="assets/product360-sidebar.js?v=2.2" defer></script>
     <link rel="stylesheet" href="assets/carelon-theme.css?v=2.1">
 </head>
@@ -228,7 +229,7 @@
     </div>
 
     <script>
-        const API_BASE = 'https://carelonrx-roadmap.onrender.com';
+        const API_BASE = window.PRODUCT360_API_BASE || 'https://carelonrx-roadmap.onrender.com';
         let teamMembers = [];
         let isViewMode = false;
 
