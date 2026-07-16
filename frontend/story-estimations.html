@@ -1681,16 +1681,25 @@
             render();
         };
 
-        // Hardcoded team mapping for known projects
-        const PROJECT_TEAM_MAP = {
-            'CPDL': ['Specialty Pharmacy - Data Engineering & Analytics', 'VPDL'],
-            'CPTC': ['Tech Titans'],
-            'DIG':  ['API Squad', 'Digital Commandos'],
-            'IRX':  ['Mavericks'],
-            'ISOA': ['API Geeks', 'Digital Sprinters'],
-            'RDM':  ['RDM Development Team', 'RDM Project Team'],
-            'VPIE': ['Aero Avengers', 'Champions', 'Digital Divas', 'Enhance Warriors', 'Guardians', 'VPIE-ALL', 'VPIE-OTH']
-        };
+        // ── DATA SOURCE TOGGLE ──────────────────────────────────────────────
+        // Set to true  → use hardcoded project/team data (no JIRA API calls)
+        // Set to false → use live JIRA API (requires JIRA_BASE_URL + token)
+        const USE_HARDCODE = true;
+        // ───────────────────────────────────────────────────────────────────
+
+        // Hardcoded project + team data
+        const PROJECT_DATA = [
+            { key: 'CPDL', name: 'CarealonRx Pharmacy Data Lake', teams: ['Specialty Pharmacy - Data Engineering & Analytics', 'VPDL'] },
+            { key: 'CPTC', name: 'CPTC Engineering',              teams: ['Tech Titans'] },
+            { key: 'DIG',  name: 'Digital',                       teams: ['API Squad', 'Digital Commandos'] },
+            { key: 'IRX',  name: 'RxSmart',                       teams: ['Mavericks'] },
+            { key: 'ISOA', name: 'IngenioRX SOA API',             teams: ['API Geeks', 'Digital Sprinters'] },
+            { key: 'RDM',  name: 'Reports and Data Migr',         teams: ['RDM Development Team', 'RDM Project Team'] },
+            { key: 'VPIE', name: 'Intel Engine',                  teams: ['Aero Avengers', 'Champions', 'Digital Divas', 'Enhance Warriors', 'Guardians', 'VPIE-ALL', 'VPIE-OTH'] }
+        ];
+
+        // Lookup map for quick team resolution
+        const PROJECT_TEAM_MAP = Object.fromEntries(PROJECT_DATA.map(p => [p.key, p.teams]));
 
         const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent';
 
@@ -1698,6 +1707,23 @@
             const container = document.getElementById('projectNameContainer');
             const hint = document.getElementById('projectNameHint');
             if (!container) return;
+
+            if (USE_HARDCODE) {
+                // ── HARDCODED MODE ──
+                const select = document.getElementById('projectName');
+                select.innerHTML = `<option value="">Select project...</option>` +
+                    PROJECT_DATA.map(p => `<option value="${p.key}" data-name="${p.name}">${p.name} (${p.key})</option>`).join('');
+                select.disabled = false;
+                select.onchange = () => {
+                    const key = select.value;
+                    const name = select.options[select.selectedIndex]?.dataset?.name || '';
+                    loadTeamsForProject(key, name);
+                };
+                if (hint) hint.textContent = `${PROJECT_DATA.length} projects`;
+                return;
+            }
+
+            // ── API MODE ──
             try {
                 const response = await fetch(`${API_BASE_URL}/jira/projects`);
                 const data = await response.json();
