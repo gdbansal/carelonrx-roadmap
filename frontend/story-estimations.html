@@ -1524,14 +1524,14 @@
                     `}
 
                     <!-- Estimation Buttons -->
-                    <div class="mb-3">
-                        <div class="text-sm font-medium text-gray-700 mb-2">Your Estimation:</div>
-                        <div class="flex flex-wrap gap-2">
+                    <div class="mb-2">
+                        <div class="text-xs font-medium text-gray-600 mb-1">Your Estimation:</div>
+                        <div class="flex flex-wrap gap-1.5">
                             ${FIBONACCI.map(points => {
                                 const isSelected = userEst !== null && Number(userEst) === Number(points);
                                 return `
                                     <button onclick="updateEstimation('${story.id}', ${points})" 
-                                        class="fibonacci-btn px-3 py-2 rounded-md font-semibold ${
+                                        class="fibonacci-btn w-9 h-8 rounded text-sm font-semibold ${
                                             isSelected
                                                 ? 'selected bg-blue-600 text-white' 
                                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1541,7 +1541,7 @@
                                 `;
                             }).join('')}
                             <button onclick="updateEstimation('${story.id}', null)" 
-                                class="fibonacci-btn px-3 py-2 rounded-md font-semibold ${
+                                class="fibonacci-btn w-9 h-8 rounded text-sm font-semibold ${
                                     userEst === null 
                                         ? 'selected bg-gray-600 text-white' 
                                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1580,9 +1580,9 @@
                     ` : ''}
 
                     <!-- Team Estimations -->
-                    <div class="border-t pt-3">
-                        <div class="text-sm font-medium text-gray-700 mb-2">Team Estimations:</div>
-                        <div class="space-y-2">
+                    <div class="border-t pt-2">
+                        <div class="text-xs font-medium text-gray-600 mb-1">Team Estimations:</div>
+                        <div class="space-y-1">
                             ${state.currentSession.participants.map(participant => {
                                 const participantKey = `${participant.name}_${participant.role}`;
                                 const est = estimations[participantKey];
@@ -1592,18 +1592,18 @@
                                     const reason = est.devReason || est.qaReason || '';
                                     const displayPoints = est.points === null ? '?' : est.points;
                                     return `
-                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                            <div class="flex items-center justify-between mb-1">
+                                        <div class="px-3 py-1.5 bg-gray-50 rounded border border-gray-200">
+                                            <div class="flex items-center justify-between">
                                                 <div>
-                                                    <span class="font-medium text-gray-900">${participant.name}</span>
-                                                    <span class="text-gray-500 text-xs ml-1">(${participant.role})</span>
+                                                    <span class="text-sm font-medium text-gray-900">${participant.name}</span>
+                                                    <span class="text-gray-400 text-xs ml-1">(${participant.role})</span>
                                                 </div>
-                                                <span class="font-bold text-lg ${shouldShow ? (est.points === null ? 'text-gray-600' : 'text-blue-600') : 'text-gray-400'}">
+                                                <span class="font-bold text-sm ${shouldShow ? (est.points === null ? 'text-gray-600' : 'text-blue-600') : 'text-gray-400'}">
                                                     ${shouldShow ? displayPoints : '***'}
                                                 </span>
                                             </div>
                                             ${shouldShow && reason ? `
-                                                <div class="text-xs text-gray-600 mt-1 pl-2 border-l-2 border-blue-300">
+                                                <div class="text-xs text-gray-500 mt-0.5 pl-2 border-l-2 border-blue-300">
                                                     ${reason}
                                                 </div>
                                             ` : ''}
@@ -1611,13 +1611,10 @@
                                     `;
                                 } else {
                                     return `
-                                        <div class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                        <div class="px-3 py-1.5 bg-orange-50 border border-orange-200 rounded">
                                             <div class="flex items-center justify-between">
-                                                <div>
-                                                    <span class="font-medium text-gray-900">${participant.name}</span>
-                                                    <span class="text-gray-500 text-xs ml-1">(${participant.role})</span>
-                                                </div>
-                                                <span class="text-orange-600 font-medium text-sm">Waiting...</span>
+                                                <span class="text-sm font-medium text-gray-900">${participant.name} <span class="text-gray-400 text-xs">(${participant.role})</span></span>
+                                                <span class="text-orange-500 text-xs">Waiting...</span>
                                             </div>
                                         </div>
                                     `;
