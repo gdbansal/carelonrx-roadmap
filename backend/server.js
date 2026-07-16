@@ -36,21 +36,29 @@ connectDB();
 // Security headers
 app.use(helmet({ contentSecurityPolicy: false }));
 
-// CORS - S6: no wildcard fallback
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:8080')
+// CORS - no wildcard fallback
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5000')
     .split(',').map(o => o.trim());
-allowedOrigins.push('https://carelonrx-roadmap.onrender.com');
+[
+    'https://carelonrx-roadmap.onrender.com',
+    'https://carelonrx-roadmap1.onrender.com',
+    'http://localhost:5000',
+    'http://localhost:3000',
+    'http://localhost:8080',
+    'http://127.0.0.1:5000'
+].forEach(o => { if (!allowedOrigins.includes(o)) allowedOrigins.push(o); });
 
 const corsOptions = {
     origin: function(origin, callback) {
         if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin) || /^http:\/\/(10|192\.168|172\.(1[6-9]|2\d|3[01]))\./i.test(origin)) {
+        if (allowedOrigins.includes(origin) ||
+            /^http:\/\/(10|192\.168|172\.(1[6-9]|2\d|3[01]))\./i.test(origin)) {
             return callback(null, true);
         }
         return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
-    optionsSuccessOptions: 200
+    optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
