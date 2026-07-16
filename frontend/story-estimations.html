@@ -813,6 +813,11 @@
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
+
+            // Auto-load active teams dropdown when Create Session form is rendered
+            if (state.user && !state.currentSession && document.getElementById('teamNameContainer')) {
+                loadActiveTeamsDropdown();
+            }
         }
 
         function renderReasonModal() {
@@ -911,15 +916,15 @@
             ` : '';
             
             return `
-                <div class="min-h-screen flex items-center justify-center">
-                    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-                        <div class="text-center mb-6">
-                            <i data-lucide="users" class="w-16 h-16 mx-auto text-gray-700 mb-4"></i>
-                            <h2 class="text-2xl font-bold text-gray-900">Story Point Estimator</h2>
-                            <p class="text-gray-600 mt-2">${state.joiningViaUrl ? 'Join the estimation session' : 'Enter your details to begin'}</p>
+                <div class="flex items-center justify-center py-8">
+                    <div class="bg-white p-5 rounded-lg shadow-lg max-w-md w-full">
+                        <div class="text-center mb-4">
+                            <i data-lucide="users" class="w-10 h-10 mx-auto text-gray-700 mb-2"></i>
+                            <h2 class="text-xl font-bold text-gray-900">Story Point Estimator</h2>
+                            <p class="text-sm text-gray-600 mt-1">${state.joiningViaUrl ? 'Join the estimation session' : 'Enter your details to begin'}</p>
                         </div>
                         ${joiningMessage}
-                        <div class="space-y-4">
+                        <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
                                 <input type="text" id="loginName" placeholder="Enter your name" value="${defaultName}"
@@ -951,12 +956,14 @@
             const showInfoMessage = state.joiningViaUrl && state.sessionId;
             
             return `
-                <div class="max-w-2xl mx-auto">
-                    <div class="bg-white rounded-lg shadow-lg p-8">
-                        <div class="text-center mb-8">
-                            <i data-lucide="users" class="w-16 h-16 mx-auto text-gray-700 mb-4"></i>
-                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Join Estimation Session</h2>
-                            <p class="text-gray-600">${hasPoPrivileges() ? 'Create a new session or join existing' : 'Join an existing session'}</p>
+                <div class="max-w-xl mx-auto">
+                    <div class="bg-white rounded-lg shadow-lg p-5">
+                        <div class="flex items-center space-x-3 mb-5">
+                            <i data-lucide="users" class="w-9 h-9 text-gray-700 flex-shrink-0"></i>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-900 leading-tight">Join Estimation Session</h2>
+                                <p class="text-sm text-gray-500">${hasPoPrivileges() ? 'Create a new session or join existing' : 'Join an existing session'}</p>
+                            </div>
                         </div>
                         
                         ${showInfoMessage ? `
@@ -970,43 +977,48 @@
                         ` : ''}
                         
                         ${hasPoPrivileges() && !state.joiningViaUrl ? `
-                            <div class="mb-6 p-6 bg-gray-50 rounded-lg">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                    <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i>
+                            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                                <h3 class="text-base font-semibold text-gray-900 mb-3 flex items-center">
+                                    <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i>
                                     Create New Session
                                 </h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Team Name
-                                            <!-- JIRA Integration temporarily disabled -->
-                                        </label>
-                                        <input type="text" id="teamName" placeholder="Enter team name" 
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                        <p class="text-xs text-gray-500 mt-1">Enter your team or project name</p>
+                                <div class="space-y-2">
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Team Name</label>
+                                            <div id="teamNameContainer">
+                                                <select id="teamName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" disabled>
+                                                    <option value="">Loading active teams from JIRA...</option>
+                                                </select>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1" id="teamNameHint">Loading teams from JIRA...</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Sprint Value</label>
+                                            <div id="sprintValueContainer">
+                                                <input type="text" id="sprintValue" placeholder="Select a team to load sprints" 
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" disabled>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1" id="sprintValueHint"></p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Sprint Value</label>
-                                        <input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)" 
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                    </div>
-                                    <button onclick="handleCreateSessionClick()" class="w-full px-4 py-3 btn-primary rounded-lg font-medium transition">
+                                    <button onclick="handleCreateSessionClick()" class="w-full px-3 py-2 btn-primary rounded-lg font-medium transition text-sm">
                                         Create Session
                                     </button>
                                 </div>
                             </div>
-                            <div class="text-center text-gray-500 my-6">or</div>
+                            <div class="text-center text-gray-400 text-sm my-2">or</div>
                         ` : ''}
                         
-                        <div class="space-y-4">
+                        <div class="space-y-3">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Session ID</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Session ID</label>
                                 <input type="text" id="sessionIdInput" placeholder="Enter session ID" value="${sessionIdValue}"
                                     ${state.joiningViaUrl ? 'readonly' : ''}
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${state.joiningViaUrl ? 'bg-gray-50' : ''}">
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${state.joiningViaUrl ? 'bg-gray-50' : ''}">
                                 ${state.joiningViaUrl ? '<p class="text-xs text-gray-500 mt-1">Session ID from shared URL (read-only)</p>' : ''}
                             </div>
-                            <button onclick="handleJoinSessionClick()" class="w-full px-4 py-3 btn-primary rounded-lg font-medium transition">
+                            <button onclick="handleJoinSessionClick()" class="w-full px-3 py-2 btn-primary rounded-lg font-medium transition text-sm">
                                 Join Session
                             </button>
                         </div>
@@ -1643,43 +1655,104 @@
             render();
         };
 
-        window.loadJiraProjects = async function() {
+        async function loadActiveTeamsDropdown() {
             const container = document.getElementById('teamNameContainer');
-            const loadingMsg = document.getElementById('jiraLoadingMessage');
-            
-            if (!container || !loadingMsg) return;
-            
-            // Show loading message
-            loadingMsg.classList.remove('hidden');
-            
+            const hint = document.getElementById('teamNameHint');
+            if (!container) return;
             try {
-                const response = await fetch(`${API_BASE_URL}/jira/projects`);
+                const token = localStorage.getItem('token') || localStorage.getItem('storyEstToken');
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const response = await fetch(`${API_BASE_URL}/jira/active-teams`, { headers });
                 const data = await response.json();
-                
-                if (data.success && data.projects && data.projects.length > 0) {
-                    // Replace input with dropdown
-                    container.innerHTML = `
-                        <select id="teamName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Select a JIRA project...</option>
-                            ${data.projects.map(p => `
-                                <option value="${p.name}" data-key="${p.key}">
-                                    ${p.name} (${p.key}) - Lead: ${p.lead}
-                                </option>
-                            `).join('')}
-                        </select>
-                    `;
-                    loadingMsg.classList.add('hidden');
-                    lucide.createIcons();
+                if (data.success && data.data && data.data.length > 0) {
+                    // Build flat list of all active teams across all projects
+                    const allTeams = [];
+                    data.data.forEach(project => {
+                        project.activeTeams.forEach(team => {
+                            allTeams.push({ label: `${team.name} (${project.projectKey})`, value: team.name });
+                        });
+                    });
+                    allTeams.sort((a, b) => a.label.localeCompare(b.label));
+                    const select = document.getElementById('teamName');
+                    select.innerHTML = `<option value="">Select active team...</option>` +
+                        allTeams.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
+                    select.disabled = false;
+                    select.onchange = () => loadSprintsForTeam(select.value);
+                    if (hint) hint.textContent = `${allTeams.length} active teams loaded from JIRA`;
                 } else {
-                    alert('No JIRA projects found or JIRA integration not configured');
-                    loadingMsg.classList.add('hidden');
+                    // Fallback to free text if JIRA not configured
+                    container.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name"
+                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
+                    if (hint) hint.textContent = 'JIRA not configured — enter team name manually';
+                    // Sprint field — enable free text immediately since no JIRA
+                    const sprintContainer = document.getElementById('sprintValueContainer');
+                    const sprintHint = document.getElementById('sprintValueHint');
+                    if (sprintContainer) {
+                        sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Enter Sprint value"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
+                        if (sprintHint) sprintHint.textContent = '';
+                    }
                 }
             } catch (error) {
-                console.error('Error loading JIRA projects:', error);
-                alert('Failed to load JIRA projects: ' + error.message);
-                loadingMsg.classList.add('hidden');
+                console.error('Error loading active teams:', error);
+                container.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
+                if (hint) hint.textContent = 'Could not load JIRA teams — enter team name manually';
+                    const sprintContainer = document.getElementById('sprintValueContainer');
+                    const sprintHint = document.getElementById('sprintValueHint');
+                    if (sprintContainer) {
+                        sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Enter Sprint value"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
+                        if (sprintHint) sprintHint.textContent = '';
+                    }
             }
-        };
+        }
+
+        window.loadJiraProjects = loadActiveTeamsDropdown;
+
+        async function loadSprintsForTeam(teamName) {
+            const container = document.getElementById('sprintValueContainer');
+            const hint = document.getElementById('sprintValueHint');
+            if (!container) return;
+            if (!teamName) {
+                container.innerHTML = `<input type="text" id="sprintValue" placeholder="Select a team to load sprints"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" disabled>`;
+                if (hint) hint.textContent = '';
+                return;
+            }
+            // Show loading state
+            container.innerHTML = `<input type="text" id="sprintValue" placeholder="Loading sprints..."
+                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" disabled>`;
+            if (hint) hint.textContent = 'Fetching sprints from JIRA...';
+            try {
+                const response = await fetch(`${API_BASE_URL}/jira/sprint-for-team?teamName=${encodeURIComponent(teamName)}`);
+                const data = await response.json();
+                if (data.success && data.sprints && data.sprints.length > 0) {
+                    const stateOrder = { active: 0, future: 1, closed: 2 };
+                    const sorted = [...data.sprints].sort((a, b) => {
+                        const sd = (stateOrder[a.state] ?? 3) - (stateOrder[b.state] ?? 3);
+                        if (sd !== 0) return sd;
+                        return new Date(b.startDate || 0) - new Date(a.startDate || 0);
+                    });
+                    const options = sorted.map(s => {
+                        const badge = s.state === 'active' ? ' [Active]' : s.state === 'future' ? ' [Future]' : ' [Closed]';
+                        const selected = s.id === data.preSelectedSprintId ? 'selected' : '';
+                        return `<option value="${s.name}" ${selected}>${s.name}${badge}</option>`;
+                    }).join('');
+                    container.innerHTML = `<select id="sprintValue" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">${options}</select>`;
+                    if (hint) hint.textContent = `${data.sprints.length} sprints loaded — pre-selected: ${data.preSelectedSprintName || 'none'}`;
+                } else {
+                    container.innerHTML = `<input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)"
+                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
+                    if (hint) hint.textContent = data.message || 'No sprints found — enter manually';
+                }
+            } catch (error) {
+                console.error('Error loading sprints:', error);
+                container.innerHTML = `<input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
+                if (hint) hint.textContent = 'Could not load sprints — enter manually';
+            }
+        }
 
         window.handleCreateSessionClick = async function() {
             const teamNameElement = document.getElementById('teamName');

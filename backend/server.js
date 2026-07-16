@@ -2032,6 +2032,169 @@ app.get('/api/jira/teams', authMiddleware, async (req, res) => {
     }
 });
 
+// Active projects + active teams (boards with active sprints)
+app.get('/api/jira/active-teams', async (req, res) => {
+    try {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA integration not configured', data: [] });
+        }
+        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
+
+        // Step 1: Get all non-archived projects
+        const { status: ps, body: projectsBody } = await jiraRequest(`${jiraBase}/rest/api/2/project?maxResults=500`);
+        if (ps !== 200 || !Array.isArray(projectsBody)) {
+            return res.json({ success: true, data: [] });
+        }
+        const activeProjects = projectsBody.filter(p => !p.archived);
+
+        // Step 2: Get all boards (paginated)
+        let allBoards = [];
+        let boardStart = 0;
+        let boardTotal = 1;
+        while (boardStart < boardTotal) {
+            const { status: bs, body: boardsBody } = await jiraRequest(
+                `${jiraBase}/rest/agile/1.0/board?maxResults=50&startAt=${boardStart}`
+            );
+            if (bs !== 200 || !boardsBody.values) break;
+            allBoards = allBoards.concat(boardsBody.values);
+            boardTotal = boardsBody.total || 0;
+            boardStart += 50;
+            if (boardsBody.values.length === 0) break;
+        }
+
+        // Step 3: For each board, check active sprints in parallel (batches of 10)
+        const activeBoardsByProject = {};
+        const batchSize = 10;
+        for (let i = 0; i < allBoards.length; i += batchSize) {
+            const batch = allBoards.slice(i, i + batchSize);
+            await Promise.all(batch.map(async (board) => {
+                if (board.type === 'kanban') {
+                    // Kanban boards don't have sprints — check recent issues instead
+                    const projectKey = board.location && board.location.projectKey;
+                    if (!projectKey) return;
+                    if (!activeBoardsByProject[projectKey]) activeBoardsByProject[projectKey] = [];
+                    activeBoardsByProject[projectKey].push({ id: board.id, name: board.name, type: 'kanban' });
+                    return;
+                }
+                try {
+                    const { status: ss, body: sprintsBody } = await jiraRequest(
+                        `${jiraBase}/rest/agile/1.0/board/${board.id}/sprint?state=active&maxResults=1`
+                    );
+                    if (ss === 200 && sprintsBody.values && sprintsBody.values.length > 0) {
+                        const projectKey = board.location && board.location.projectKey;
+                        if (!projectKey) return;
+                        if (!activeBoardsByProject[projectKey]) activeBoardsByProject[projectKey] = [];
+                        activeBoardsByProject[projectKey].push({ id: board.id, name: board.name, type: 'scrum' });
+                    }
+                } catch (e) { /* skip board on error */ }
+            }));
+        }
+
+        // Step 4: Build result — only active projects that have active teams
+        const projectMap = {};
+        activeProjects.forEach(p => { projectMap[p.key] = p.name; });
+
+        const result = Object.entries(activeBoardsByProject)
+            .filter(([key]) => projectMap[key])
+            .map(([key, teams]) => ({
+                projectKey: key,
+                projectName: projectMap[key],
+                activeTeams: teams.sort((a, b) => a.name.localeCompare(b.name))
+            }))
+            .sort((a, b) => a.projectName.localeCompare(b.projectName));
+
+        res.json({ success: true, totalProjects: result.length, totalTeams: result.reduce((s, p) => s + p.activeTeams.length, 0), data: result });
+    } catch (error) {
+        console.error('JIRA active-teams error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch active teams', data: [] });
+    }
+});
+
+// Sprints for a given team name (all: closed + active + future)
+app.get('/api/jira/sprint-for-team', async (req, res) => {
+    try {
+        const { teamName } = req.query;
+        if (!teamName) {
+            return res.status(400).json({ success: false, message: 'teamName query param is required', sprints: [], preSelectedSprintId: null });
+        }
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA integration not configured', sprints: [], preSelectedSprintId: null });
+        }
+        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
+
+        // Step 1: Find board matching teamName (case-insensitive)
+        let matchedBoard = null;
+        let boardStart = 0;
+        let boardTotal = 1;
+        while (boardStart < boardTotal && !matchedBoard) {
+            const { status: bs, body: boardsBody } = await jiraRequest(
+                `${jiraBase}/rest/agile/1.0/board?maxResults=50&startAt=${boardStart}`
+            );
+            if (bs !== 200 || !boardsBody.values) break;
+            matchedBoard = boardsBody.values.find(b =>
+                b.name.toLowerCase() === teamName.toLowerCase()
+            );
+            boardTotal = boardsBody.total || 0;
+            boardStart += 50;
+            if (boardsBody.values.length === 0) break;
+        }
+
+        if (!matchedBoard) {
+            return res.json({ success: false, message: `No board found for team: ${teamName}`, sprints: [], preSelectedSprintId: null });
+        }
+
+        // Step 2: Fetch ALL sprints (closed + active + future) paginated
+        let allSprints = [];
+        let sprintStart = 0;
+        let sprintTotal = 1;
+        while (sprintStart < sprintTotal) {
+            const { status: ss, body: sprintsBody } = await jiraRequest(
+                `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?maxResults=50&startAt=${sprintStart}`
+            );
+            if (ss !== 200 || !sprintsBody.values) break;
+            allSprints = allSprints.concat(sprintsBody.values);
+            sprintTotal = sprintsBody.total || 0;
+            sprintStart += 50;
+            if (sprintsBody.values.length === 0) break;
+        }
+
+        // Step 3: Sort by startDate ascending
+        allSprints.sort((a, b) => {
+            const da = a.startDate ? new Date(a.startDate) : new Date(0);
+            const db = b.startDate ? new Date(b.startDate) : new Date(0);
+            return da - db;
+        });
+
+        // Step 4: Determine pre-selected sprint
+        const activeSprint = allSprints.find(s => s.state === 'active');
+        const activeIndex = activeSprint ? allSprints.indexOf(activeSprint) : -1;
+        const nextSprint = activeIndex >= 0
+            ? allSprints.slice(activeIndex + 1).find(s => s.state === 'future')
+            : null;
+        const preSelected = nextSprint || activeSprint || null;
+
+        const sprints = allSprints.map(s => ({
+            id: s.id,
+            name: s.name,
+            state: s.state,
+            startDate: s.startDate || null,
+            endDate: s.endDate || null
+        }));
+
+        res.json({
+            success: true,
+            boardId: matchedBoard.id,
+            boardName: matchedBoard.name,
+            sprints,
+            preSelectedSprintId: preSelected ? preSelected.id : null,
+            preSelectedSprintName: preSelected ? preSelected.name : null
+        });
+    } catch (error) {
+        console.error('JIRA sprint-for-team error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch sprints', sprints: [], preSelectedSprintId: null });
+    }
+});
+
 // ========== JIRA2 INTEGRATION (Elevance Health) ==========
 
 function jiraRequest2(url) {
