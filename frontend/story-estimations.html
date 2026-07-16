@@ -355,9 +355,10 @@
         // ============================================
         // SESSION MANAGEMENT
         // ============================================
-        async function handleCreateSession(teamName, sprintValue) {
+        async function handleCreateSession(teamName, sprintValue, projectName) {
             const newSessionId = generateSessionId();
             const sessionData = {
+                projectName: projectName || '',
                 teamName,
                 sprintValue,
                 participants: [{ name: state.user.name, role: state.user.role }],
@@ -814,9 +815,9 @@
                 lucide.createIcons();
             }
 
-            // Auto-load active teams dropdown when Create Session form is rendered
-            if (state.user && !state.currentSession && document.getElementById('teamNameContainer')) {
-                loadActiveTeamsDropdown();
+            // Auto-load projects dropdown when Create Session form is rendered
+            if (state.user && !state.currentSession && document.getElementById('projectNameContainer')) {
+                loadProjectsDropdown();
             }
         }
 
@@ -983,20 +984,29 @@
                                     Create New Session
                                 </h3>
                                 <div class="space-y-2">
-                                    <div class="grid grid-cols-2 gap-3">
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
+                                            <div id="projectNameContainer">
+                                                <select id="projectName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" disabled>
+                                                    <option value="">Loading projects...</option>
+                                                </select>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1" id="projectNameHint">Loading from JIRA...</p>
+                                        </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Team Name</label>
                                             <div id="teamNameContainer">
                                                 <select id="teamName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" disabled>
-                                                    <option value="">Loading active teams from JIRA...</option>
+                                                    <option value="">Select a project first</option>
                                                 </select>
                                             </div>
-                                            <p class="text-xs text-gray-500 mt-1" id="teamNameHint">Loading teams from JIRA...</p>
+                                            <p class="text-xs text-gray-500 mt-1" id="teamNameHint"></p>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Sprint Value</label>
                                             <div id="sprintValueContainer">
-                                                <input type="text" id="sprintValue" placeholder="Select a team to load sprints" 
+                                                <input type="text" id="sprintValue" placeholder="Select a team first" 
                                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" disabled>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-1" id="sprintValueHint"></p>
@@ -1672,60 +1682,125 @@
             render();
         };
 
-        async function loadActiveTeamsDropdown() {
-            const container = document.getElementById('teamNameContainer');
-            const hint = document.getElementById('teamNameHint');
+        // Hardcoded team mapping for known projects
+        const PROJECT_TEAM_MAP = {
+            'CPDL': ['Specialty Pharmacy - Data Engineering & Analytics', 'VPDL'],
+            'CPTC': ['Tech Titans'],
+            'DIG':  ['API Squad', 'Digital Commandos'],
+            'IRX':  ['Mavericks'],
+            'ISOA': ['API Geeks', 'Digital Sprinters'],
+            'RDM':  ['RDM Development Team', 'RDM Project Team'],
+            'VPIE': ['Aero Avengers', 'Champions', 'Digital Divas', 'Enhance Warriors', 'Guardians', 'VPIE-ALL', 'VPIE-OTH']
+        };
+
+        const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent';
+
+        async function loadProjectsDropdown() {
+            const container = document.getElementById('projectNameContainer');
+            const hint = document.getElementById('projectNameHint');
             if (!container) return;
             try {
-                const token = localStorage.getItem('token') || localStorage.getItem('storyEstToken');
-                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-                const response = await fetch(`${API_BASE_URL}/jira/active-teams`, { headers });
+                const response = await fetch(`${API_BASE_URL}/jira/projects`);
                 const data = await response.json();
-                if (data.success && data.data && data.data.length > 0) {
-                    // Build flat list of all active teams across all projects
-                    const allTeams = [];
-                    data.data.forEach(project => {
-                        project.activeTeams.forEach(team => {
-                            allTeams.push({ label: `${team.name} (${project.projectKey})`, value: team.name });
-                        });
-                    });
-                    allTeams.sort((a, b) => a.label.localeCompare(b.label));
-                    const select = document.getElementById('teamName');
-                    select.innerHTML = `<option value="">Select active team...</option>` +
-                        allTeams.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
+                if (data.success && data.projects && data.projects.length > 0) {
+                    const select = document.getElementById('projectName');
+                    select.innerHTML = `<option value="">Select project...</option>` +
+                        data.projects.map(p => `<option value="${p.key}" data-name="${p.name}">${p.label}</option>`).join('');
                     select.disabled = false;
-                    select.onchange = () => loadSprintsForTeam(select.value);
-                    if (hint) hint.textContent = `${allTeams.length} active teams loaded from JIRA`;
+                    select.onchange = () => {
+                        const key = select.value;
+                        const name = select.options[select.selectedIndex]?.dataset?.name || '';
+                        loadTeamsForProject(key, name);
+                    };
+                    if (hint) hint.textContent = `${data.projects.length} projects loaded`;
                 } else {
-                    // Fallback to free text if JIRA not configured
-                    container.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-                    if (hint) hint.textContent = 'JIRA not configured — enter team name manually';
-                    // Sprint field — enable free text immediately since no JIRA
-                    const sprintContainer = document.getElementById('sprintValueContainer');
-                    const sprintHint = document.getElementById('sprintValueHint');
-                    if (sprintContainer) {
-                        sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Enter Sprint value"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-                        if (sprintHint) sprintHint.textContent = '';
-                    }
+                    container.innerHTML = `<input type="text" id="projectName" placeholder="Enter project name" class="${INPUT_CLS}">`;
+                    if (hint) hint.textContent = 'JIRA not configured — enter manually';
+                    enableFreeTextFallback();
                 }
             } catch (error) {
-                console.error('Error loading active teams:', error);
-                container.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-                if (hint) hint.textContent = 'Could not load JIRA teams — enter team name manually';
-                    const sprintContainer = document.getElementById('sprintValueContainer');
-                    const sprintHint = document.getElementById('sprintValueHint');
-                    if (sprintContainer) {
-                        sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Enter Sprint value"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-                        if (sprintHint) sprintHint.textContent = '';
-                    }
+                console.error('Error loading projects:', error);
+                container.innerHTML = `<input type="text" id="projectName" placeholder="Enter project name" class="${INPUT_CLS}">`;
+                if (hint) hint.textContent = 'Could not load projects';
+                enableFreeTextFallback();
             }
         }
 
-        window.loadJiraProjects = loadActiveTeamsDropdown;
+        function enableFreeTextFallback() {
+            const teamContainer = document.getElementById('teamNameContainer');
+            const teamHint = document.getElementById('teamNameHint');
+            const sprintContainer = document.getElementById('sprintValueContainer');
+            const sprintHint = document.getElementById('sprintValueHint');
+            if (teamContainer) {
+                teamContainer.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name" class="${INPUT_CLS}">`;
+                if (teamHint) teamHint.textContent = '';
+            }
+            if (sprintContainer) {
+                sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Enter Sprint value" class="${INPUT_CLS}">`;
+                if (sprintHint) sprintHint.textContent = '';
+            }
+        }
+
+        async function loadTeamsForProject(projectKey, projectName) {
+            const container = document.getElementById('teamNameContainer');
+            const hint = document.getElementById('teamNameHint');
+            // Reset sprint when project changes
+            const sprintContainer = document.getElementById('sprintValueContainer');
+            const sprintHint = document.getElementById('sprintValueHint');
+            if (sprintContainer) {
+                sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Select a team first" class="${INPUT_CLS}" disabled>`;
+                if (sprintHint) sprintHint.textContent = '';
+            }
+            if (!projectKey) {
+                container.innerHTML = `<select id="teamName" class="${INPUT_CLS}" disabled><option value="">Select a project first</option></select>`;
+                if (hint) hint.textContent = '';
+                return;
+            }
+            // Use hardcoded teams if project is in the map
+            if (PROJECT_TEAM_MAP[projectKey]) {
+                const teams = PROJECT_TEAM_MAP[projectKey];
+                const select = document.createElement('select');
+                select.id = 'teamName';
+                select.className = INPUT_CLS;
+                select.innerHTML = `<option value="">Select team...</option>` +
+                    teams.map(t => `<option value="${t}">${t}</option>`).join('');
+                select.onchange = () => loadSprintsForTeam(select.value);
+                container.innerHTML = '';
+                container.appendChild(select);
+                if (hint) hint.textContent = `${teams.length} teams`;
+            } else {
+                // Fallback: fetch active teams from JIRA filtered loosely by project
+                container.innerHTML = `<select id="teamName" class="${INPUT_CLS}" disabled><option value="">Loading teams...</option></select>`;
+                if (hint) hint.textContent = 'Loading teams from JIRA...';
+                try {
+                    const res = await fetch(`${API_BASE_URL}/jira/active-teams`);
+                    const data = await res.json();
+                    if (data.success && data.data) {
+                        const proj = data.data.find(p => p.projectKey === projectKey);
+                        const teams = proj ? proj.activeTeams : [];
+                        const select = document.getElementById('teamName');
+                        if (teams.length > 0) {
+                            select.innerHTML = `<option value="">Select team...</option>` +
+                                teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+                            select.disabled = false;
+                            select.onchange = () => loadSprintsForTeam(select.value);
+                            if (hint) hint.textContent = `${teams.length} teams`;
+                        } else {
+                            container.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name" class="${INPUT_CLS}">`;
+                            if (hint) hint.textContent = 'No teams found — enter manually';
+                            if (sprintContainer) {
+                                sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Enter Sprint value" class="${INPUT_CLS}">`;
+                            }
+                        }
+                    }
+                } catch(e) {
+                    container.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name" class="${INPUT_CLS}">`;
+                    if (hint) hint.textContent = 'Could not load teams';
+                }
+            }
+        }
+
+        window.loadJiraProjects = loadProjectsDropdown;
 
         async function loadSprintsForTeam(teamName) {
             const container = document.getElementById('sprintValueContainer');
@@ -1774,15 +1849,17 @@
         window.handleCreateSessionClick = async function() {
             const teamNameElement = document.getElementById('teamName');
             const teamName = teamNameElement ? teamNameElement.value.trim() : '';
+            const projectEl = document.getElementById('projectName');
+            const projectName = projectEl ? (projectEl.options ? projectEl.options[projectEl.selectedIndex]?.text : projectEl.value.trim()) : '';
             const sprintValue = document.getElementById('sprintValue').value.trim();
             
             if (!teamName || !sprintValue) {
-                alert('Please enter both team name and sprint value');
+                alert('Please enter team name and sprint value');
                 return;
             }
             
             try {
-                await handleCreateSession(teamName, sprintValue);
+                await handleCreateSession(teamName, sprintValue, projectName);
             } catch (error) {
                 alert('Failed to create session: ' + error.message);
             }

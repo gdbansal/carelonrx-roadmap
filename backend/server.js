@@ -2033,6 +2033,29 @@ app.get('/api/jira/teams', authMiddleware, async (req, res) => {
 });
 
 // Active projects + active teams (boards with active sprints)
+app.get('/api/jira/projects', async (req, res) => {
+    try {
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA integration not configured', projects: [] });
+        }
+        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
+        const { status, body } = await jiraRequest(`${jiraBase}/rest/api/2/project?maxResults=500`);
+        if (status !== 200 || !Array.isArray(body)) {
+            return res.status(500).json({ success: false, message: 'Failed to fetch projects', projects: [] });
+        }
+        // Deduplicate by key, sort by name
+        const seen = new Set();
+        const projects = body
+            .filter(p => { if (seen.has(p.key)) return false; seen.add(p.key); return true; })
+            .map(p => ({ key: p.key, name: p.name, label: `${p.name} (${p.key})` }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+        res.json({ success: true, projects });
+    } catch (error) {
+        console.error('JIRA projects error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch projects', projects: [] });
+    }
+});
+
 app.get('/api/jira/active-teams', async (req, res) => {
     try {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
