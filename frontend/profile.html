@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="assets/carelon-theme.css">
 </head>
 <body class="bg-gray-50">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-carelon-purple focus:text-white focus:rounded-lg focus:font-semibold">Skip to main content</a>
     <!-- Navigation -->
     <nav class="bg-white shadow-lg">
         <div class="container mx-auto px-6 py-4">
@@ -26,7 +27,7 @@
                 <div class="flex items-center space-x-4">
                     <!-- Profile Dropdown -->
                     <div class="relative">
-                        <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                        <button type="button" onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
                             <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                                 <span id="userInitials">U</span>
                                 <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
@@ -49,7 +50,7 @@
                                 <span>Admin Panel</span>
                             </a>
                             <hr class="my-2">
-                            <button onclick="handleLogout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                            <button type="button" onclick="handleLogout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
                                 <i data-lucide="log-out" class="w-4 h-4"></i>
                                 <span>Logout</span>
                             </button>
@@ -71,7 +72,7 @@
                         <span id="profileInitials">U</span>
                         <img id="profileImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
                     </div>
-                    <button onclick="document.getElementById('imageUpload').click()" 
+                    <button type="button" onclick="document.getElementById('imageUpload').click()" 
                         class="absolute bottom-0 right-0 btn-carelon-primary text-white p-2 rounded-full transition">
                         <i data-lucide="camera" class="w-4 h-4"></i>
                     </button>
@@ -182,13 +183,13 @@
     </div>
 
     <!-- Success Message -->
-    <div id="successMessage" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+    <div id="successMessage" role="status" aria-live="polite" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50">
         <i data-lucide="check-circle" class="w-6 h-6"></i>
         <span>Profile updated successfully!</span>
     </div>
 
     <!-- Error Message -->
-    <div id="errorMessage" class="hidden fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+    <div id="errorMessage" role="alert" aria-live="assertive" class="hidden fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50">
         <i data-lucide="alert-circle" class="w-6 h-6"></i>
         <span id="errorText">An error occurred</span>
     </div>

@@ -29,6 +29,7 @@
     </style>
 </head>
 <body class="bg-gray-50">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-carelon-purple focus:text-white focus:rounded-lg focus:font-semibold">Skip to main content</a>
     <!-- Navigation (no-print) -->
     <nav class="bg-white shadow-lg no-print">
         <div class="container mx-auto px-6 py-4">
@@ -40,7 +41,7 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button onclick="window.print()" class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                    <button type="button" onclick="window.print()" class="btn-carelon-primary text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="download" class="w-4 h-4"></i>
                         <span>Download PDF</span>
                     </button>

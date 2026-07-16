@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Product 360 Side Panel Component
  * Reusable sidebar for all pages
  */
@@ -276,35 +276,36 @@ function setActiveLink() {
     
     links.forEach(link => {
         link.classList.remove('active');
+        link.removeAttribute('aria-current');
         const href = link.getAttribute('href');
         const module = link.getAttribute('data-module');
         
         // Check if current page matches the link
         if (href && currentPage === href) {
-            link.classList.add('active');
+            link.classList.add('active'); link.setAttribute('aria-current', 'page');
         }
         // Default to dashboard for empty/root path
         else if (currentPage === '' && href === 'dashboard.html') {
-            link.classList.add('active');
+            link.classList.add('active'); link.setAttribute('aria-current', 'page');
         }
         // Handle story-estimations page
         else if (currentPage === 'story-estimations.html' && module === 'story-estimations') {
-            link.classList.add('active');
+            link.classList.add('active'); link.setAttribute('aria-current', 'page');
         }
         // Handle capacity-planning page
         else if (currentPage === 'capacity-planning.html' && module === 'capacity-planning') {
-            link.classList.add('active');
+            link.classList.add('active'); link.setAttribute('aria-current', 'page');
         }
         // Handle user-guide page
         else if (currentPage === 'user-guide.html' && module === 'user-guide') {
-            link.classList.add('active');
+            link.classList.add('active'); link.setAttribute('aria-current', 'page');
         }
         // Handle requirements-intake module pages (dashboard, intake)
         else if (module === 'requirements-intake' && (
             currentPage.includes('dashboard') ||
             currentPage.includes('intake')
         )) {
-            link.classList.add('active');
+            link.classList.add('active'); link.setAttribute('aria-current', 'page');
         }
         // Handle all roadmap module pages (roadmap, analytics, admin, etc.)
         else if (module === 'roadmap' && (
@@ -313,7 +314,7 @@ function setActiveLink() {
             currentPage.includes('roadmap') || 
             currentPage.includes('profile')
         )) {
-            link.classList.add('active');
+            link.classList.add('active'); link.setAttribute('aria-current', 'page');
         }
     });
 }
@@ -430,3 +431,31 @@ async function applyRoleModuleVisibility() {
         window.location.href = redirectPage;
     }
 }
+
+// U3: Global Escape key handler - closes any visible modal
+document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Escape') return;
+    const modalIds = ['userModal','lobModal','teamMemberModal','addRoleModal','initiativeModal','jiraImportModal'];
+    for (const id of modalIds) {
+        const el = document.getElementById(id);
+        if (el && !el.classList.contains('hidden')) {
+            // Call page-specific close function if available
+            const closeFnMap = {
+                userModal: 'closeUserModal',
+                lobModal: 'closeLobModal',
+                teamMemberModal: 'closeTeamMemberModal',
+                addRoleModal: 'closeAddRoleModal',
+                initiativeModal: 'closeModal',
+                jiraImportModal: 'closeJiraImportModal'
+            };
+            const fn = closeFnMap[id];
+            if (fn && typeof window[fn] === 'function') {
+                window[fn]();
+            } else {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            }
+            break;
+        }
+    }
+});

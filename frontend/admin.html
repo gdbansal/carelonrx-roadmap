@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="assets/carelon-theme.css">
 </head>
 <body class="bg-gray-50">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-carelon-purple focus:text-white focus:rounded-lg focus:font-semibold">Skip to main content</a>
     <nav class="bg-white shadow-lg">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
@@ -25,7 +26,7 @@
                 <div class="flex items-center space-x-4">
                     <!-- Profile Dropdown -->
                     <div class="relative">
-                        <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                        <button type="button" onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
                             <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                                 <span id="userInitials">U</span>
                                 <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
@@ -49,7 +50,7 @@
                                 <span>Admin Panel</span>
                             </a>
                             <hr class="my-2">
-                            <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                            <button type="button" onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
                                 <i data-lucide="log-out" class="w-4 h-4"></i>
                                 <span>Logout</span>
                             </button>
@@ -60,24 +61,24 @@
         </div>
     </nav>
 
-    <div class="container mx-auto px-6 py-8">
+    <div id="main-content" class="container mx-auto px-6 py-8">
         <!-- Tab Navigation -->
         <div class="bg-white rounded-lg shadow-lg mb-6">
             <div class="border-b border-gray-200">
                 <nav class="flex space-x-8 px-6" aria-label="Tabs">
-                    <button onclick="switchTab('users')" id="usersTab" class="tab-button active border-b-2 border-blue-600 py-4 px-1 text-sm font-semibold text-blue-600 flex items-center space-x-2">
+                    <button type="button" onclick="switchTab('users')" id="usersTab" class="tab-button active border-b-2 border-blue-600 py-4 px-1 text-sm font-semibold text-blue-600 flex items-center space-x-2">
                         <i data-lucide="users" class="w-4 h-4"></i>
                         <span>User Management</span>
                     </button>
-                    <button onclick="switchTab('lob')" id="lobTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                    <button type="button" onclick="switchTab('lob')" id="lobTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
                         <i data-lucide="briefcase" class="w-4 h-4"></i>
                         <span>Line of Business</span>
                     </button>
-                    <button onclick="switchTab('team')" id="teamTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                    <button type="button" onclick="switchTab('team')" id="teamTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
                         <i data-lucide="users" class="w-4 h-4"></i>
                         <span>Team Members</span>
                     </button>
-                    <button onclick="switchTab('rolemodule')" id="rolemoduleTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                    <button type="button" onclick="switchTab('rolemodule')" id="rolemoduleTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
                         <i data-lucide="grid" class="w-4 h-4"></i>
                         <span>Role vs Module</span>
                     </button>
@@ -90,7 +91,7 @@
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
-                    <button onclick="showAddUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                    <button type="button" onclick="showAddUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
                         <i data-lucide="user-plus" class="w-4 h-4"></i>
                         <span>Add User</span>
                     </button>
@@ -127,7 +128,7 @@
                         <h2 class="text-2xl font-bold text-gray-800">Line of Business Management</h2>
                         <p class="text-sm text-gray-600 mt-1">Manage Lines of Business that appear in initiative dropdowns</p>
                     </div>
-                    <button onclick="showAddLobModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                    <button type="button" onclick="showAddLobModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         <span>Add Line of Business</span>
                     </button>
@@ -164,7 +165,7 @@
                         <h2 class="text-2xl font-bold text-gray-800">Team Members Management</h2>
                         <p class="text-sm text-gray-600 mt-1">Manage team members for capacity planning</p>
                     </div>
-                    <button onclick="showAddTeamMemberModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                    <button type="button" onclick="showAddTeamMemberModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
                         <i data-lucide="user-plus" class="w-4 h-4"></i>
                         <span>Add Team Member</span>
                     </button>
@@ -197,11 +198,11 @@
     </div>
 
     <!-- Add/Edit User Modal -->
-    <div id="userModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div id="userModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 id="modalTitle" class="text-xl font-bold text-gray-800">Add New User</h3>
-                <button onclick="closeUserModal()" class="text-gray-400 hover:text-gray-600">
+                <button type="button" onclick="closeUserModal()" aria-label="Close dialog" class="text-gray-400 hover:text-gray-600">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
@@ -272,11 +273,11 @@
     </div>
 
     <!-- Add/Edit LOB Modal -->
-    <div id="lobModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div id="lobModal" role="dialog" aria-modal="true" aria-labelledby="lobModalTitle" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 id="lobModalTitle" class="text-xl font-bold text-gray-800">Add Line of Business</h3>
-                <button onclick="closeLobModal()" class="text-gray-400 hover:text-gray-600">
+                <button type="button" onclick="closeLobModal()" aria-label="Close dialog" class="text-gray-400 hover:text-gray-600">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
@@ -323,11 +324,11 @@
     </div>
 
     <!-- Add/Edit Team Member Modal -->
-    <div id="teamMemberModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div id="teamMemberModal" role="dialog" aria-modal="true" aria-labelledby="teamMemberModalTitle" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 my-auto" style="max-height:90vh;overflow-y:auto;">
             <div class="flex items-center justify-between mb-4">
                 <h3 id="teamMemberModalTitle" class="text-xl font-bold text-gray-800">Add Team Member</h3>
-                <button onclick="closeTeamMemberModal()" class="text-gray-400 hover:text-gray-600">
+                <button type="button" onclick="closeTeamMemberModal()" aria-label="Close dialog" class="text-gray-400 hover:text-gray-600">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
@@ -454,11 +455,11 @@
                         <p class="text-sm text-gray-600 mt-1">Control which modules each role can access. Changes are saved to MongoDB.</p>
                     </div>
                     <div class="flex gap-3">
-                        <button onclick="showAddRoleModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                        <button type="button" onclick="showAddRoleModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
                             <i data-lucide="plus" class="w-4 h-4"></i>
                             <span>Add Role</span>
                         </button>
-                        <button onclick="saveRoleMappings()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
+                        <button type="button" onclick="saveRoleMappings()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
                             <i data-lucide="save" class="w-4 h-4"></i>
                             <span>Save Mappings</span>
                         </button>
@@ -483,11 +484,11 @@
         </div>
 
         <!-- Add Role Modal -->
-        <div id="addRoleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div id="addRoleModal" role="dialog" aria-modal="true" aria-labelledby="addRoleModalTitle" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl font-bold text-gray-800">Add New Role</h3>
-                    <button onclick="closeAddRoleModal()" class="text-gray-400 hover:text-gray-600">
+                    <h3 id="addRoleModalTitle" class="text-xl font-bold text-gray-800">Add New Role</h3>
+                    <button type="button" onclick="closeAddRoleModal()" aria-label="Close dialog" class="text-gray-400 hover:text-gray-600">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
@@ -498,21 +499,21 @@
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
                     <div class="flex gap-3 pt-2">
-                        <button onclick="confirmAddRole()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold">Add Role</button>
-                        <button onclick="closeAddRoleModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                        <button type="button" onclick="confirmAddRole()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold">Add Role</button>
+                        <button type="button" onclick="closeAddRoleModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
                     </div>
                 </div>
             </div>
         </div>
 
     <!-- Success Message -->
-    <div id="successMessage" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+    <div id="successMessage" role="status" aria-live="polite" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50">
         <i data-lucide="check-circle" class="w-6 h-6"></i>
         <span id="successText">Operation successful!</span>
     </div>
 
     <!-- Error Message -->
-    <div id="errorMessage" class="hidden fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50">
+    <div id="errorMessage" role="alert" aria-live="assertive" class="hidden fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 z-50">
         <i data-lucide="alert-circle" class="w-6 h-6"></i>
         <span id="errorText">An error occurred</span>
     </div>
@@ -696,10 +697,10 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button onclick="editUser('${user.id}')" class="text-blue-600 hover:text-blue-900">
+                        <button type="button" onclick="editUser('${user.id}')" class="text-blue-600 hover:text-blue-900">
                             <i data-lucide="edit" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="deleteUser('${user.id}')" class="text-red-600 hover:text-red-900">
+                        <button type="button" onclick="deleteUser('${user.id}')" class="text-red-600 hover:text-red-900">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </td>
@@ -993,10 +994,10 @@
                         <div class="text-sm text-gray-600">${lob.createdBy}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button onclick="editLob('${lob._id}')" class="text-blue-600 hover:text-blue-900">
+                        <button type="button" onclick="editLob('${lob._id}')" class="text-blue-600 hover:text-blue-900">
                             <i data-lucide="edit" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="deleteLob('${lob._id}')" class="text-red-600 hover:text-red-900">
+                        <button type="button" onclick="deleteLob('${lob._id}')" class="text-red-600 hover:text-red-900">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </td>
@@ -1178,10 +1179,10 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button onclick="editTeamMember('${member._id}')" class="text-blue-600 hover:text-blue-900">
+                        <button type="button" onclick="editTeamMember('${member._id}')" class="text-blue-600 hover:text-blue-900">
                             <i data-lucide="edit" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="deleteTeamMember('${member._id}')" class="text-red-600 hover:text-red-900">
+                        <button type="button" onclick="deleteTeamMember('${member._id}')" class="text-red-600 hover:text-red-900">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </td>
@@ -1609,7 +1610,7 @@
                     row += `<td class="px-4 py-3 text-center border-b border-gray-100"><input type="checkbox" ${chk} onchange="toggleMapping(${ri},'${mod.key}',this.checked)" class="w-5 h-5 rounded accent-blue-600 cursor-pointer"></td>`;
                 });
                 row += `<td class="px-4 py-3 text-center border-b border-gray-100">
-                    <button onclick="deleteRole(${ri})" class="text-red-400 hover:text-red-600" title="Remove role"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <button type="button" onclick="deleteRole(${ri})" class="text-red-400 hover:text-red-600" title="Remove role"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </td>`;
                 row += '</tr>';
                 tbody.innerHTML += row;

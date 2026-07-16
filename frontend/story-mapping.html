@@ -28,6 +28,7 @@
     </style>
 </head>
 <body class="bg-gray-50">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-carelon-purple focus:text-white focus:rounded-lg focus:font-semibold">Skip to main content</a>
 <!-- Navbar -->
 <nav class="bg-white shadow-lg">
     <div class="container mx-auto px-6 py-4">
@@ -41,7 +42,7 @@
             <div class="flex items-center space-x-4">
                 <!-- Profile Dropdown -->
                 <div class="relative">
-                    <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                    <button type="button" onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
                         <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                             <span id="userInitials">U</span>
                             <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
@@ -64,7 +65,7 @@
                             <span>Admin Panel</span>
                         </a>
                         <hr class="my-2">
-                        <button onclick="handleLogout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                        <button type="button" onclick="handleLogout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
                             <i data-lucide="log-out" class="w-4 h-4"></i>
                             <span>Logout</span>
                         </button>
@@ -120,7 +121,7 @@
                 </div>
             </div>
             <div class="mt-4 flex justify-end">
-                <button onclick="fetchSources()" id="fetchBtn"
+                <button type="button" onclick="fetchSources()" id="fetchBtn"
                     class="px-5 py-2 bg-purple-700 text-white text-sm font-medium rounded-lg hover:bg-purple-800 transition flex items-center gap-2">
                     <i data-lucide="download" class="w-4 h-4"></i> Fetch Content
                 </button>
@@ -150,8 +151,8 @@
                 </div>
             </div>
             <div class="mt-4 flex justify-end gap-3">
-                <button onclick="goBack()" class="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition">Back</button>
-                <button onclick="analyzeContent()" id="analyzeBtn"
+                <button type="button" onclick="goBack()" class="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition">Back</button>
+                <button type="button" onclick="analyzeContent()" id="analyzeBtn"
                     class="px-5 py-2 bg-purple-700 text-white text-sm font-medium rounded-lg hover:bg-purple-800 transition flex items-center gap-2">
                     <i data-lucide="cpu" class="w-4 h-4"></i> Analyze & Break Down
                 </button>
@@ -167,15 +168,15 @@
                     <span id="count-stories" class="px-2 py-0.5 rounded-full text-xs badge-story font-medium">0 Stories</span>
                     <span id="count-tasks"   class="px-2 py-0.5 rounded-full text-xs badge-task font-medium">0 Tasks</span>
                     <span id="count-epics"   class="px-2 py-0.5 rounded-full text-xs badge-epic font-medium hidden">0 Epics</span>
-                    <button onclick="toggleEpics()" id="epicToggleBtn"
+                    <button type="button" onclick="toggleEpics()" id="epicToggleBtn"
                         class="text-xs text-purple-600 underline hover:text-purple-800">Show Epics</button>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="approveAll()"
+                    <button type="button" onclick="approveAll()"
                         class="px-3 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-1">
                         <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Approve All
                     </button>
-                    <button onclick="goBack()"
+                    <button type="button" onclick="goBack()"
                         class="px-3 py-1.5 text-xs border border-gray-300 rounded-lg hover:bg-gray-50 transition">Back</button>
                 </div>
             </div>
@@ -204,7 +205,7 @@
                     </div>
                 </div>
                 <div id="approvedCount" class="text-xs text-gray-500 mb-3"></div>
-                <button onclick="createTickets()" id="createBtn"
+                <button type="button" onclick="createTickets()" id="createBtn"
                     class="px-5 py-2 bg-green-700 text-white text-sm font-medium rounded-lg hover:bg-green-800 transition flex items-center gap-2">
                     <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Tickets in JIRA
                 </button>
@@ -219,7 +220,7 @@
             </h2>
             <div id="created-list" class="space-y-2 mb-4"></div>
             <div id="failed-list" class="space-y-2 mb-4"></div>
-            <button onclick="startOver()" class="px-4 py-2 text-sm bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition">
+            <button type="button" onclick="startOver()" class="px-4 py-2 text-sm bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition">
                 Start New Mapping
             </button>
         </div>
@@ -438,12 +439,12 @@
                     </div>
                     <!-- Actions -->
                     <div class="flex flex-col gap-1.5 min-w-max">
-                        <button onclick="toggleEdit('${item.id}')" id="editBtn-${item.id}"
+                        <button type="button" onclick="toggleEdit('${item.id}')" id="editBtn-${item.id}"
                             class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50 transition">Edit</button>
-                        <button onclick="saveEdit('${item.id}')" id="saveBtn-${item.id}"
+                        <button type="button" onclick="saveEdit('${item.id}')" id="saveBtn-${item.id}"
                             class="hidden px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition">Save</button>
                         ${item.type !== 'Epic' ? `
-                        <button onclick="toggleApprove('${item.id}')"
+                        <button type="button" onclick="toggleApprove('${item.id}')"
                             class="px-3 py-1 text-xs ${item.approved ? 'bg-gray-200 text-gray-600 hover:bg-gray-300' : 'bg-green-600 text-white hover:bg-green-700'} rounded transition">
                             ${item.approved ? 'Unapprove' : 'Approve'}
                         </button>` : ''}

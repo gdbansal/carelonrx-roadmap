@@ -17,6 +17,7 @@
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-carelon-purple focus:text-white focus:rounded-lg focus:font-semibold">Skip to main content</a>
     <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-gray-800">Product 360</h1>
@@ -37,7 +38,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i data-lucide="user" class="w-5 h-5 text-gray-400"></i>
                     </div>
-                    <input type="text" id="username" required
+                    <input type="text" id="username" required autofocus autocomplete="username"
                         class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter your username">
                 </div>
@@ -49,7 +50,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i data-lucide="lock" class="w-5 h-5 text-gray-400"></i>
                     </div>
-                    <input type="password" id="password" required
+                    <input type="password" id="password" required autocomplete="current-password"
                         class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter your password">
                 </div>
@@ -57,8 +58,8 @@
 
             <div class="flex items-center justify-between">
                 <label class="flex items-center">
-                    <input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                    <input type="checkbox" id="rememberMe" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <label for="rememberMe" class="ml-2 text-sm text-gray-600">Remember me</label>
                 </label>
                 <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Forgot password?</a>
             </div>
@@ -70,7 +71,7 @@
             </button>
         </form>
 
-        <div id="errorMessage" class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg hidden">
+        <div id="errorMessage" role="alert" aria-live="assertive" class="mt-4 p-3 bg-red-100 text-red-700 rounded-lg hidden">
             <div class="flex items-center space-x-2">
                 <i data-lucide="alert-circle" class="w-5 h-5"></i>
                 <span id="errorText"></span>

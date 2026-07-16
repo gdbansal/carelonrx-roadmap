@@ -33,6 +33,7 @@
     </style>
 </head>
 <body class="bg-gray-50">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-carelon-purple focus:text-white focus:rounded-lg focus:font-semibold">Skip to main content</a>
 
 <!-- Navbar -->
 <nav class="bg-white shadow-lg">
@@ -47,7 +48,7 @@
             <div class="flex items-center space-x-4">
                 <!-- Profile Dropdown -->
                 <div class="relative">
-                    <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                    <button type="button" onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
                         <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                             <span id="userInitials">U</span>
                             <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
@@ -70,7 +71,7 @@
                             <span>Admin Panel</span>
                         </a>
                         <hr class="my-2">
-                        <button onclick="handleLogout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                        <button type="button" onclick="handleLogout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
                             <i data-lucide="log-out" class="w-4 h-4"></i>
                             <span>Logout</span>
                         </button>
@@ -81,7 +82,7 @@
     </div>
 </nav>
 
-<div class="flex">
+<div id="main-content" class="flex">
 <div class="flex-1 p-6 max-w-6xl mx-auto">
 
     <!-- Selector row -->
@@ -121,15 +122,15 @@
             <div class="flex items-center gap-3 flex-wrap">
                 <!-- SP / Dollar toggle -->
                 <div class="pill-toggle">
-                    <button class="pill-btn active" id="toggleSP" onclick="setMode('sp')">Story Points</button>
-                    <button class="pill-btn inactive" id="toggleDollar" onclick="setMode('dollar')">$ Dollar</button>
+                    <button type="button" class="pill-btn active" id="toggleSP" onclick="setMode('sp')">Story Points</button>
+                    <button type="button" class="pill-btn inactive" id="toggleDollar" onclick="setMode('dollar')">$ Dollar</button>
                 </div>
                 <!-- Actions -->
-                <button onclick="saveLoe()" id="saveBtn"
+                <button type="button" onclick="saveLoe()" id="saveBtn"
                     class="px-4 py-2 text-xs bg-purple-700 text-white font-semibold rounded-lg hover:bg-purple-800 transition flex items-center gap-1">
                     <i data-lucide="save" class="w-3.5 h-3.5"></i> Save
                 </button>
-                <button onclick="exportLoe()" id="exportBtn"
+                <button type="button" onclick="exportLoe()" id="exportBtn"
                     class="px-4 py-2 text-xs bg-green-700 text-white font-semibold rounded-lg hover:bg-green-800 transition flex items-center gap-1">
                     <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Excel
                 </button>

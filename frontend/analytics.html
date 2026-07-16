@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="assets/carelon-theme.css">
 </head>
 <body class="bg-gray-50">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-carelon-purple focus:text-white focus:rounded-lg focus:font-semibold">Skip to main content</a>
     <nav class="bg-white shadow-lg">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
@@ -26,7 +27,7 @@
                 <div class="flex items-center space-x-4">
                     <!-- Profile Dropdown -->
                     <div class="relative">
-                        <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                        <button type="button" onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
                             <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                                 <span id="userInitials">U</span>
                                 <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
@@ -50,7 +51,7 @@
                                 <span>Admin Panel</span>
                             </a>
                             <hr class="my-2">
-                            <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                            <button type="button" onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
                                 <i data-lucide="log-out" class="w-4 h-4"></i>
                                 <span>Logout</span>
                             </button>
@@ -61,7 +62,7 @@
         </div>
     </nav>
 
-    <div class="container mx-auto px-6 py-8">
+    <div id="main-content" class="container mx-auto px-6 py-8">
         <div class="mb-6">
             <h2 class="text-3xl font-bold text-gray-800 mb-2">Analytics Dashboard</h2>
             <p class="text-gray-600">Module analytics and metrics</p>
@@ -71,15 +72,15 @@
         <div class="bg-white rounded-lg shadow-lg mb-6">
             <div class="border-b border-gray-200">
                 <nav class="flex space-x-8 px-6" aria-label="Tabs">
-                    <button onclick="switchTab('roadmap')" id="roadmapTab" class="analytics-tab active border-b-2 border-carelon-purple py-4 px-1 text-sm font-semibold text-carelon-purple flex items-center space-x-2">
+                    <button type="button" onclick="switchTab('roadmap')" id="roadmapTab" class="analytics-tab active border-b-2 border-carelon-purple py-4 px-1 text-sm font-semibold text-carelon-purple flex items-center space-x-2">
                         <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
                         <span>Roadmap</span>
                     </button>
-                    <button onclick="switchTab('story')" id="storyTab" class="analytics-tab border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-carelon-purple hover:border-carelon-purple flex items-center space-x-2">
+                    <button type="button" onclick="switchTab('story')" id="storyTab" class="analytics-tab border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-carelon-purple hover:border-carelon-purple flex items-center space-x-2">
                         <i data-lucide="book-open" class="w-4 h-4"></i>
                         <span>Story Estimations</span>
                     </button>
-                    <button onclick="switchTab('capacity')" id="capacityTab" class="analytics-tab border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-carelon-purple hover:border-carelon-purple flex items-center space-x-2">
+                    <button type="button" onclick="switchTab('capacity')" id="capacityTab" class="analytics-tab border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-carelon-purple hover:border-carelon-purple flex items-center space-x-2">
                         <i data-lucide="table-2" class="w-4 h-4"></i>
                         <span>Capacity Planning</span>
                     </button>
@@ -311,29 +312,29 @@
                         </select>
                     </div>
                     <div class="flex items-end">
-                        <button onclick="seApplyFilters()" class="w-full btn-carelon-primary text-white px-4 py-2 rounded-lg text-sm transition font-medium">
+                        <button type="button" onclick="seApplyFilters()" class="w-full btn-carelon-primary text-white px-4 py-2 rounded-lg text-sm transition font-medium">
                             Apply Filters
                         </button>
                     </div>
                 </div>
                 <div class="mt-4 flex gap-2 flex-wrap">
-                    <button onclick="seClearFilters()" class="btn-carelon-secondary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
+                    <button type="button" onclick="seClearFilters()" class="btn-carelon-secondary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
                         <i data-lucide="x" class="w-4 h-4"></i>
                         <span>Clear Filters</span>
                     </button>
-                    <button onclick="seRefreshLogs()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
+                    <button type="button" onclick="seRefreshLogs()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                         <span>Refresh</span>
                     </button>
-                    <button onclick="seExportLogs()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
+                    <button type="button" onclick="seExportLogs()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
                         <i data-lucide="download" class="w-4 h-4"></i>
                         <span>Export Audit CSV</span>
                     </button>
-                    <button onclick="seExportEstimationAnalysis()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
+                    <button type="button" onclick="seExportEstimationAnalysis()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
                         <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
                         <span>Export Deviation Analysis</span>
                     </button>
-                    <button onclick="seExportSessionsSummary()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
+                    <button type="button" onclick="seExportSessionsSummary()" class="btn-carelon-primary text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1">
                         <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
                         <span>Export Sessions Summary</span>
                     </button>
@@ -419,7 +420,7 @@
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <button onclick="loadCapacityMatrix()" class="w-full btn-carelon-primary text-white px-4 py-2 rounded-lg text-sm transition">
+                    <button type="button" onclick="loadCapacityMatrix()" class="w-full btn-carelon-primary text-white px-4 py-2 rounded-lg text-sm transition">
                         Load Matrix
                     </button>
                 </div>
