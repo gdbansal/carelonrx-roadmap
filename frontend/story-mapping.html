@@ -222,6 +222,79 @@
         return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
     }
 
+    // Detect JIRA base URL from issue URL
+    function getJiraBase(url) {
+        try { const u = new URL(url); return `${u.protocol}//${u.hostname}`; }
+        catch(e) { return 'https://jira.carelonrx.com'; }
+    }
+
+    // Extract issue key from JIRA URL
+    function extractIssueKey(url) {
+        const m = url.match(/\/browse\/([A-Z]+-\d+)/) || url.match(/([A-Z]+-\d+)/);
+        return m ? m[1] : null;
+    }
+
+    // Extract Confluence page ID from URL
+    function extractPageId(url) {
+        const m = url.match(/\/pages\/(\d+)/);
+        return m ? m[1] : null;
+    }
+
+    // Fetch JIRA issue directly from browser (VPN-accessible)
+    async function fetchJiraIssue(url) {
+        const jiraBase = getJiraBase(url);
+        const issueKey = extractIssueKey(url);
+        if (!issueKey) throw new Error('Could not extract issue key from URL');
+        const token = localStorage.getItem('token');
+        const headers = { 'Accept': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(`${jiraBase}/rest/api/2/issue/${issueKey}?expand=names,renderedFields&fields=*all`, { headers });
+        if (!res.ok) throw new Error(`JIRA returned ${res.status}`);
+        const body = await res.json();
+        const fields = body.fields || {};
+        const names = body.names || {};
+        let acceptanceCriteria = '';
+        // Find AC field by name
+        for (const [fId, fName] of Object.entries(names)) {
+            if (fName && fName.toLowerCase().includes('acceptance criteria')) {
+                const raw = fields[fId];
+                if (raw && typeof raw === 'string') { acceptanceCriteria = raw; break; }
+                // Try rendered field (HTML)
+                const rendered = body.renderedFields?.[fId];
+                if (rendered) { acceptanceCriteria = rendered.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(); break; }
+                if (raw && typeof raw === 'object') { acceptanceCriteria = JSON.stringify(raw); break; }
+            }
+        }
+        return {
+            success: true,
+            issueKey,
+            featureName: fields.summary || '',
+            summary: fields.summary || '',
+            description: fields.description || '',
+            acceptanceCriteria,
+            issueType: fields.issuetype?.name || 'Feature',
+            project: { key: fields.project?.key, name: fields.project?.name },
+            jiraBase,
+            url
+        };
+    }
+
+    // Fetch Confluence page directly from browser
+    async function fetchConfluencePage(url) {
+        const pageId = extractPageId(url);
+        if (!pageId) throw new Error('Could not extract page ID from Confluence URL');
+        const confBase = url.includes('elevancehealth') ? 'https://confluence.elevancehealth.com' : 'https://confluence.carelonrx.com';
+        const token = localStorage.getItem('token');
+        const headers = { 'Accept': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(`${confBase}/rest/api/content/${pageId}?expand=body.view,body.storage`, { headers });
+        if (!res.ok) throw new Error(`Confluence returned ${res.status}`);
+        const body = await res.json();
+        const html = body.body?.view?.value || body.body?.storage?.value || '';
+        const plain = html.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+        return { success: true, pageId, title: body.title || '', content: plain, url };
+    }
+
     function setStep(n) {
         [1,2,3,4,5].forEach(i => {
             const el = document.getElementById(`step${i}-badge`);
@@ -252,35 +325,27 @@
         setStep(2);
 
         try {
-            // Fetch JIRA
+            // Fetch JIRA directly from browser (VPN-accessible)
             showStatus('jiraStatus', 'Fetching JIRA issue...', 'loading');
-            const jiraRes = await fetch(`${API_BASE}/story-mapping/fetch-jira`, {
-                method: 'POST',
-                headers: authHeaders(),
-                body: JSON.stringify({ url: jiraUrl })
-            });
-            const jiraData = await jiraRes.json();
-            if (!jiraData.success) {
-                showStatus('jiraStatus', `Error: ${jiraData.message}`, 'error');
+            let jiraData;
+            try {
+                jiraData = await fetchJiraIssue(jiraUrl);
+                state.featureData = jiraData;
+                showStatus('jiraStatus', `Loaded: ${jiraData.issueKey}`, 'ok');
+            } catch(e) {
+                showStatus('jiraStatus', `Error: ${e.message}`, 'error');
                 btn.disabled = false; btn.innerHTML = '<i data-lucide="download" class="w-4 h-4"></i> Fetch Content'; lucide.createIcons(); return;
             }
-            state.featureData = jiraData;
-            showStatus('jiraStatus', `Loaded: ${jiraData.issueKey}`, 'ok');
 
-            // Fetch Confluence (optional)
+            // Fetch Confluence directly from browser (optional)
             if (confUrl) {
                 showStatus('confStatus', 'Fetching Confluence page...', 'loading');
-                const confRes = await fetch(`${API_BASE}/story-mapping/fetch-confluence`, {
-                    method: 'POST',
-                    headers: authHeaders(),
-                    body: JSON.stringify({ url: confUrl })
-                });
-                const confData = await confRes.json();
-                if (confData.success) {
+                try {
+                    const confData = await fetchConfluencePage(confUrl);
                     state.confluenceData = confData;
                     showStatus('confStatus', `Loaded: ${confData.title}`, 'ok');
-                } else {
-                    showStatus('confStatus', `Warning: ${confData.message}`, 'error');
+                } catch(e) {
+                    showStatus('confStatus', `Warning: ${e.message} — proceeding without solutioning notes`, 'error');
                     state.confluenceData = null;
                 }
             } else {
@@ -290,9 +355,7 @@
             // Show preview
             document.getElementById('jiraPreviewKey').textContent = jiraData.issueKey;
             document.getElementById('jiraPreviewSummary').textContent = jiraData.featureName;
-            document.getElementById('jiraPreviewAC').textContent = jiraData.acceptanceCriteria
-                ? jiraData.acceptanceCriteria.replace(/<[^>]+>/g, ' ').replace(/\s+/g,' ').trim()
-                : '(No Acceptance Criteria found)';
+            document.getElementById('jiraPreviewAC').textContent = jiraData.acceptanceCriteria || '(No Acceptance Criteria found)';
 
             if (state.confluenceData) {
                 document.getElementById('confPreviewTitle').textContent = state.confluenceData.title;
@@ -302,14 +365,14 @@
                 document.getElementById('confPreviewContent').textContent = 'Solutioning notes not available — analysis will use JIRA content only.';
             }
 
-            // Pre-fill project key from JIRA data
-            if (jiraData.project?.key) {
-                document.getElementById('createProjectKey').value = jiraData.project.key;
-            }
+            // Pre-fill project key
+            if (jiraData.project?.key) document.getElementById('createProjectKey').value = jiraData.project.key;
+            // Pre-select JIRA instance
+            if (jiraData.jiraBase?.includes('elevancehealth')) document.getElementById('createJiraInstance').value = 'elevancehealth';
 
             document.getElementById('step-preview').classList.remove('hidden');
         } catch(e) {
-            showStatus('jiraStatus', `Network error: ${e.message}`, 'error');
+            showStatus('jiraStatus', `Unexpected error: ${e.message}`, 'error');
         }
 
         btn.disabled = false;
@@ -476,7 +539,7 @@
         if (approvedItems.length === 0) { alert('No approved tickets to create. Please approve at least one item.'); return; }
 
         const instance = document.getElementById('createJiraInstance').value;
-        const jiraBaseUrl = instance === 'elevancehealth'
+        const jiraBase = instance === 'elevancehealth'
             ? 'https://jira.elevancehealth.com'
             : 'https://jira.carelonrx.com';
 
@@ -485,40 +548,58 @@
         btn.innerHTML = '<span class="spinner"></span> Creating...';
         setStep(5);
 
-        try {
-            const res = await fetch(`${API_BASE}/story-mapping/create-tickets`, {
-                method: 'POST',
-                headers: authHeaders(),
-                body: JSON.stringify({ items: state.items, projectKey, jiraBaseUrl })
-            });
-            const data = await res.json();
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
 
-            const createdList = document.getElementById('created-list');
-            const failedList  = document.getElementById('failed-list');
+        const created = [];
+        const failed  = [];
 
-            createdList.innerHTML = data.created?.length ? `
-                <div class="text-sm font-semibold text-green-700 mb-2">${data.created.length} ticket(s) created:</div>
-                ${data.created.map(c => `
-                    <div class="flex items-center gap-2 text-sm p-2 bg-green-50 rounded border border-green-200">
-                        <span class="text-green-600">✓</span>
-                        <a href="${c.url}" target="_blank" class="text-blue-600 hover:underline font-medium">${c.key}</a>
-                        <span class="text-gray-500 text-xs">${c.url}</span>
-                    </div>`).join('')}
-            ` : '';
-
-            failedList.innerHTML = data.failed?.length ? `
-                <div class="text-sm font-semibold text-red-700 mb-2">${data.failed.length} ticket(s) failed:</div>
-                ${data.failed.map(f => `
-                    <div class="text-sm p-2 bg-red-50 rounded border border-red-200">
-                        <span class="text-red-600">✗</span> ${escHtml(f.summary)} — <span class="text-xs text-gray-500">${escHtml(f.error)}</span>
-                    </div>`).join('')}
-            ` : '';
-
-            document.getElementById('step-done').classList.remove('hidden');
-            document.getElementById('step-done').scrollIntoView({ behavior: 'smooth' });
-        } catch(e) {
-            alert('Error creating tickets: ' + e.message);
+        for (const item of approvedItems) {
+            try {
+                const res = await fetch(`${jiraBase}/rest/api/2/issue`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        fields: {
+                            project: { key: projectKey },
+                            summary: item.summary,
+                            description: item.summary,
+                            issuetype: { name: item.type }
+                        }
+                    })
+                });
+                const body = await res.json();
+                if (res.status === 201) {
+                    created.push({ key: body.key, url: `${jiraBase}/browse/${body.key}` });
+                } else {
+                    failed.push({ summary: item.summary, error: body.errorMessages?.join(', ') || JSON.stringify(body.errors || body) });
+                }
+            } catch(e) {
+                failed.push({ summary: item.summary, error: e.message });
+            }
         }
+
+        document.getElementById('created-list').innerHTML = created.length ? `
+            <div class="text-sm font-semibold text-green-700 mb-2">${created.length} ticket(s) created:</div>
+            ${created.map(c => `
+                <div class="flex items-center gap-2 text-sm p-2 bg-green-50 rounded border border-green-200">
+                    <span class="text-green-600">✓</span>
+                    <a href="${c.url}" target="_blank" class="text-blue-600 hover:underline font-medium">${c.key}</a>
+                    <span class="text-gray-400 text-xs">${c.url}</span>
+                </div>`).join('')}
+        ` : '';
+
+        document.getElementById('failed-list').innerHTML = failed.length ? `
+            <div class="text-sm font-semibold text-red-700 mb-2">${failed.length} ticket(s) failed:</div>
+            ${failed.map(f => `
+                <div class="text-sm p-2 bg-red-50 rounded border border-red-200">
+                    <span class="text-red-600">✗</span> ${escHtml(f.summary)}<br><span class="text-xs text-gray-500">${escHtml(f.error)}</span>
+                </div>`).join('')}
+        ` : '';
+
+        document.getElementById('step-done').classList.remove('hidden');
+        document.getElementById('step-done').scrollIntoView({ behavior: 'smooth' });
 
         btn.disabled = false;
         btn.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Create Tickets in JIRA';
