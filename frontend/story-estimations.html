@@ -1341,7 +1341,8 @@
                         </div>
                     ` : ''}
 
-                    <!-- Add New Story -->
+                    <!-- Add New Story — PO/Admin/Session Creator only -->
+                    ${hasPoPrivileges() || isSessionCreator() ? `
                     <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
                         <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
                             <i data-lucide="plus-circle" class="w-4 h-4 text-carelon-purple"></i>
@@ -1392,6 +1393,7 @@
                             </div>
                         </div>
                     </div>
+                    ` : ''}
 
                     <!-- Stories List -->
                     <!-- Active Stories -->
