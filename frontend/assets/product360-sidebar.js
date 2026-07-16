@@ -35,6 +35,10 @@
                     <i data-lucide="git-branch" class="w-5 h-5"></i>
                     <span>Story Mapping</span>
                 </a>
+                <a href="loe-estimation.html" class="side-panel-link" data-module="loe-estimation">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+                    <span>LOE Estimation</span>
+                </a>
                 <a href="story-estimations.html" class="side-panel-link" data-module="story-estimations">
                     <i data-lucide="calculator" class="w-5 h-5"></i>
                     <span>Story Estimations</span>

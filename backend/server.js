@@ -13,6 +13,7 @@ const LineOfBusiness = require('./models/LineOfBusiness');
 const TeamMember = require('./models/TeamMember');
 const CapacityPlan = require('./models/CapacityPlan');
 const RoleModuleMapping = require('./models/RoleModuleMapping');
+const LoeEstimation = require('./models/LoeEstimation');
 const { logAuditEvent } = require('./middleware/auditLogger');
 const crypto = require('crypto');
 
@@ -3491,6 +3492,135 @@ app.get('/api/health', (req, res) => {
         timestamp: new Date().toISOString(),
         database: require('mongoose').connection.readyState === 1 ? 'connected' : 'disconnected'
     });
+});
+
+// ========== LOE ESTIMATION MODULE ==========
+
+// GET /api/loe — list all saved LOE initiatives (for dropdown)
+app.get('/api/loe', authMiddleware, async (req, res) => {
+    try {
+        const loes = await LoeEstimation.find({}, 'initiativeId initiativeName lastUpdatedAt lastUpdatedBy').sort({ lastUpdatedAt: -1 });
+        res.json({ success: true, loes });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch LOE list', error: error.message });
+    }
+});
+
+// GET /api/loe/:initiativeId — get LOE for an initiative (merges latest dependent systems)
+app.get('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
+    try {
+        const initiative = await Initiative.findById(req.params.initiativeId);
+        if (!initiative) return res.status(404).json({ success: false, message: 'Initiative not found' });
+
+        const latestSystems = (initiative.dependentSystems || []).map(s => s.system).filter(Boolean);
+        let loe = await LoeEstimation.findOne({ initiativeId: req.params.initiativeId });
+
+        if (!loe) {
+            // First time — build skeleton from initiative's dependent systems
+            return res.json({
+                success: true,
+                initiativeId: req.params.initiativeId,
+                initiativeName: initiative.name,
+                systems: latestSystems.map(s => ({ system: s, devEffort: 0, qaEffort: 0, supportEffort: 0, confidencePct: 0 })),
+                blendedRate: 150,
+                hoursPerSp: 8,
+                isNew: true
+            });
+        }
+
+        // Merge: keep saved values, add any new systems from initiative, flag removed ones
+        const savedMap = {};
+        loe.systems.forEach(s => { savedMap[s.system] = s; });
+
+        const mergedSystems = latestSystems.map(s => savedMap[s]
+            ? { system: s, devEffort: savedMap[s].devEffort, qaEffort: savedMap[s].qaEffort, supportEffort: savedMap[s].supportEffort, confidencePct: savedMap[s].confidencePct }
+            : { system: s, devEffort: 0, qaEffort: 0, supportEffort: 0, confidencePct: 0, isNew: true }
+        );
+
+        // Flag systems that were removed from initiative but have LOE data
+        loe.systems.forEach(s => {
+            if (!latestSystems.includes(s.system) && (s.devEffort || s.qaEffort || s.supportEffort)) {
+                mergedSystems.push({ system: s.system, devEffort: s.devEffort, qaEffort: s.qaEffort, supportEffort: s.supportEffort, confidencePct: s.confidencePct, removed: true });
+            }
+        });
+
+        res.json({
+            success: true,
+            initiativeId: req.params.initiativeId,
+            initiativeName: initiative.name,
+            systems: mergedSystems,
+            blendedRate: loe.blendedRate,
+            hoursPerSp: loe.hoursPerSp,
+            lastUpdatedBy: loe.lastUpdatedBy,
+            lastUpdatedAt: loe.lastUpdatedAt
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch LOE', error: error.message });
+    }
+});
+
+// PUT /api/loe/:initiativeId — save/update LOE
+app.put('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
+    try {
+        const { systems, blendedRate, hoursPerSp } = req.body;
+        const initiative = await Initiative.findById(req.params.initiativeId);
+        if (!initiative) return res.status(404).json({ success: false, message: 'Initiative not found' });
+
+        const loe = await LoeEstimation.findOneAndUpdate(
+            { initiativeId: req.params.initiativeId },
+            {
+                initiativeId: req.params.initiativeId,
+                initiativeName: initiative.name,
+                systems: systems || [],
+                blendedRate: blendedRate || 150,
+                hoursPerSp: hoursPerSp || 8,
+                lastUpdatedBy: req.user?.username || req.user?.name || 'Unknown',
+                lastUpdatedAt: new Date()
+            },
+            { upsert: true, new: true }
+        );
+        res.json({ success: true, message: 'LOE saved', loe });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to save LOE', error: error.message });
+    }
+});
+
+// GET /api/loe/:initiativeId/export — export LOE as CSV (for Excel)
+app.get('/api/loe/:initiativeId/export', authMiddleware, async (req, res) => {
+    try {
+        const initiative = await Initiative.findById(req.params.initiativeId);
+        const loe = await LoeEstimation.findOne({ initiativeId: req.params.initiativeId });
+        if (!initiative) return res.status(404).json({ success: false, message: 'Initiative not found' });
+
+        const systems = loe ? loe.systems : [];
+        const blendedRate = loe?.blendedRate || 150;
+        const hoursPerSp = loe?.hoursPerSp || 8;
+
+        let csv = `LOE Estimation — ${initiative.name}\n`;
+        csv += `Blended Rate: $${blendedRate}/hr | Hours per SP: ${hoursPerSp}\n\n`;
+        csv += `Dependent System,Dev Effort (SP),QA Effort (SP),Support Effort (SP),Total SP,Dev $(USD),QA $(USD),Support $(USD),Total $(USD),Confidence %\n`;
+
+        let totalDev = 0, totalQA = 0, totalSupport = 0;
+        systems.forEach(s => {
+            const rowSP = (s.devEffort || 0) + (s.qaEffort || 0) + (s.supportEffort || 0);
+            const devD  = (s.devEffort || 0) * hoursPerSp * blendedRate;
+            const qaD   = (s.qaEffort || 0) * hoursPerSp * blendedRate;
+            const supD  = (s.supportEffort || 0) * hoursPerSp * blendedRate;
+            totalDev += (s.devEffort || 0); totalQA += (s.qaEffort || 0); totalSupport += (s.supportEffort || 0);
+            csv += `${s.system},${s.devEffort || 0},${s.qaEffort || 0},${s.supportEffort || 0},${rowSP},${devD},${qaD},${supD},${devD + qaD + supD},${s.confidencePct || 0}%\n`;
+        });
+
+        const grandSP = totalDev + totalQA + totalSupport;
+        const grandD  = grandSP * hoursPerSp * blendedRate;
+        csv += `GRAND TOTAL,${totalDev},${totalQA},${totalSupport},${grandSP},${totalDev * hoursPerSp * blendedRate},${totalQA * hoursPerSp * blendedRate},${totalSupport * hoursPerSp * blendedRate},${grandD},\n`;
+
+        const filename = `LOE_${initiative.name.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`;
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(csv);
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Export failed', error: error.message });
+    }
 });
 
 // ========== STORY MAPPING MODULE ==========
