@@ -79,6 +79,8 @@
                             <li><a href="#analytics-dashboard" class="hover:underline">Analytics Dashboard</a></li>
                         </ol>
                     </li>
+                    <li><a href="#story-mapping-module" class="hover:underline">Story Mapping Module</a></li>
+                    <li><a href="#loe-estimation-module" class="hover:underline">LOE Estimation Module</a></li>
                     <li><a href="#story-estimations" class="hover:underline">Story Estimations Module</a>
                         <ol class="list-decimal list-inside ml-6 mt-1 space-y-1">
                             <li><a href="#creating-session" class="hover:underline">Creating a Session</a></li>
@@ -102,7 +104,7 @@
                             <li><a href="#admin-users" class="hover:underline">User Management</a></li>
                             <li><a href="#admin-lob" class="hover:underline">Line of Business</a></li>
                             <li><a href="#admin-team" class="hover:underline">Team Members</a></li>
-                            <li><a href="#admin-role-module" class="hover:underline">Role vs Module Mapping</a> &mdash; 5 modules: Requirements Intake, Roadmap, Capacity Planning, Story Mapping, Story Estimations</li>
+                            <li><a href="#admin-role-module" class="hover:underline">Role vs Module Mapping</a> &mdash; 6 modules: Requirements Intake, Roadmap, Capacity Planning, Story Mapping, LOE Estimation, Story Estimations</li>
                         </ol>
                     </li>
                     <li><a href="#session-management" class="hover:underline">Session Management</a></li>
@@ -142,13 +144,20 @@
                     <div class="border-l-4 border-yellow-500 pl-4 py-2 bg-yellow-50">
                         <h4 class="font-bold text-gray-800 flex items-center space-x-2">
                             <i data-lucide="git-branch" class="w-5 h-5 text-yellow-600"></i>
-                            <span>Story Mapping <span class="text-xs text-yellow-600 font-semibold">(Coming Soon)</span></span>
+                            <span>Story Mapping (Available Now)</span>
                         </h4>
-                        <p class="text-gray-700 text-sm mt-1">Visual user story mapping to organise backlog items by user journey, activities, and release slices.</p>
+                        <p class="text-gray-700 text-sm mt-1">AI-powered user story mapping — fetches JIRA epics and Confluence pages, then breaks them down into INVEST-compliant stories with JIRA ticket creation support.</p>
+                    </div>
+                    <div class="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50">
+                        <h4 class="font-bold text-gray-800 flex items-center space-x-2">
+                            <i data-lucide="calculator" class="w-5 h-5 text-blue-600"></i>
+                            <span>LOE Estimation Module (Available Now)</span>
+                        </h4>
+                        <p class="text-gray-700 text-sm mt-1">Level of Effort estimation per initiative — break down effort by system with Dev, QA, and Support story points, toggle between SP and Dollar modes, and export to CSV.</p>
                     </div>
                     <div class="border-l-4 border-green-600 pl-4 py-2 bg-green-50">
                         <h4 class="font-bold text-gray-800 flex items-center space-x-2">
-                            <i data-lucide="calculator" class="w-5 h-5 text-green-600"></i>
+                            <i data-lucide="users" class="w-5 h-5 text-green-600"></i>
                             <span>Story Estimations Module (Available Now)</span>
                         </h4>
                         <p class="text-gray-700 text-sm mt-1">Collaborative Planning Poker tool for agile teams to estimate user stories using Fibonacci sequence with real-time collaboration.</p>
@@ -163,7 +172,8 @@
                     <li><strong>Visual Timeline:</strong> Interactive roadmap across quarters</li>
                     <li><strong>Requirements Intake:</strong> Structured capture of product initiatives</li>
                     <li><strong>Story Estimations:</strong> Planning Poker with real-time collaboration</li>
-                    <li><strong>Story Mapping:</strong> Visual backlog organisation by user journey (coming soon)</li>
+                    <li><strong>Story Mapping:</strong> AI-powered INVEST story breakdown from JIRA epics and Confluence pages</li>
+                    <li><strong>LOE Estimation:</strong> Per-initiative effort estimation by system in story points or dollars with CSV export</li>
                     <li><strong>Analytics Dashboard:</strong> Real-time statistics and charts</li>
                     <li><strong>Role-Based Access:</strong> Dynamic role permissions with module-level visibility control</li>
                     <li><strong>Budget Tracking:</strong> Approval status management</li>
@@ -201,7 +211,7 @@
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Side Panel Components</h3>
                 <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-4">
                     <li><strong>Product 360 Title:</strong> Main branding header</li>
-                    <li><strong>Module Links:</strong> Navigation to Requirements Intake, Roadmap, Capacity Planning, Story Mapping, and Story Estimations</li>
+                    <li><strong>Module Links:</strong> Navigation to Requirements Intake, Roadmap, Capacity Planning, Story Mapping, LOE Estimation, and Story Estimations</li>
                     <li><strong>Toggle Button:</strong> Collapse/expand sidebar (chevron icon)</li>
                     <li><strong>Version Info:</strong> Current version and copyright at bottom</li>
                 </ul>
@@ -232,14 +242,21 @@
                     <div class="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
                         <i data-lucide="git-branch" class="w-5 h-5 text-yellow-600 mt-1"></i>
                         <div>
-                            <h4 class="font-bold text-gray-800">Story Mapping <span class="text-xs text-yellow-600">(Coming Soon)</span></h4>
-                            <p class="text-sm text-gray-700">Visual user story mapping to organise backlog items by user journey, activities, and release slices.</p>
+                            <h4 class="font-bold text-gray-800">Story Mapping</h4>
+                            <p class="text-sm text-gray-700">AI-powered user story mapping — fetches JIRA epics and Confluence pages, then produces INVEST-compliant stories with JIRA ticket creation.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                        <i data-lucide="calculator" class="w-5 h-5 text-blue-600 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-gray-800">LOE Estimation</h4>
+                            <p class="text-sm text-gray-700">Per-initiative Level of Effort estimation by system — Dev, QA, and Support story points, SP/Dollar toggle, confidence %, and CSV export.</p>
                         </div>
                     </div>
                     <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
-                        <i data-lucide="calculator" class="w-5 h-5 text-green-600 mt-1"></i>
+                        <i data-lucide="users" class="w-5 h-5 text-green-600 mt-1"></i>
                         <div>
-                            <h4 class="font-bold text-gray-800">Story Estimations <span class="text-xs text-green-600">(Available Now)</span></h4>
+                            <h4 class="font-bold text-gray-800">Story Estimations</h4>
                             <p class="text-sm text-gray-700">Collaborative Planning Poker estimation tool with real-time collaboration, session management, and comprehensive audit logging.</p>
                         </div>
                     </div>
@@ -381,6 +398,8 @@
                         <li><strong>Profile Image</strong>: Shows your photo or colored initials</li>
                         <li><strong>Your Name</strong>: Displays your full name</li>
                         <li><strong>My Profile</strong>: Navigate to profile page</li>
+                        <li><strong>Analytics</strong>: Navigate to Analytics dashboard</li>
+                        <li><strong>Admin Panel</strong>: Navigate to Admin Panel (Admin role only)</li>
                         <li><strong>Logout</strong>: Sign out of the application</li>
                     </ul>
                 </div>
@@ -761,9 +780,97 @@
                 </div>
             </div>
 
+            <!-- Story Mapping Module -->
+            <div id="story-mapping-module" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">7. Story Mapping Module</h2>
+                <p class="text-gray-700 mb-4">The Story Mapping module uses AI to break down JIRA epics and Confluence pages into INVEST-compliant user stories, then lets you create those stories as JIRA tickets.</p>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">How It Works (5 Steps)</h3>
+                <div class="space-y-3 mb-6">
+                    <div class="bg-purple-50 border-l-4 border-purple-500 p-4">
+                        <p class="font-semibold text-purple-800">Step 1 &mdash; Input</p>
+                        <p class="text-gray-700 text-sm">Provide a JIRA Epic URL and optionally a Confluence page URL as source material.</p>
+                    </div>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                        <p class="font-semibold text-blue-800">Step 2 &mdash; Fetch</p>
+                        <p class="text-gray-700 text-sm">The system fetches content from JIRA and Confluence via the backend proxy (requires corporate network or internal server).</p>
+                    </div>
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                        <p class="font-semibold text-yellow-800">Step 3 &mdash; Analyze</p>
+                        <p class="text-gray-700 text-sm">AI analyzes the fetched content and produces an INVEST-compliant story breakdown with acceptance criteria.</p>
+                    </div>
+                    <div class="bg-orange-50 border-l-4 border-orange-500 p-4">
+                        <p class="font-semibold text-orange-800">Step 4 &mdash; Review</p>
+                        <p class="text-gray-700 text-sm">Review the generated stories, approve or remove individual items before creating tickets.</p>
+                    </div>
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4">
+                        <p class="font-semibold text-green-800">Step 5 &mdash; Create Tickets</p>
+                        <p class="text-gray-700 text-sm">Approved stories are pushed as JIRA sub-tasks or stories under the parent epic.</p>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                    <p class="font-semibold text-yellow-800 mb-1">Note:</p>
+                    <p class="text-gray-700 text-sm">JIRA and Confluence integration requires the backend to be running on the corporate network (internal server) so it can reach <code class="bg-gray-100 px-1 rounded">jira.carelonrx.com</code> and <code class="bg-gray-100 px-1 rounded">confluence.carelonrx.com</code>.</p>
+                </div>
+            </div>
+
+            <!-- LOE Estimation Module -->
+            <div id="loe-estimation-module" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">8. LOE Estimation Module</h2>
+                <p class="text-gray-700 mb-4">The LOE (Level of Effort) Estimation module allows you to estimate the effort required for each initiative broken down by system, role, and cost.</p>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Getting Started</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-6">
+                    <li>Click <strong>LOE Estimation</strong> in the sidebar</li>
+                    <li>Select an <strong>Initiative</strong> from the dropdown</li>
+                    <li>Add systems using the <strong>"Add System Row"</strong> button</li>
+                    <li>Enter Dev, QA, and Support story points per system</li>
+                    <li>Set a <strong>Confidence %</strong> per row</li>
+                    <li>Click <strong>"Save"</strong> to persist the estimate</li>
+                </ol>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Key Features</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                        <p class="font-semibold text-blue-800 mb-2">SP / Dollar Toggle</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4 text-sm">
+                            <li><strong>SP Mode:</strong> Enter story points directly</li>
+                            <li><strong>Dollar Mode:</strong> Auto-converts SP to cost using blended rate and hours/SP</li>
+                        </ul>
+                    </div>
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4">
+                        <p class="font-semibold text-green-800 mb-2">Summary Cards</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4 text-sm">
+                            <li>Total Dev SP, QA SP, Support SP</li>
+                            <li>Blended total and confidence-adjusted estimate</li>
+                        </ul>
+                    </div>
+                    <div class="bg-purple-50 border-l-4 border-purple-500 p-4">
+                        <p class="font-semibold text-purple-800 mb-2">Settings</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4 text-sm">
+                            <li><strong>Blended Rate:</strong> $/hour (default $150)</li>
+                            <li><strong>Hours/SP:</strong> Hours per story point (default 8)</li>
+                        </ul>
+                    </div>
+                    <div class="bg-orange-50 border-l-4 border-orange-500 p-4">
+                        <p class="font-semibold text-orange-800 mb-2">Export</p>
+                        <ul class="list-disc list-inside text-gray-700 ml-4 text-sm">
+                            <li>Click <strong>"Export CSV"</strong> to download the estimate</li>
+                            <li>Includes all systems, roles, SP, and dollar values</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 border-l-4 border-gray-400 p-4">
+                    <p class="font-semibold text-gray-800 mb-1">Access Control:</p>
+                    <p class="text-gray-700 text-sm">Access to this module is controlled by the Admin Panel's Role vs Module Mapping. Admins can grant or restrict access per role.</p>
+                </div>
+            </div>
+
             <!-- Story Estimations Module -->
             <div id="story-estimations" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">7. Story Estimations Module</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">9. Story Estimations Module</h2>
                 <p class="text-gray-700 mb-4">The Story Estimations module provides agile story point estimation using the Fibonacci sequence for sprint planning and team collaboration.</p>
                 
                 <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
@@ -1357,7 +1464,7 @@
             <!-- Footer -->
             <hr class="my-8">
             <div class="text-center text-gray-600 text-sm">
-                <p><strong>Version 2.6</strong> | Last Updated: July 15, 2026</p>
+                <p><strong>Version 2.6</strong> | Last Updated: July 16, 2026</p>
                 <p class="mt-2">Application URL: <code class="bg-gray-100 px-2 py-1 rounded">https://carelonrx-roadmap.onrender.com</code></p>
                 <p class="mt-4">© 2026 Product 360. All rights reserved.</p>
             </div>
