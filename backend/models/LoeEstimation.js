@@ -2,9 +2,7 @@ const mongoose = require('mongoose');
 
 const systemLoeSchema = new mongoose.Schema({
     system: { type: String, required: true },
-    devEffort: { type: Number, default: 0 },
-    qaEffort: { type: Number, default: 0 },
-    supportEffort: { type: Number, default: 0 },
+    dollarRate: { type: Number, default: 0 },
     confidencePct: { type: Number, default: 0, min: 0, max: 100 }
 }, { _id: false });
 

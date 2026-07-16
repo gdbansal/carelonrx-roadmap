@@ -13,20 +13,15 @@
     <script src="assets/product360-sidebar.js?v=2.2" defer></script>
     <link rel="stylesheet" href="assets/carelon-theme.css?v=2.1">
     <style>
-        .pill-toggle { display:flex; background:#e5e7eb; border-radius:9999px; padding:3px; gap:2px; }
-        .pill-btn { padding:4px 16px; border-radius:9999px; font-size:0.75rem; font-weight:600; cursor:pointer; transition:all 0.2s; border:none; }
-        .pill-btn.active { background:#5b21b6; color:#fff; box-shadow:0 1px 4px rgba(91,33,182,0.3); }
-        .pill-btn.inactive { background:transparent; color:#6b7280; }
-        .loe-table th { background:#f3f0ff; color:#5b21b6; font-size:0.75rem; font-weight:600; padding:10px 12px; text-align:center; white-space:nowrap; }
-        .loe-table td { padding:8px 10px; text-align:center; border-bottom:1px solid #f3f4f6; font-size:0.85rem; }
+        .loe-table th { background:#f3f0ff; color:#5b21b6; font-size:0.75rem; font-weight:600; padding:10px 16px; text-align:center; white-space:nowrap; }
+        .loe-table td { padding:9px 14px; text-align:center; border-bottom:1px solid #f3f4f6; font-size:0.85rem; }
         .loe-table tr:hover td { background:#faf5ff; }
         .loe-table .total-row td { background:#f3f0ff; font-weight:700; color:#5b21b6; }
         .loe-table .removed-row td { background:#fff7ed; color:#9a3412; }
-        .sp-input { width:80px; padding:4px 8px; border:1px solid #d1d5db; border-radius:6px; text-align:center; font-size:0.85rem; }
-        .sp-input:focus { outline:none; border-color:#5b21b6; box-shadow:0 0 0 2px rgba(91,33,182,0.15); }
-        .conf-input { width:70px; padding:4px 8px; border:1px solid #d1d5db; border-radius:6px; text-align:center; font-size:0.85rem; }
+        .dollar-input { width:130px; padding:5px 10px; border:1px solid #d1d5db; border-radius:6px; text-align:right; font-size:0.85rem; }
+        .dollar-input:focus { outline:none; border-color:#5b21b6; box-shadow:0 0 0 2px rgba(91,33,182,0.15); }
+        .conf-input { width:70px; padding:5px 8px; border:1px solid #d1d5db; border-radius:6px; text-align:center; font-size:0.85rem; }
         .conf-input:focus { outline:none; border-color:#5b21b6; box-shadow:0 0 0 2px rgba(91,33,182,0.15); }
-        .dollar-cell { color:#065f46; font-weight:500; }
         .saved-badge { display:inline-flex; align-items:center; gap:4px; background:#d1fae5; color:#065f46; padding:2px 10px; border-radius:9999px; font-size:0.7rem; font-weight:600; }
         .fade-in { animation:fadeIn 0.3s ease; }
         @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
@@ -113,19 +108,13 @@
     <!-- LOE Table area -->
     <div id="loeArea" class="hidden fade-in">
 
-        <!-- Header bar: initiative name + toggle + actions -->
+        <!-- Header bar: initiative name + actions -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
                 <div class="text-base font-bold text-gray-900" id="initiativeNameDisplay"></div>
                 <div id="lastSavedBadge" class="mt-1 text-xs text-gray-400"></div>
             </div>
             <div class="flex items-center gap-3 flex-wrap">
-                <!-- SP / Dollar toggle -->
-                <div class="pill-toggle">
-                    <button type="button" class="pill-btn active" id="toggleSP" onclick="setMode('sp')">Story Points</button>
-                    <button type="button" class="pill-btn inactive" id="toggleDollar" onclick="setMode('dollar')">$ Dollar</button>
-                </div>
-                <!-- Actions -->
                 <button type="button" onclick="saveLoe()" id="saveBtn"
                     class="px-4 py-2 text-xs bg-purple-700 text-white font-semibold rounded-lg hover:bg-purple-800 transition flex items-center gap-1">
                     <i data-lucide="save" class="w-3.5 h-3.5"></i> Save
@@ -152,11 +141,8 @@
             <table class="loe-table w-full border-collapse">
                 <thead>
                     <tr>
-                        <th class="text-left pl-4" style="min-width:160px">Dependent System</th>
-                        <th id="hDev">Dev Effort (SP)</th>
-                        <th id="hQA">QA Effort (SP)</th>
-                        <th id="hSupport">Support Effort (SP)</th>
-                        <th id="hTotal">Total (SP)</th>
+                        <th class="text-left pl-5" style="min-width:200px">Dependent System</th>
+                        <th>Dollar Rate ($)</th>
                         <th>Confidence %</th>
                     </tr>
                 </thead>
@@ -164,8 +150,8 @@
             </table>
         </div>
 
-        <!-- Summary cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4" id="summaryCards"></div>
+        <!-- Grand Total card -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4" id="summaryCards"></div>
 
     </div>
 
@@ -248,7 +234,7 @@
     }
 
     function onLobChange() {
-        const lob = document.getElementById('lobSelect').value;
+        const lob = document.getElementById('lobSelect').value.trim();
         const sel = document.getElementById('initiativeSelect');
         document.getElementById('loeArea').classList.add('hidden');
         document.getElementById('emptyState').classList.remove('hidden');
@@ -259,7 +245,11 @@
             sel.disabled = true;
             return;
         }
-        const filtered = allInitiatives.filter(i => (i.businessUnit || '') === lob);
+        // Case-insensitive match to handle any value discrepancies between LOB API and intake data
+        const lobLower = lob.toLowerCase();
+        const filtered = allInitiatives.filter(i => (i.businessUnit || '').trim().toLowerCase() === lobLower);
+        console.debug('[LOE] LOB selected:', lob, '| Initiatives matched:', filtered.length,
+            '| All businessUnits:', [...new Set(allInitiatives.map(i => i.businessUnit))]);
         sel.innerHTML = '<option value="">— Select an Initiative —</option>' +
             filtered.map(i => `<option value="${i.id || i._id}">${i.name}</option>`).join('');
         sel.disabled = filtered.length === 0;
@@ -290,7 +280,11 @@
             const mock = MOCK_INITIATIVES.find(i => i.id === id);
             if (!mock) return;
             state.initiativeName = mock.name;
-            state.systems = mock.dependentSystems.map(s => ({ system: s, devEffort: 0, qaEffort: 0, supportEffort: 0, confidencePct: 0 }));
+            // Dedup mock systems
+            const mockSeen = new Set();
+            state.systems = mock.dependentSystems
+                .filter(s => { const k = s.toLowerCase(); if (mockSeen.has(k)) return false; mockSeen.add(k); return true; })
+                .map(s => ({ system: s, dollarRate: 0, confidencePct: 0 }));
             state.blendedRate = 150; state.hoursPerSp = 8; state.dirty = false;
             document.getElementById('initiativeNameDisplay').textContent = mock.name;
             document.getElementById('lastSavedBadge').textContent = 'Mock data — not saved';
@@ -308,9 +302,17 @@
             if (!data.success) { alert('Failed to load LOE: ' + data.message); return; }
 
             state.initiativeName = data.initiativeName;
-            state.systems = data.systems || [];
-            state.blendedRate = data.blendedRate || 150;
-            state.hoursPerSp = data.hoursPerSp || 8;
+            // Dedup by system name, keep first occurrence
+            const seen = new Set();
+            const rawSystems = data.systems || [];
+            state.systems = rawSystems.filter(s => {
+                const key = (s.system || '').trim().toLowerCase();
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+            state.blendedRate = 150;
+            state.hoursPerSp = 8;
             state.dirty = false;
 
             document.getElementById('blendedRate').value = state.blendedRate;
@@ -337,148 +339,57 @@
         }
     }
 
-    function setMode(m) {
-        state.mode = m;
-        document.getElementById('toggleSP').className     = `pill-btn ${m === 'sp' ? 'active' : 'inactive'}`;
-        document.getElementById('toggleDollar').className = `pill-btn ${m === 'dollar' ? 'active' : 'inactive'}`;
-        renderTable();
-    }
-
-    function getVal(sysIdx, field) {
-        const inp = document.getElementById(`inp-${sysIdx}-${field}`);
-        return inp ? parseFloat(inp.value) || 0 : 0;
-    }
-
     function renderTable() {
-        const sp = state.mode === 'sp';
-        const br = parseFloat(document.getElementById('blendedRate').value) || state.blendedRate;
-        const hsp = parseFloat(document.getElementById('hoursPerSp').value) || state.hoursPerSp;
-
-        // Update headers
-        const suffix = sp ? '(SP)' : '($)';
-        document.getElementById('hDev').textContent     = `Dev Effort ${suffix}`;
-        document.getElementById('hQA').textContent      = `QA Effort ${suffix}`;
-        document.getElementById('hSupport').textContent = `Support Effort ${suffix}`;
-        document.getElementById('hTotal').textContent   = `Total ${suffix}`;
-
-        let totalDev = 0, totalQA = 0, totalSupport = 0;
-
         const tbody = document.getElementById('loeTableBody');
         tbody.innerHTML = state.systems.map((s, i) => {
-            const dev = s.devEffort || 0;
-            const qa  = s.qaEffort  || 0;
-            const sup = s.supportEffort || 0;
-            const conf = s.confidencePct || 0;
-            const rowSP = dev + qa + sup;
-
-            totalDev += dev; totalQA += qa; totalSupport += sup;
-
-            const fmtSP = v => v;
-            const fmtD  = v => `$${(v * hsp * br).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}`;
-            const fmt   = v => sp ? fmtSP(v) : fmtD(v);
-            const totalFmt = sp ? rowSP : `$${(rowSP * hsp * br).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}`;
-
+            const dollar = s.dollarRate || 0;
+            const conf   = s.confidencePct || 0;
             const removedBadge = s.removed ? '<span class="ml-1 text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">Removed</span>' : '';
             const newBadge     = s.isNew   ? '<span class="ml-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">New</span>' : '';
-
             return `<tr class="${s.removed ? 'removed-row' : ''}">
-                <td class="text-left pl-4 font-medium text-gray-800">${s.system}${removedBadge}${newBadge}</td>
-                <td>
-                    ${sp
-                        ? `<input class="sp-input" id="inp-${i}-dev" type="number" min="0" value="${dev}" oninput="onCellChange(${i},'dev',this.value)">`
-                        : `<span class="dollar-cell">${fmtD(dev)}</span>`
-                    }
-                </td>
-                <td>
-                    ${sp
-                        ? `<input class="sp-input" id="inp-${i}-qa" type="number" min="0" value="${qa}" oninput="onCellChange(${i},'qa',this.value)">`
-                        : `<span class="dollar-cell">${fmtD(qa)}</span>`
-                    }
-                </td>
-                <td>
-                    ${sp
-                        ? `<input class="sp-input" id="inp-${i}-support" type="number" min="0" value="${sup}" oninput="onCellChange(${i},'support',this.value)">`
-                        : `<span class="dollar-cell">${fmtD(sup)}</span>`
-                    }
-                </td>
-                <td class="font-semibold text-purple-700">${totalFmt}</td>
+                <td class="text-left pl-5 font-medium text-gray-800">${s.system}${removedBadge}${newBadge}</td>
+                <td><span class="text-gray-400 mr-1 text-xs">$</span><input class="dollar-input" id="inp-${i}-dollar" type="number" min="0" value="${dollar}" oninput="onCellChange(${i},'dollar',this.value)"></td>
                 <td><input class="conf-input" type="number" min="0" max="100" value="${conf}" oninput="onCellChange(${i},'conf',this.value)"><span class="ml-1 text-gray-400 text-xs">%</span></td>
             </tr>`;
         }).join('');
 
         // Grand total row
-        const grandSP = totalDev + totalQA + totalSupport;
-        const grandFmt = sp ? grandSP : `$${(grandSP * hsp * br).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}`;
+        const grandTotal = state.systems.reduce((sum, s) => sum + (s.dollarRate || 0), 0);
         tbody.innerHTML += `
             <tr class="total-row">
-                <td class="text-left pl-4">GRAND TOTAL</td>
-                <td>${sp ? totalDev : `$${(totalDev * hsp * br).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}`}</td>
-                <td>${sp ? totalQA  : `$${(totalQA  * hsp * br).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}`}</td>
-                <td>${sp ? totalSupport : `$${(totalSupport * hsp * br).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}`}</td>
-                <td>${grandFmt}</td>
+                <td class="text-left pl-5">GRAND TOTAL</td>
+                <td>$${grandTotal.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}</td>
                 <td></td>
             </tr>`;
 
-        renderSummaryCards(totalDev, totalQA, totalSupport, grandSP, br, hsp);
+        renderSummaryCards(grandTotal);
     }
 
-    function renderSummaryCards(dev, qa, sup, grand, br, hsp) {
-        const sp = state.mode === 'sp';
-        const cards = [
-            { label: 'Dev Total',     val: sp ? `${dev} SP`     : `$${(dev * hsp * br).toLocaleString()}`,   color: 'bg-blue-50 border-blue-200 text-blue-800' },
-            { label: 'QA Total',      val: sp ? `${qa} SP`      : `$${(qa  * hsp * br).toLocaleString()}`,   color: 'bg-green-50 border-green-200 text-green-800' },
-            { label: 'Support Total', val: sp ? `${sup} SP`     : `$${(sup * hsp * br).toLocaleString()}`,   color: 'bg-yellow-50 border-yellow-200 text-yellow-800' },
-            { label: 'GRAND TOTAL',   val: sp ? `${grand} SP`   : `$${(grand * hsp * br).toLocaleString()}`, color: 'bg-purple-50 border-purple-200 text-purple-800' }
-        ];
-        document.getElementById('summaryCards').innerHTML = cards.map(c => `
-            <div class="rounded-xl border p-4 ${c.color}">
-                <div class="text-xs font-semibold opacity-70 mb-1">${c.label}</div>
-                <div class="text-xl font-bold">${c.val}</div>
-            </div>`).join('');
+    function renderSummaryCards(grandTotal) {
+        document.getElementById('summaryCards').innerHTML = `
+            <div class="rounded-xl border p-4 bg-purple-50 border-purple-200 text-purple-800">
+                <div class="text-xs font-semibold opacity-70 mb-1">Total Systems</div>
+                <div class="text-xl font-bold">${state.systems.length}</div>
+            </div>
+            <div class="rounded-xl border p-4 bg-green-50 border-green-200 text-green-800">
+                <div class="text-xs font-semibold opacity-70 mb-1">Grand Total ($)</div>
+                <div class="text-xl font-bold">$${grandTotal.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}</div>
+            </div>`;
     }
 
     function onCellChange(idx, field, val) {
         const n = parseFloat(val) || 0;
-        if (field === 'dev')     state.systems[idx].devEffort     = n;
-        if (field === 'qa')      state.systems[idx].qaEffort      = n;
-        if (field === 'support') state.systems[idx].supportEffort = n;
-        if (field === 'conf')    state.systems[idx].confidencePct = Math.min(100, Math.max(0, n));
+        if (field === 'dollar') state.systems[idx].dollarRate    = n;
+        if (field === 'conf')   state.systems[idx].confidencePct = Math.min(100, Math.max(0, n));
         state.dirty = true;
-        recalcTotalsOnly();
-    }
-
-    function recalcTotalsOnly() {
-        const br  = parseFloat(document.getElementById('blendedRate').value) || state.blendedRate;
-        const hsp = parseFloat(document.getElementById('hoursPerSp').value)  || state.hoursPerSp;
-        const sp  = state.mode === 'sp';
-        let totalDev = 0, totalQA = 0, totalSupport = 0;
-
-        state.systems.forEach((s, i) => {
-            const dev = s.devEffort || 0, qa = s.qaEffort || 0, sup = s.supportEffort || 0;
-            totalDev += dev; totalQA += qa; totalSupport += sup;
-            const rowSP = dev + qa + sup;
-            const totalCell = document.querySelector(`#loeTableBody tr:nth-child(${i+1}) td:nth-child(5)`);
-            if (totalCell) totalCell.textContent = sp ? rowSP : `$${(rowSP * hsp * br).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}`;
-        });
-
-        // Update total row
-        const grandSP = totalDev + totalQA + totalSupport;
+        // Update grand total row live
+        const grandTotal = state.systems.reduce((sum, s) => sum + (s.dollarRate || 0), 0);
         const totalRow = document.querySelector('#loeTableBody .total-row');
         if (totalRow) {
             const tds = totalRow.querySelectorAll('td');
-            const fmt = v => sp ? v : `$${(v * hsp * br).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}`;
-            if (tds[1]) tds[1].textContent = fmt(totalDev);
-            if (tds[2]) tds[2].textContent = fmt(totalQA);
-            if (tds[3]) tds[3].textContent = fmt(totalSupport);
-            if (tds[4]) tds[4].textContent = fmt(grandSP);
+            if (tds[1]) tds[1].textContent = `$${grandTotal.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}`;
         }
-        renderSummaryCards(totalDev, totalQA, totalSupport, grandSP, br, hsp);
-    }
-
-    function recalc() {
-        state.blendedRate = parseFloat(document.getElementById('blendedRate').value) || 150;
-        state.hoursPerSp  = parseFloat(document.getElementById('hoursPerSp').value)  || 8;
-        renderTable();
+        renderSummaryCards(grandTotal);
     }
 
     async function saveLoe() {
@@ -486,25 +397,17 @@
         const btn = document.getElementById('saveBtn');
         btn.disabled = true; btn.textContent = 'Saving...';
 
-        // Sync latest values from inputs
+        // Sync latest dollar values from inputs
         state.systems.forEach((s, i) => {
-            const devInp  = document.getElementById(`inp-${i}-dev`);
-            const qaInp   = document.getElementById(`inp-${i}-qa`);
-            const supInp  = document.getElementById(`inp-${i}-support`);
-            if (devInp)  s.devEffort     = parseFloat(devInp.value)  || 0;
-            if (qaInp)   s.qaEffort      = parseFloat(qaInp.value)   || 0;
-            if (supInp)  s.supportEffort = parseFloat(supInp.value)  || 0;
+            const dollarInp = document.getElementById(`inp-${i}-dollar`);
+            if (dollarInp) s.dollarRate = parseFloat(dollarInp.value) || 0;
         });
 
         try {
             const res = await fetch(`${API_BASE}/loe/${state.initiativeId}`, {
                 method: 'PUT',
                 headers: authHeaders(),
-                body: JSON.stringify({
-                    systems: state.systems,
-                    blendedRate: parseFloat(document.getElementById('blendedRate').value) || 150,
-                    hoursPerSp:  parseFloat(document.getElementById('hoursPerSp').value)  || 8
-                })
+                body: JSON.stringify({ systems: state.systems, blendedRate: 150, hoursPerSp: 8 })
             });
             const data = await res.json();
             if (data.success) {
