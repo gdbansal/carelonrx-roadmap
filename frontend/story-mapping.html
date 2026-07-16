@@ -29,25 +29,46 @@
 </head>
 <body class="bg-gray-50">
 <!-- Navbar -->
-<nav class="bg-white shadow-sm">
-    <div class="container mx-auto px-6 py-3 flex items-center justify-between">
-        <div>
-            <h1 class="text-lg font-bold text-gray-800">Story Mapping</h1>
-            <p class="text-xs text-gray-500">Feature Breakdown — INVEST Model</p>
-        </div>
-        <div class="flex items-center space-x-4">
-            <div class="relative">
-                <button onclick="toggleProfileDropdown()" class="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
-                    <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
-                        <span id="userInitials">U</span>
-                        <img id="userImage" src="" alt="" class="hidden w-full h-full object-cover">
+<nav class="bg-white shadow-lg">
+    <div class="container mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div>
+                    <h1 class="text-lg font-bold text-gray-800">Story Mapping</h1>
+                    <p class="text-xs text-gray-600">Product 360</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <!-- Profile Dropdown -->
+                <div class="relative">
+                    <button onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                        <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                            <span id="userInitials">U</span>
+                            <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
+                        </div>
+                        <span id="userName" class="font-semibold text-gray-700"></span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                        <a href="profile.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="analytics.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                            <i data-lucide="trending-up" class="w-4 h-4"></i>
+                            <span>Analytics</span>
+                        </a>
+                        <a id="adminDropdownLink" href="admin.html" class="hidden px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                            <i data-lucide="shield" class="w-4 h-4"></i>
+                            <span>Admin Panel</span>
+                        </a>
+                        <hr class="my-2">
+                        <button onclick="handleLogout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 flex items-center space-x-2">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                            <span>Logout</span>
+                        </button>
                     </div>
-                    <span id="userName" class="font-semibold text-gray-700 text-sm"></span>
-                    <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
-                </button>
-                <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                    <a href="profile.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">Profile</a>
-                    <a href="#" onclick="handleLogout()" class="block px-4 py-2 text-red-600 hover:bg-gray-100 text-sm">Logout</a>
                 </div>
             </div>
         </div>
@@ -588,6 +609,40 @@
     // Init
     lucide.createIcons();
     setStep(1);
+
+    function toggleProfileDropdown() {
+        const dropdown = document.getElementById('profileDropdown');
+        if (dropdown) dropdown.classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('profileDropdown');
+        const btn = document.querySelector('[onclick="toggleProfileDropdown()"]');
+        if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    function handleLogout() {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+    }
+
+    function populateProfile() {
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user) { window.location.href = 'login.html'; return; }
+        const nameEl = document.getElementById('userName');
+        const initialsEl = document.getElementById('userInitials');
+        const adminLink = document.getElementById('adminDropdownLink');
+        if (nameEl) nameEl.textContent = user.name || user.username || '';
+        if (initialsEl) initialsEl.textContent = (user.name || user.username || 'U').charAt(0).toUpperCase();
+        if (adminLink && (user.role === 'admin' || user.role === 'Admin')) {
+            adminLink.classList.remove('hidden');
+            adminLink.classList.add('block');
+        }
+    }
+    populateProfile();
 </script>
 </body>
 </html>
