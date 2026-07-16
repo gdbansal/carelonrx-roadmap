@@ -1,4 +1,4 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -210,8 +210,6 @@ app.post('/api/signup', authLimiter, async (req, res) => {
             role
         });
         
-        console.log('New user created:', username, 'with role:', role);
-        
         res.json({
             success: true,
             message: 'Account created successfully',
@@ -240,7 +238,6 @@ app.post('/api/login', authLimiter, async (req, res) => {
         const user = await User.findOne({ username });
         
         if (!user) {
-            console.log('User NOT found - invalid username');
             return res.status(401).json({
                 success: false,
                 message: 'Invalid username or password'
@@ -251,7 +248,6 @@ app.post('/api/login', authLimiter, async (req, res) => {
         const isPasswordValid = await user.comparePassword(password);
         
         if (isPasswordValid) {
-            console.log('User authenticated:', user.username);
             
             // Update last login
             user.lastLogin = new Date();
@@ -272,7 +268,6 @@ app.post('/api/login', authLimiter, async (req, res) => {
                 }
             });
         } else {
-            console.log('Invalid password for user:', username);
             res.status(401).json({
                 success: false,
                 message: 'Invalid username or password'
@@ -531,30 +526,16 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
             'userBusinessValue', 'timeCriticality', 'riskReduction', 'jobSize',
             'owner', 'dependentSystems', 'businessValue', 'risks', 'dependencies'];
         
-        console.log('=== UPDATE INITIATIVE DEBUG ===');
-        console.log('Initiative ID:', req.params.id);
-        console.log('Current businessUnit in DB:', initiative.businessUnit);
-        console.log('New businessUnit from request:', req.body.businessUnit);
-        console.log('Request body keys:', Object.keys(req.body));
-        
         allowedFields.forEach(field => {
             if (req.body[field] !== undefined) {
-                const oldValue = initiative[field];
                 // Convert empty string to null for optional date fields
                 if (['startDate', 'deliveryDate', 'sitStartDate', 'sitEndDate', 'uatStartDate', 'uatEndDate', 'businessCommitmentDate'].includes(field)) {
                     initiative[field] = req.body[field] || null;
                 } else {
                     initiative[field] = req.body[field];
                 }
-                if (field === 'businessUnit') {
-                    console.log(`businessUnit assignment: ${oldValue} -> ${initiative[field]}`);
-                }
             }
         });
-        
-        console.log('After assignment - businessUnit value:', initiative.businessUnit);
-        console.log('Field changes detected:', fieldChanges.length);
-        console.log('=== END DEBUG ===');
         initiative.updatedAt = timestamp;
         initiative.updatedBy = req.user.username;
         initiative.changeLog.push(changeLogEntry);
@@ -1004,147 +985,6 @@ app.put('/api/profile', authMiddleware, async (req, res) => {
     }
 });
 
-// ========== MIGRATION ENDPOINTS (ADMIN ONLY) ==========
-
-// Migrate passwords endpoint - ADMIN ONLY
-app.post('/api/migrate-passwords', authMiddleware, async (req, res) => {
-    try {
-        // Check if user is admin
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied. Admin privileges required.'
-            });
-        }
-        
-        const bcrypt = require('bcryptjs');
-        
-        // Find all users
-        const users = await User.find({});
-        let migratedCount = 0;
-        const results = [];
-
-        for (const user of users) {
-            // Check if password is already hashed (bcrypt hashes start with $2a$ or $2b$)
-            if (user.password && !user.password.startsWith('$2')) {
-                const plainPassword = user.password;
-                
-                // Hash the plain text password
-                const salt = await bcrypt.genSalt(10);
-                const hashedPassword = await bcrypt.hash(plainPassword, salt);
-                
-                // Update the user with hashed password
-                await User.updateOne(
-                    { _id: user._id },
-                    { $set: { password: hashedPassword } }
-                );
-                
-                results.push(`âœ… Hashed password for: ${user.username}`);
-                migratedCount++;
-            } else {
-                results.push(`â­ï¸ Skipped (already hashed): ${user.username}`);
-            }
-        }
-
-        // Verify admin user
-        const adminUser = await User.findOne({ username: 'admin' });
-        let adminVerified = false;
-        if (adminUser) {
-            adminVerified = await bcrypt.compare('admin123', adminUser.password);
-        }
-
-        res.json({
-            success: true,
-            message: 'Password migration completed',
-            totalUsers: users.length,
-            migratedCount,
-            alreadyHashed: users.length - migratedCount,
-            adminVerified,
-            details: results
-        });
-    } catch (error) {
-        console.error('Migration error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Migration failed' });
-    }
-});
-
-// Update user role endpoint - ADMIN ONLY
-app.post('/api/update-user-role', authMiddleware, async (req, res) => {
-    try {
-        // Check if user is admin
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied. Admin privileges required.'
-            });
-        }
-        
-        const { username, role } = req.body;
-        
-        if (!username || !role) {
-            return res.status(400).json({
-                success: false,
-                message: 'Username and role are required'
-            });
-        }
-
-        // List all users
-        const allUsers = await User.find({}, 'username name email role');
-        
-        // Find the user
-        let user = await User.findOne({ username });
-        
-        if (!user) {
-            // Try by email
-            const escapedUsername = username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            user = await User.findOne({ email: new RegExp('^' + escapedUsername + '$', 'i') });
-        }
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: `User '${username}' not found`,
-                availableUsers: allUsers.map(u => ({
-                    username: u.username,
-                    name: u.name,
-                    email: u.email,
-                    role: u.role
-                }))
-            });
-        }
-
-        const oldRole = user.role;
-        
-        // Update role
-        await User.collection.updateOne(
-            { _id: user._id },
-            { $set: { role } }
-        );
-        
-        // Verify update
-        const updatedUser = await User.findById(user._id);
-
-        res.json({
-            success: true,
-            message: `Role updated successfully`,
-            user: {
-                username: updatedUser.username,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                oldRole,
-                newRole: updatedUser.role
-            },
-            note: 'User must logout and login again to see changes'
-        });
-    } catch (error) {
-        console.error('Role update error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Role update failed' });
-    }
-});
 
 // ========== ESTIMATION USER AUTHENTICATION ==========
 
@@ -1382,21 +1222,14 @@ app.get('/api/estimation-auth/session-history', async (req, res) => {
 // Create a new estimation session
 app.post('/api/sessions', async (req, res) => {
     try {
-        console.log('ðŸ“¥ Received create session request');
-        console.log('Request body keys:', Object.keys(req.body));
-        console.log('Request body:', JSON.stringify(req.body, null, 2));
         
         // Support both formats: { sessionId, sessionData } and { sessionId, ...data }
         const { sessionId, sessionData, ...restData } = req.body;
         const dataToSave = sessionData || restData;
         
-        console.log('SessionId:', sessionId);
-        console.log('Data to save keys:', Object.keys(dataToSave));
-        
         // Check if session already exists
         const existingSession = await EstimationSession.findOne({ sessionId });
         if (existingSession) {
-            console.log('âš ï¸ Session already exists:', sessionId);
             return res.status(409).json({
                 success: false,
                 message: 'Session already exists'
@@ -1407,10 +1240,7 @@ app.post('/api/sessions', async (req, res) => {
             sessionId,
             ...dataToSave
         });
-        
-        console.log('ðŸ’¾ Saving session to database...');
         await session.save();
-        console.log('âœ… Session saved successfully:', sessionId);
         
         // Log audit event
         await logAuditEvent(
@@ -1432,7 +1262,6 @@ app.post('/api/sessions', async (req, res) => {
         });
     } catch (error) {
         console.error('âŒ Create session error:', error);
-        console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
             message: 'Failed to create session' });
@@ -1467,8 +1296,6 @@ app.get('/api/sessions/:sessionId', async (req, res) => {
             sessionObj.revealedStories = Object.fromEntries(sessionObj.revealedStories);
         }
         
-        console.log('ðŸ“¤ Sending session with estimations:', JSON.stringify(sessionObj.estimations));
-        
         res.json(sessionObj);
     } catch (error) {
         console.error('Get session error:', error);
@@ -1483,11 +1310,6 @@ app.put('/api/sessions/:sessionId', async (req, res) => {
     try {
         const { sessionId } = req.params;
         const { sessionData } = req.body;
-        
-        console.log('ðŸ“ Updating session:', sessionId);
-        console.log('ðŸ“¦ Request body keys:', Object.keys(req.body));
-        console.log('ðŸ“¦ SessionData keys:', sessionData ? Object.keys(sessionData) : 'undefined');
-        console.log('ðŸ“¦ Received estimations:', JSON.stringify(sessionData?.estimations));
         
         // Find the session first
         const session = await EstimationSession.findOne({ sessionId });
@@ -1512,8 +1334,6 @@ app.put('/api/sessions/:sessionId', async (req, res) => {
         session.lastUpdated = new Date();
         
         await session.save();
-        
-        console.log('âœ… Session updated, estimations:', JSON.stringify(Object.fromEntries(session.estimations)));
         
         res.json({
             success: true,
@@ -1939,7 +1759,6 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
         // Step 1: find boards for this project
         const boardsUrl = `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=10`;
         const { status: bs, body: boardsBody } = await jiraRequest(boardsUrl);
-        console.log(`JIRA boards [${projectKey}] status=${bs} boards=${boardsBody?.values?.length}`);
 
         if (bs !== 200 || !boardsBody.values || boardsBody.values.length === 0) {
             return res.json({ success: true, sprints: [], message: `No boards found for project ${projectKey}` });
@@ -1951,7 +1770,6 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
             if (board.type === 'kanban') continue; // kanban boards don't have sprints
             const sprintsUrl = `${jiraBase}/rest/agile/1.0/board/${board.id}/sprint?state=active,future&maxResults=20`;
             const { status: ss, body: sprintsBody } = await jiraRequest(sprintsUrl);
-            console.log(`JIRA sprints board=${board.id} type=${board.type} status=${ss} count=${sprintsBody?.values?.length}`);
 
             if (ss === 200 && sprintsBody.values && sprintsBody.values.length > 0) {
                 sprints = sprintsBody.values.map(s => ({
@@ -3901,49 +3719,5 @@ app.post('/api/story-mapping/create-tickets', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`\nðŸš€ CarelonRx Product 360 API Server`);
-    console.log(`ðŸ“¡ Server running on http://localhost:${PORT}`);
-    console.log(`\nðŸ“‹ Available endpoints:`);
-    console.log(`\n   ðŸ—ºï¸  ROADMAP MODULE:`);
-    console.log(`   POST   /api/signup`);
-    console.log(`   POST   /api/login`);
-    console.log(`   GET    /api/initiatives`);
-    console.log(`   POST   /api/initiatives`);
-    console.log(`   GET    /api/initiatives/:id`);
-    console.log(`   PUT    /api/initiatives/:id`);
-    console.log(`   DELETE /api/initiatives/:id`);
-    console.log(`   GET    /api/users (admin only)`);
-    console.log(`   POST   /api/users (admin only)`);
-    console.log(`   GET    /api/users/:id (admin only)`);
-    console.log(`   PUT    /api/users/:id (admin only)`);
-    console.log(`   DELETE /api/users/:id (admin only)`);
-    console.log(`   GET    /api/profile`);
-    console.log(`   PUT    /api/profile`);
-    console.log(`   GET    /api/stats`);
-    console.log(`\n   ðŸ§® STORY ESTIMATIONS MODULE:`);
-    console.log(`   POST   /api/estimation-auth/login`);
-    console.log(`   POST   /api/estimation-auth/logout`);
-    console.log(`   GET    /api/estimation-auth/me`);
-    console.log(`   PUT    /api/estimation-auth/last-session`);
-    console.log(`   GET    /api/estimation-auth/session-history`);
-    console.log(`   POST   /api/sessions`);
-    console.log(`   GET    /api/sessions`);
-    console.log(`   GET    /api/sessions/:sessionId`);
-    console.log(`   PUT    /api/sessions/:sessionId`);
-    console.log(`   DELETE /api/sessions/:sessionId`);
-    console.log(`   POST   /api/sessions/:sessionId/participants`);
-    console.log(`\n   ðŸ“Š AUDIT LOGS MODULE:`);
-    console.log(`   GET    /api/audit-logs`);
-    console.log(`   GET    /api/audit-logs/stats`);
-    console.log(`   GET    /api/audit-logs/session-ids`);
-    console.log(`   GET    /api/audit-logs/export`);
-    console.log(`   GET    /api/estimation-analysis/export`);
-    console.log(`\n   ðŸ—ºï¸  STORY MAPPING:`);
-    console.log(`   POST   /api/story-mapping/fetch-jira`);
-    console.log(`   POST   /api/story-mapping/fetch-confluence`);
-    console.log(`   POST   /api/story-mapping/analyze`);
-    console.log(`   POST   /api/story-mapping/create-tickets`);
-    console.log(`\n   â¤ï¸  HEALTH:`);
-    console.log(`   GET    /api/health`);
-    console.log(`\nâœ… Ready to accept requests!\n`);
+    console.log(`Product 360 API running on port ${PORT}`);
 });
