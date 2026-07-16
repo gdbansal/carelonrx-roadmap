@@ -342,8 +342,9 @@ const PAGE_MODULE_MAP = {
     'roadmap.html':             'roadmap',
     'analytics.html':           'roadmap',
     'admin.html':               'roadmap',
-    'story-estimations.html':   'story-estimations',
-    'capacity-planning.html':   'capacity-planning'
+    'capacity-planning.html':   'capacity-planning',
+    'story-mapping.html':       'story-mapping',
+    'story-estimations.html':   'story-estimations'
 };
 
 // data-module -> default landing page
@@ -351,6 +352,7 @@ const MODULE_DEFAULT_PAGE = {
     'requirements-intake': 'dashboard.html',
     'roadmap':             'roadmap.html',
     'capacity-planning':   'capacity-planning.html',
+    'story-mapping':       'story-mapping.html',
     'story-estimations':   'story-estimations.html'
 };
 
@@ -418,7 +420,7 @@ async function applyRoleModuleVisibility() {
     const currentModule = PAGE_MODULE_MAP[currentPage];
     if (currentModule && deniedModules.has(currentModule)) {
         // Find first sidebar module that is NOT denied
-        const moduleOrder = ['requirements-intake', 'roadmap', 'capacity-planning', 'story-estimations'];
+        const moduleOrder = ['requirements-intake', 'roadmap', 'capacity-planning', 'story-mapping', 'story-estimations'];
         const firstAllowed = moduleOrder.find(m => !deniedModules.has(m));
         // If no module is allowed, redirect to user guide
         const redirectPage = firstAllowed ? (MODULE_DEFAULT_PAGE[firstAllowed]) : 'user-guide.html';
