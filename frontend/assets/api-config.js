@@ -1,17 +1,14 @@
 /**
  * API Base URL Configuration
  * Auto-detects environment:
- *   - localhost / 127.0.0.1     → local dev backend on port 5000
- *   - 10.x.x.x internal server  → backend on same host port 5000
- *   - anything else             → Render production backend
+ *   - localhost / 127.0.0.1  → local dev backend on port 5000
+ *   - everything else        → Render production backend (handles MongoDB Atlas)
  */
 (function() {
     const host = window.location.hostname;
     let base;
     if (host === 'localhost' || host === '127.0.0.1') {
         base = 'http://localhost:5000';
-    } else if (/^10\./.test(host) || /^192\.168\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host)) {
-        base = 'http://' + host + ':5000';
     } else {
         base = 'https://carelonrx-roadmap.onrender.com';
     }
