@@ -2195,6 +2195,96 @@ app.get('/api/jira/sprint-for-team', async (req, res) => {
     }
 });
 
+// Sprint issues for a given team + sprint name
+app.get('/api/jira/sprint-issues', async (req, res) => {
+    try {
+        const { teamName, sprintName } = req.query;
+        if (!teamName || !sprintName) {
+            return res.status(400).json({ success: false, message: 'teamName and sprintName are required', issues: [] });
+        }
+        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'JIRA integration not configured', issues: [] });
+        }
+        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
+
+        // Step 1: Find board matching teamName
+        let matchedBoard = null;
+        let boardStart = 0;
+        let boardTotal = 1;
+        while (boardStart < boardTotal && !matchedBoard) {
+            const { status: bs, body: boardsBody } = await jiraRequest(
+                `${jiraBase}/rest/agile/1.0/board?maxResults=50&startAt=${boardStart}`
+            );
+            if (bs !== 200 || !boardsBody.values) break;
+            matchedBoard = boardsBody.values.find(b =>
+                b.name.toLowerCase() === teamName.toLowerCase()
+            );
+            boardTotal = boardsBody.total || 0;
+            boardStart += 50;
+            if (boardsBody.values.length === 0) break;
+        }
+        if (!matchedBoard) {
+            return res.json({ success: false, message: `No board found for team: ${teamName}`, issues: [] });
+        }
+
+        // Step 2: Find sprint matching sprintName on that board
+        let matchedSprint = null;
+        let sprintStart = 0;
+        let sprintTotal = 1;
+        while (sprintStart < sprintTotal && !matchedSprint) {
+            const { status: ss, body: sprintsBody } = await jiraRequest(
+                `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?maxResults=50&startAt=${sprintStart}`
+            );
+            if (ss !== 200 || !sprintsBody.values) break;
+            matchedSprint = sprintsBody.values.find(s =>
+                s.name.toLowerCase() === sprintName.toLowerCase()
+            );
+            sprintTotal = sprintsBody.total || 0;
+            sprintStart += 50;
+            if (sprintsBody.values.length === 0) break;
+        }
+        if (!matchedSprint) {
+            return res.json({ success: false, message: `No sprint found: ${sprintName}`, issues: [] });
+        }
+
+        // Step 3: Fetch all issues in that sprint (paginated)
+        let allIssues = [];
+        let issueStart = 0;
+        let issueTotal = 1;
+        while (issueStart < issueTotal) {
+            const { status: is, body: issuesBody } = await jiraRequest(
+                `${jiraBase}/rest/agile/1.0/sprint/${matchedSprint.id}/issue?maxResults=50&startAt=${issueStart}&fields=summary,status,issuetype,assignee`
+            );
+            if (is !== 200 || !issuesBody.issues) break;
+            allIssues = allIssues.concat(issuesBody.issues);
+            issueTotal = issuesBody.total || 0;
+            issueStart += 50;
+            if (issuesBody.issues.length === 0) break;
+        }
+
+        const issues = allIssues.map(issue => ({
+            id: issue.id,
+            key: issue.key,
+            summary: issue.fields.summary,
+            status: issue.fields.status ? issue.fields.status.name : 'Unknown',
+            issueType: issue.fields.issuetype ? issue.fields.issuetype.name : 'Story',
+            assignee: issue.fields.assignee ? issue.fields.assignee.displayName : 'Unassigned',
+            url: `${jiraBase}/browse/${issue.key}`
+        }));
+
+        res.json({
+            success: true,
+            boardName: matchedBoard.name,
+            sprintName: matchedSprint.name,
+            total: issues.length,
+            issues
+        });
+    } catch (error) {
+        console.error('JIRA sprint-issues error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch sprint issues', issues: [] });
+    }
+});
+
 // ========== JIRA2 INTEGRATION (Elevance Health) ==========
 
 function jiraRequest2(url) {

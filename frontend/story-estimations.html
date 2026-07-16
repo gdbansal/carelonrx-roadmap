@@ -1341,32 +1341,55 @@
                         </div>
                     ` : ''}
 
-                    <!-- Add Story Form -->
-                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                            <i data-lucide="plus-circle" class="w-5 h-5 text-carelon-purple"></i>
+                    <!-- Add New Story -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                            <i data-lucide="plus-circle" class="w-4 h-4 text-carelon-purple"></i>
                             <span>Add New Story</span>
                         </h3>
-                        <div class="flex items-center gap-3">
-                            <input type="text" id="storyNumber" placeholder="Story Number / JIRA URL" 
-                                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-carelon-purple focus:border-transparent">
-                            <input type="text" id="storySummary" placeholder="Story Summary" 
-                                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-carelon-purple focus:border-transparent">
-                            
-                            <!-- Toggle Buttons -->
-                            <button onclick="toggleDevOnly()" id="devOnlyBtn" class="px-3 py-2 border-2 ${state.devOnlyToggle ? 'border-carelon-cyan bg-blue-100 text-carelon-cyan' : 'border-gray-300 text-gray-600 hover:border-carelon-cyan hover:bg-blue-50'} rounded-lg transition flex items-center space-x-1.5 text-sm font-medium">
-                                <i data-lucide="code" class="w-4 h-4"></i>
-                                <span>Dev Only</span>
+                        <div class="flex gap-2 mb-3">
+                            ${hasPoPrivileges() ? `
+                            <button onclick="openJiraImportModal()" class="flex-1 px-3 py-2 text-sm border-2 border-carelon-purple text-carelon-purple rounded-lg hover:bg-purple-50 transition font-medium">
+                                Import from JIRA
+                            </button>` : ''}
+                            <button onclick="toggleManualAddForm()" class="flex-1 px-3 py-2 text-sm border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+                                Manual Add
                             </button>
-                            <button onclick="toggleQaOnly()" id="qaOnlyBtn" class="px-3 py-2 border-2 ${state.qaOnlyToggle ? 'border-carelon-turquoise bg-green-100 text-carelon-turquoise' : 'border-gray-300 text-gray-600 hover:border-carelon-turquoise hover:bg-green-50'} rounded-lg transition flex items-center space-x-1.5 text-sm font-medium">
-                                <i data-lucide="check-circle" class="w-4 h-4"></i>
-                                <span>QA Only</span>
-                            </button>
-                            
-                            <button onclick="handleAddStory()" class="btn-primary px-4 py-2 text-white rounded-lg transition flex items-center space-x-2">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                                <span>Add</span>
-                            </button>
+                        </div>
+                        <div id="manualAddForm" class="hidden">
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="storyNumber" placeholder="Story Number / JIRA URL" 
+                                    class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-carelon-purple focus:border-transparent">
+                                <input type="text" id="storySummary" placeholder="Story Summary" 
+                                    class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-carelon-purple focus:border-transparent">
+                                <button onclick="toggleDevOnly()" id="devOnlyBtn" class="px-3 py-2 border-2 ${state.devOnlyToggle ? 'border-carelon-cyan bg-blue-100 text-carelon-cyan' : 'border-gray-300 text-gray-600 hover:border-carelon-cyan hover:bg-blue-50'} rounded-lg transition text-xs font-medium">Dev Only</button>
+                                <button onclick="toggleQaOnly()" id="qaOnlyBtn" class="px-3 py-2 border-2 ${state.qaOnlyToggle ? 'border-carelon-turquoise bg-green-100 text-carelon-turquoise' : 'border-gray-300 text-gray-600 hover:border-carelon-turquoise hover:bg-green-50'} rounded-lg transition text-xs font-medium">QA Only</button>
+                                <button onclick="handleAddStory()" class="btn-primary px-3 py-2 text-white text-sm rounded-lg transition">+ Add</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- JIRA Import Modal -->
+                    <div id="jiraImportModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 flex flex-col" style="max-height:80vh">
+                            <div class="flex items-center justify-between p-4 border-b">
+                                <div>
+                                    <h3 class="text-base font-semibold text-gray-900">Import from JIRA</h3>
+                                    <p class="text-xs text-gray-500 mt-0.5">Team: <strong>${state.currentSession ? state.currentSession.teamName : ''}</strong> &nbsp;|&nbsp; Sprint: <strong>${state.currentSession ? state.currentSession.sprintValue : ''}</strong></p>
+                                </div>
+                                <button onclick="closeJiraImportModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                            </div>
+                            <div id="jiraImportContent" class="flex-1 overflow-y-auto p-4">
+                                <div class="text-center py-8 text-gray-500 text-sm">Loading JIRA issues...</div>
+                            </div>
+                            <div class="p-4 border-t flex items-center justify-between">
+                                <span id="jiraImportCount" class="text-xs text-gray-500"></span>
+                                <div class="flex gap-2">
+                                    <button onclick="selectAllJiraIssues(true)" class="px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-50">Select All</button>
+                                    <button onclick="selectAllJiraIssues(false)" class="px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-50">Deselect All</button>
+                                    <button onclick="importSelectedJiraIssues()" class="px-4 py-1.5 text-xs btn-primary text-white rounded-md">Import Selected</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1820,6 +1843,81 @@
                 render();
             } catch (error) {
                 alert('Failed to add story: ' + error.message);
+            }
+        };
+
+        // Toggle manual add form
+        window.toggleManualAddForm = function() {
+            const form = document.getElementById('manualAddForm');
+            if (form) form.classList.toggle('hidden');
+        };
+
+        // JIRA Import Modal
+        let jiraIssuesCache = [];
+
+        window.openJiraImportModal = async function() {
+            const modal = document.getElementById('jiraImportModal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            const content = document.getElementById('jiraImportContent');
+            const countEl = document.getElementById('jiraImportCount');
+            content.innerHTML = '<div class="text-center py-8 text-gray-500 text-sm">Loading JIRA issues...</div>';
+            jiraIssuesCache = [];
+            try {
+                const teamName = state.currentSession.teamName;
+                const sprintName = state.currentSession.sprintValue;
+                const res = await fetch(`${API_BASE_URL}/jira/sprint-issues?teamName=${encodeURIComponent(teamName)}&sprintName=${encodeURIComponent(sprintName)}`);
+                const data = await res.json();
+                if (data.success && data.issues && data.issues.length > 0) {
+                    jiraIssuesCache = data.issues;
+                    if (countEl) countEl.textContent = `${data.issues.length} issues found`;
+                    content.innerHTML = data.issues.map((issue, i) => `
+                        <label class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0">
+                            <input type="checkbox" class="jira-issue-cb mt-0.5 w-4 h-4 accent-purple-600" data-index="${i}" checked>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <a href="${issue.url}" target="_blank" class="text-sm font-semibold text-carelon-purple hover:underline shrink-0">${issue.key}</a>
+                                    <span class="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">${issue.issueType}</span>
+                                    <span class="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">${issue.status}</span>
+                                </div>
+                                <p class="text-sm text-gray-700 mt-0.5 truncate">${issue.summary}</p>
+                                <p class="text-xs text-gray-400">${issue.assignee}</p>
+                            </div>
+                        </label>
+                    `).join('');
+                } else {
+                    content.innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">${data.message || 'No issues found for this sprint'}</div>`;
+                    if (countEl) countEl.textContent = '';
+                }
+            } catch (e) {
+                content.innerHTML = '<div class="text-center py-8 text-red-500 text-sm">Failed to load JIRA issues</div>';
+            }
+        };
+
+        window.closeJiraImportModal = function() {
+            const modal = document.getElementById('jiraImportModal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        window.selectAllJiraIssues = function(checked) {
+            document.querySelectorAll('.jira-issue-cb').forEach(cb => cb.checked = checked);
+        };
+
+        window.importSelectedJiraIssues = async function() {
+            const checkboxes = document.querySelectorAll('.jira-issue-cb');
+            const selected = [];
+            checkboxes.forEach(cb => {
+                if (cb.checked) selected.push(jiraIssuesCache[parseInt(cb.dataset.index)]);
+            });
+            if (selected.length === 0) { alert('Select at least one issue to import'); return; }
+            try {
+                for (const issue of selected) {
+                    await addStory(issue.key, issue.summary, false, false);
+                }
+                window.closeJiraImportModal();
+                render();
+            } catch (e) {
+                alert('Failed to import some issues: ' + e.message);
             }
         };
 
