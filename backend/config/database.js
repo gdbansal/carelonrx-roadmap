@@ -4,11 +4,9 @@ const connectDB = async () => {
     try {
         const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/carelonrx-roadmap';
         
-        const isLocal = !process.env.RENDER && (process.env.NODE_ENV !== 'production');
         await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            ...(isLocal && { tlsAllowInvalidCertificates: true, tlsAllowInvalidHostnames: true }),
         });
         
         console.log('✅ MongoDB Connected Successfully');
