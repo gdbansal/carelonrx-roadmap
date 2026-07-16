@@ -2480,6 +2480,266 @@ app.get('/api/jira/test', authMiddleware, async (req, res) => {
 });
 
 
+// ========== CONFLUENCE INTEGRATION (CarelonRx) ==========
+
+function confluenceRequest(url) {
+    return new Promise((resolve, reject) => {
+        const parsedUrl = new URL(url);
+        const options = {
+            hostname: parsedUrl.hostname,
+            path: parsedUrl.pathname + parsedUrl.search,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${process.env.CONFLUENCE_API_TOKEN}`,
+                'Accept': 'application/json'
+            }
+        };
+        const req = https.request(options, (resp) => {
+            let data = '';
+            resp.on('data', chunk => data += chunk);
+            resp.on('end', () => {
+                try {
+                    resolve({ status: resp.statusCode, body: JSON.parse(data) });
+                } catch (e) {
+                    resolve({ status: resp.statusCode, body: { message: `Non-JSON response: ${data.substring(0, 200)}` } });
+                }
+            });
+        });
+        req.on('error', reject);
+        req.end();
+    });
+}
+
+app.get('/api/confluence/test', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.CONFLUENCE_BASE_URL || !process.env.CONFLUENCE_API_TOKEN) {
+            return res.json({ success: false, message: 'Confluence env vars missing', vars: { CONFLUENCE_BASE_URL: !!process.env.CONFLUENCE_BASE_URL, CONFLUENCE_API_TOKEN: !!process.env.CONFLUENCE_API_TOKEN } });
+        }
+        const url = `${process.env.CONFLUENCE_BASE_URL.replace(/\/$/, '')}/rest/api/user/current`;
+        const { status, body } = await confluenceRequest(url);
+        res.json({ success: status === 200, httpStatus: status, confluenceUser: body.displayName || body.username, error: status !== 200 ? body : undefined });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/confluence/spaces', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.CONFLUENCE_BASE_URL || !process.env.CONFLUENCE_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'Confluence integration not configured', spaces: [] });
+        }
+        const base = process.env.CONFLUENCE_BASE_URL.replace(/\/$/, '');
+        const url = `${base}/rest/api/space?limit=200&type=global`;
+        const { status, body } = await confluenceRequest(url);
+        if (status !== 200 || !body.results) {
+            return res.json({ success: true, spaces: [] });
+        }
+        const spaces = body.results.map(s => ({ key: s.key, name: s.name, type: s.type }))
+                                   .sort((a, b) => a.name.localeCompare(b.name));
+        res.json({ success: true, spaces });
+    } catch (error) {
+        console.error('Confluence spaces error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch Confluence spaces', spaces: [] });
+    }
+});
+
+app.get('/api/confluence/pages', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.CONFLUENCE_BASE_URL || !process.env.CONFLUENCE_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'Confluence integration not configured', pages: [] });
+        }
+        const { spaceKey, title } = req.query;
+        if (!spaceKey) {
+            return res.status(400).json({ success: false, message: 'spaceKey is required', pages: [] });
+        }
+        const base = process.env.CONFLUENCE_BASE_URL.replace(/\/$/, '');
+        let url = `${base}/rest/api/content?spaceKey=${encodeURIComponent(spaceKey)}&type=page&limit=50&expand=version`;
+        if (title) url += `&title=${encodeURIComponent(title)}`;
+        const { status, body } = await confluenceRequest(url);
+        if (status !== 200 || !body.results) {
+            return res.json({ success: true, pages: [] });
+        }
+        const pages = body.results.map(p => ({ id: p.id, title: p.title, url: `${base}${p._links && p._links.webui ? p._links.webui : ''}`, version: p.version && p.version.number }));
+        res.json({ success: true, pages });
+    } catch (error) {
+        console.error('Confluence pages error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch Confluence pages', pages: [] });
+    }
+});
+
+app.get('/api/confluence/search', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.CONFLUENCE_BASE_URL || !process.env.CONFLUENCE_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'Confluence integration not configured', results: [] });
+        }
+        const { query, spaceKey } = req.query;
+        if (!query) {
+            return res.status(400).json({ success: false, message: 'query is required', results: [] });
+        }
+        const base = process.env.CONFLUENCE_BASE_URL.replace(/\/$/, '');
+        let cql = `type=page AND text~"${query}"`;
+        if (spaceKey) cql += ` AND space="${spaceKey}"`;
+        const url = `${base}/rest/api/content/search?cql=${encodeURIComponent(cql)}&limit=25&expand=space`;
+        const { status, body } = await confluenceRequest(url);
+        if (status !== 200 || !body.results) {
+            return res.json({ success: true, results: [] });
+        }
+        const results = body.results.map(p => ({ id: p.id, title: p.title, space: p.space && p.space.name, url: `${base}${p._links && p._links.webui ? p._links.webui : ''}` }));
+        res.json({ success: true, results });
+    } catch (error) {
+        console.error('Confluence search error:', error);
+        res.status(500).json({ success: false, message: 'Failed to search Confluence', results: [] });
+    }
+});
+
+app.get('/api/confluence/page/:pageId', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.CONFLUENCE_BASE_URL || !process.env.CONFLUENCE_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'Confluence integration not configured' });
+        }
+        const base = process.env.CONFLUENCE_BASE_URL.replace(/\/$/, '');
+        const url = `${base}/rest/api/content/${req.params.pageId}?expand=body.storage,version,space`;
+        const { status, body } = await confluenceRequest(url);
+        if (status !== 200) {
+            return res.json({ success: false, message: 'Page not found' });
+        }
+        res.json({ success: true, page: { id: body.id, title: body.title, space: body.space && body.space.name, version: body.version && body.version.number, body: body.body && body.body.storage && body.body.storage.value, url: `${base}${body._links && body._links.webui ? body._links.webui : ''}` } });
+    } catch (error) {
+        console.error('Confluence page error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch Confluence page' });
+    }
+});
+
+// ========== CONFLUENCE2 INTEGRATION (Elevance Health) ==========
+
+function confluenceRequest2(url) {
+    return new Promise((resolve, reject) => {
+        const parsedUrl = new URL(url);
+        const options = {
+            hostname: parsedUrl.hostname,
+            path: parsedUrl.pathname + parsedUrl.search,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${process.env.CONFLUENCE2_API_TOKEN}`,
+                'Accept': 'application/json'
+            }
+        };
+        const req = https.request(options, (resp) => {
+            let data = '';
+            resp.on('data', chunk => data += chunk);
+            resp.on('end', () => {
+                try {
+                    resolve({ status: resp.statusCode, body: JSON.parse(data) });
+                } catch (e) {
+                    resolve({ status: resp.statusCode, body: { message: `Non-JSON response: ${data.substring(0, 200)}` } });
+                }
+            });
+        });
+        req.on('error', reject);
+        req.end();
+    });
+}
+
+app.get('/api/confluence2/test', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.CONFLUENCE2_BASE_URL || !process.env.CONFLUENCE2_API_TOKEN) {
+            return res.json({ success: false, message: 'Confluence2 env vars missing', vars: { CONFLUENCE2_BASE_URL: !!process.env.CONFLUENCE2_BASE_URL, CONFLUENCE2_API_TOKEN: !!process.env.CONFLUENCE2_API_TOKEN } });
+        }
+        const url = `${process.env.CONFLUENCE2_BASE_URL.replace(/\/$/, '')}/rest/api/user/current`;
+        const { status, body } = await confluenceRequest2(url);
+        res.json({ success: status === 200, httpStatus: status, confluenceUser: body.displayName || body.username, error: status !== 200 ? body : undefined });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/confluence2/spaces', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.CONFLUENCE2_BASE_URL || !process.env.CONFLUENCE2_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'Confluence2 integration not configured', spaces: [] });
+        }
+        const base = process.env.CONFLUENCE2_BASE_URL.replace(/\/$/, '');
+        const url = `${base}/rest/api/space?limit=200&type=global`;
+        const { status, body } = await confluenceRequest2(url);
+        if (status !== 200 || !body.results) {
+            return res.json({ success: true, spaces: [] });
+        }
+        const spaces = body.results.map(s => ({ key: s.key, name: s.name, type: s.type }))
+                                   .sort((a, b) => a.name.localeCompare(b.name));
+        res.json({ success: true, spaces });
+    } catch (error) {
+        console.error('Confluence2 spaces error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch Confluence2 spaces', spaces: [] });
+    }
+});
+
+app.get('/api/confluence2/pages', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.CONFLUENCE2_BASE_URL || !process.env.CONFLUENCE2_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'Confluence2 integration not configured', pages: [] });
+        }
+        const { spaceKey, title } = req.query;
+        if (!spaceKey) {
+            return res.status(400).json({ success: false, message: 'spaceKey is required', pages: [] });
+        }
+        const base = process.env.CONFLUENCE2_BASE_URL.replace(/\/$/, '');
+        let url = `${base}/rest/api/content?spaceKey=${encodeURIComponent(spaceKey)}&type=page&limit=50&expand=version`;
+        if (title) url += `&title=${encodeURIComponent(title)}`;
+        const { status, body } = await confluenceRequest2(url);
+        if (status !== 200 || !body.results) {
+            return res.json({ success: true, pages: [] });
+        }
+        const pages = body.results.map(p => ({ id: p.id, title: p.title, url: `${base}${p._links && p._links.webui ? p._links.webui : ''}`, version: p.version && p.version.number }));
+        res.json({ success: true, pages });
+    } catch (error) {
+        console.error('Confluence2 pages error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch Confluence2 pages', pages: [] });
+    }
+});
+
+app.get('/api/confluence2/search', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.CONFLUENCE2_BASE_URL || !process.env.CONFLUENCE2_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'Confluence2 integration not configured', results: [] });
+        }
+        const { query, spaceKey } = req.query;
+        if (!query) {
+            return res.status(400).json({ success: false, message: 'query is required', results: [] });
+        }
+        const base = process.env.CONFLUENCE2_BASE_URL.replace(/\/$/, '');
+        let cql = `type=page AND text~"${query}"`;
+        if (spaceKey) cql += ` AND space="${spaceKey}"`;
+        const url = `${base}/rest/api/content/search?cql=${encodeURIComponent(cql)}&limit=25&expand=space`;
+        const { status, body } = await confluenceRequest2(url);
+        if (status !== 200 || !body.results) {
+            return res.json({ success: true, results: [] });
+        }
+        const results = body.results.map(p => ({ id: p.id, title: p.title, space: p.space && p.space.name, url: `${base}${p._links && p._links.webui ? p._links.webui : ''}` }));
+        res.json({ success: true, results });
+    } catch (error) {
+        console.error('Confluence2 search error:', error);
+        res.status(500).json({ success: false, message: 'Failed to search Confluence2', results: [] });
+    }
+});
+
+app.get('/api/confluence2/page/:pageId', authMiddleware, async (req, res) => {
+    try {
+        if (!process.env.CONFLUENCE2_BASE_URL || !process.env.CONFLUENCE2_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'Confluence2 integration not configured' });
+        }
+        const base = process.env.CONFLUENCE2_BASE_URL.replace(/\/$/, '');
+        const url = `${base}/rest/api/content/${req.params.pageId}?expand=body.storage,version,space`;
+        const { status, body } = await confluenceRequest2(url);
+        if (status !== 200) {
+            return res.json({ success: false, message: 'Page not found' });
+        }
+        res.json({ success: true, page: { id: body.id, title: body.title, space: body.space && body.space.name, version: body.version && body.version.number, body: body.body && body.body.storage && body.body.storage.value, url: `${base}${body._links && body._links.webui ? body._links.webui : ''}` } });
+    } catch (error) {
+        console.error('Confluence2 page error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch Confluence2 page' });
+    }
+});
+
 // ========== LINE OF BUSINESS MANAGEMENT ==========
 
 // Get all Lines of Business
