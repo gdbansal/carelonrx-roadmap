@@ -322,7 +322,10 @@
         // Load LOBs
         async function loadLOBs() {
             try {
-                const response = await fetch(`${API_BASE}/api/line-of-business/active`);
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/api/line-of-business/active`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 const data = await response.json();
                 
                 if (data.success) {

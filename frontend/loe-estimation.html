@@ -218,7 +218,10 @@
         }
 
         try {
-            const res = await fetch(`${API_BASE.replace('/api','')}/api/line-of-business/active`);
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/line-of-business/active`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const data = await res.json();
             if (data.success && data.lobs && data.lobs.length > 0) {
                 data.lobs.sort().forEach(lob => {
