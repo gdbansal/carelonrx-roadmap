@@ -1,0 +1,146 @@
+CarelonRx JIRA Team Names Export (ACTUAL TEAMS)
+Generated: July 15, 2026 at 11:49am
+
+===================================================
+REAL TEAM NAMES FROM AGILE BOARDS
+===================================================
+
+DEVELOPMENT TEAMS:
+1. API Geeks
+2. API Squad  
+3. Aero Avengers
+4. Benefits Team
+5. Bravo Team
+6. Champions
+7. Cloud Musketeers
+8. Delta Force
+9. Delta Team
+10. Digital Artists
+11. Digital Artists AHD
+12. Digital Chords
+13. Digital Chords AHD
+14. Digital Commandos
+15. Digital Conquerors
+16. Digital Dashers
+17. Digital Divas
+18. Digital Marshals
+19. Digital Melody AHD
+20. Digital Shooters
+21. Digital Sprinters
+22. Digital Symphony Board
+
+SPECIALIZED TEAMS:
+23. Accum Hub Team
+24. AHUB Kanban
+25. CarelonRx CFX Team
+26. CarelonRx DevOps
+27. CarelonRx DevSecOps
+28. CarelonRx Team
+29. CARS Board
+30. CPDL2-DataWizards
+31. CPDLStreams
+32. CPFR TEAM
+33. CRUX CarelonRx UX
+34. D&A Cloud Engineering
+35. Data & Analytics
+36. Data Migration
+37. DevSecOps Goals
+38. DIG Snippers
+
+PRODUCT TEAMS:
+39. Advanced Home Delivery (AHD) - Data Lake
+40. AHD POD - Backlog
+41. AHD Production Stability & Reliability Improvements
+42. Annual Benefit verification 2025-26
+43. Atlas - Scrum
+44. Audit Genie
+45. Automation of Annual Benefits Verification
+46. Benefit Builder Features
+47. Bio-plus Mobile Board
+48. BioPlus - Falcons and Topguns
+49. BioPlus DevOps
+50. Bioplus Feature Kanban
+51. Bioplus QA
+52. Bioplus Specialty JIT E2E Testing
+53. BioPlus UX Kanban
+
+OPERATIONAL TEAMS:
+54. IRMB- Scrum
+55. Sparks team - Scrum Board
+56. (IR) Operational & Clinical
+57. (IR) Revenue Cycle & Finance
+58. (IR) Technology
+59. (NG) AWS Cloud Migration
+60. (NG) DripSync Orders Template
+61. (NG) Upgrade v8
+62. (RCM) Intake New Requests
+
+INFRASTRUCTURE & DEVOPS:
+63. AWS NLZ Migration
+64. Benefit Central Lights On
+65. BotsInLoop
+66. CAB Lights On
+67. CAL Rx Decommission
+68. CareTend Report Migration Kanban
+69. CarelonRx-Cloud DevSecOps
+70. CFX Scrum CWI
+71. CLIO LO
+72. CLM
+73. Cloud File Exchange
+74. CLOVR Dependencies
+75. CLOVR Program Board
+76. COE DevOps Delta Force
+
+SUPPORT & MAINTENANCE:
+77. Commercial PHS Scrum Board
+78. Contraxx
+79. CONZ Shared Services (Kanban)
+80. CareAuth Kanban
+81. CarelonRx Data Analytics Admin Support
+82. CPTC Feature Development
+83. CRx tools support
+84. CSSP
+85. Dashboard Mgmt
+
+TESTING & QA:
+86. AHD e2e Testing
+87. Bioplus QA
+88. Bioplus Specialty JIT E2E Testing
+89. CPRA Combined
+90. CPRA Data Eng
+
+PROJECT & PROGRAM TEAMS:
+91. 23.2 PI Board
+92. AABV Board
+93. ABV 2026 Preparations
+94. All VPIE Teams
+95. Anthem.com_Re-Imagined(ANREIMAGED)
+96. Application Diagrams
+97. Application Runbooks
+
+===================================================
+TEAM CATEGORIES SUMMARY
+===================================================
+
+Digital Experience Teams: 22 teams
+- Focus on digital products, UX/UI, mobile apps, portals
+
+Development Teams: 15+ teams  
+- Core development, API, backend services
+
+Infrastructure/DevOps: 14+ teams
+- Cloud migration, deployment, infrastructure
+
+Product Teams: 20+ teams
+- Specific product development (BioPlus, AHD, etc.)
+
+Support & Operations: 10+ teams
+- Maintenance, support, operational work
+
+===================================================
+TOTAL ACTIVE TEAMS: 97+ teams
+===================================================
+
+Data Source: JIRA Agile Boards (jira.carelonrx.com)
+Board Types: Scrum and Kanban boards
+Filter: Active boards only (excludes "Copy of" duplicates)

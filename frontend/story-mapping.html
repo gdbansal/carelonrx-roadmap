@@ -84,13 +84,13 @@
         <!-- Steps indicator -->
         <div class="flex items-center space-x-2 mb-6 text-xs font-medium">
             <div id="step1-badge" class="step-active px-3 py-1 rounded-full">1. Input</div>
-            <div class="text-gray-400">→</div>
+            <div class="text-gray-400">&#8250;</div>
             <div id="step2-badge" class="step-idle px-3 py-1 rounded-full">2. Fetch</div>
-            <div class="text-gray-400">→</div>
+            <div class="text-gray-400">&#8250;</div>
             <div id="step3-badge" class="step-idle px-3 py-1 rounded-full">3. Analyze</div>
-            <div class="text-gray-400">→</div>
+            <div class="text-gray-400">&#8250;</div>
             <div id="step4-badge" class="step-idle px-3 py-1 rounded-full">4. Review</div>
-            <div class="text-gray-400">→</div>
+            <div class="text-gray-400">&#8250;</div>
             <div id="step5-badge" class="step-idle px-3 py-1 rounded-full">5. Create Tickets</div>
         </div>
 
@@ -98,7 +98,7 @@
         <div id="step-input" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-5 fade-in">
             <h2 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <i data-lucide="link" class="w-4 h-4 text-purple-600"></i>
-                Step 1 — Provide Source Links
+                Step 1 � Provide Source Links
             </h2>
             <div class="grid grid-cols-1 gap-4">
                 <div>
@@ -113,7 +113,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Confluence Solutioning URL <span class="text-red-500">*</span>
-                        <span class="text-gray-400 font-normal ml-1"></span>
+                        <span style="display:none"><span class="text-gray-400 font-normal ml-1"></span>
                     </label>
                     <input id="confUrl" type="url" required placeholder="https://confluence.carelonrx.com/pages/123456"
                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
@@ -132,7 +132,7 @@
         <div id="step-preview" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-5 fade-in">
             <h2 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <i data-lucide="file-text" class="w-4 h-4 text-purple-600"></i>
-                Step 2 — Fetched Content Preview
+                Step 2 � Fetched Content Preview
             </h2>
             <div class="grid grid-cols-2 gap-4">
                 <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -145,7 +145,7 @@
                     </div>
                 </div>
                 <div class="p-3 bg-green-50 rounded-lg border border-green-200">
-                    <div class="text-xs font-semibold text-green-700 mb-1">Confluence — Solutioning</div>
+                    <div class="text-xs font-semibold text-green-700 mb-1">Confluence � Solutioning</div>
                     <div id="confPreviewTitle" class="text-sm font-bold text-gray-900"></div>
                     <div id="confPreviewContent" class="text-xs text-gray-700 max-h-40 overflow-y-auto mt-2 whitespace-pre-wrap bg-white p-2 rounded border border-green-100"></div>
                 </div>
@@ -229,7 +229,7 @@
 </div>
 
 <script>
-    const API_BASE = (window.PRODUCT360_API_BASE || 'https://carelonrx-roadmap.onrender.com') + '/api';
+    const API_BASE = (window.PRODUCT360_API_BASE || '') + '/api';
 
     let state = {
         featureData: null,
@@ -257,7 +257,7 @@
 
     // Extract Confluence page ID from URL
     function extractPageId(url) {
-        const m = url.match(/\/pages\/(\d+)/);
+        const m = url.match(/\/pages\/(\d+)/) || url.match(/[?&]pageId=(\d+)/) || url.match(/viewpage\.action[^?]*\?[^#]*pageId=(\d+)/);
         return m ? m[1] : null;
     }
 
@@ -336,10 +336,10 @@
                     state.confluenceData = confData;
                     showStatus('confStatus', `Loaded: ${confData.title}`, 'ok');
                 } catch(e) {
-                    showStatus('confStatus', `Warning: ${e.message} — proceeding without solutioning notes`, 'error');
-                    state.confluenceData = null;
-                }
-            } else {
+                    showStatus('confStatus', `Error: ${e.message}`, 'error');
+                    btn.disabled = false; btn.innerHTML = '<i data-lucide="download" class="w-4 h-4"></i> Fetch Content'; lucide.createIcons();
+                    return;
+                }} else {
                 state.confluenceData = null;
             }
 
@@ -353,7 +353,7 @@
                 document.getElementById('confPreviewContent').textContent = state.confluenceData.content?.substring(0, 600) + (state.confluenceData.content?.length > 600 ? '...' : '');
             } else {
                 document.getElementById('confPreviewTitle').textContent = confUrl ? 'Not loaded' : 'Not provided';
-                document.getElementById('confPreviewContent').textContent = 'Solutioning notes not available — analysis will use JIRA content only.';
+                document.getElementById('confPreviewContent').textContent = 'Solutioning notes not available � analysis will use JIRA content only.';
             }
 
             // Pre-fill project key
@@ -573,7 +573,7 @@
             <div class="text-sm font-semibold text-green-700 mb-2">${created.length} ticket(s) created:</div>
             ${created.map(c => `
                 <div class="flex items-center gap-2 text-sm p-2 bg-green-50 rounded border border-green-200">
-                    <span class="text-green-600">✓</span>
+                    <span class="text-green-600">?</span>
                     <a href="${c.url}" target="_blank" class="text-blue-600 hover:underline font-medium">${c.key}</a>
                     <span class="text-gray-400 text-xs">${c.url}</span>
                 </div>`).join('')}
@@ -583,7 +583,7 @@
             <div class="text-sm font-semibold text-red-700 mb-2">${failed.length} ticket(s) failed:</div>
             ${failed.map(f => `
                 <div class="text-sm p-2 bg-red-50 rounded border border-red-200">
-                    <span class="text-red-600">✗</span> ${escHtml(f.summary)}<br><span class="text-xs text-gray-500">${escHtml(f.error)}</span>
+                    <span class="text-red-600">?</span> ${escHtml(f.summary)}<br><span class="text-xs text-gray-500">${escHtml(f.error)}</span>
                 </div>`).join('')}
         ` : '';
 

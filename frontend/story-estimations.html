@@ -125,7 +125,7 @@
         // ============================================
         // CONFIGURATION
         // ============================================
-        const API_BASE_URL = (window.PRODUCT360_API_BASE || 'https://carelonrx-roadmap.onrender.com') + '/api';
+        const API_BASE_URL = (window.PRODUCT360_API_BASE || '') + '/api';
 
         const FIBONACCI = [0, 0.5, 1, 2, 3, 5, 8, 13];
 
@@ -182,6 +182,10 @@
         // ============================================
         async function apiCall(endpoint, options = {}) {
             try {
+                const token = localStorage.getItem('token');
+                if (token && !options.headers?.['Authorization']) {
+                    options.headers = { ...options.headers, 'Authorization': `Bearer ${token}` };
+                }
                 const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
                 if (!response.ok) {
                     const error = await response.json().catch(() => ({}));
@@ -685,7 +689,7 @@
 
         function getUserEstimation(storyId) {
             if (!state.currentSession || !state.user) {
-                console.log('âŒ getUserEstimation: No session or user');
+                console.log('❌ getUserEstimation: No session or user');
                 return null;
             }
             
@@ -784,7 +788,7 @@
             
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert('âœ… Share URL copied to clipboard!\n\nShare this link with your team members to join the session.');
+                    alert('✅ Share URL copied to clipboard!\n\nShare this link with your team members to join the session.');
                 }).catch(() => {
                     prompt('Copy this URL to share:', shareUrl);
                 });
@@ -1218,7 +1222,7 @@
                                 <div class="text-center py-8 text-gray-500">
                                     <p>No stories available for dashboard display.</p>
                                     <p class="text-xs mt-2">
-                                        Stories: ${state.stories.length} | Session: âœ“ | Estimations: âœ“
+                                        Stories: ${state.stories.length} | Session: ✓ | Estimations: ✓
                                     </p>
                                 </div>
                             ` : `
@@ -1244,7 +1248,7 @@
                                                         <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">${story.number}</span>
                                                     `}
                                                     <span class="font-medium text-gray-900">${story.summary}</span>
-                                                    ${completed ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">âœ… Complete</span>' : ''}
+                                                    ${completed ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Complete</span>' : ''}
                                                 </div>
                                                 <div class="text-sm text-gray-600">
                                                     ${estimatedCount}/${totalParticipants} estimated
@@ -1356,7 +1360,7 @@
                         </div>
                     ` : ''}
 
-                    <!-- Add New Story — PO/Admin/Session Creator only -->
+                    <!-- Add New Story � PO/Admin/Session Creator only -->
                     ${hasPoPrivileges() || isSessionCreator() ? `
                     <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
                         <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
@@ -1450,7 +1454,7 @@
                                                         <span class="bg-green-200 text-green-800 px-2 py-1 rounded text-sm font-medium">${story.number}</span>
                                                     `}
                                                     <span class="text-gray-900 font-medium">${story.summary}</span>
-                                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">âœ… Complete</span>
+                                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Complete</span>
                                                 </div>
                                                 <div class="flex items-center gap-3">
                                                     ${averageEstimation > 0 ? `
@@ -1574,7 +1578,7 @@
                                     <div class="flex items-center gap-3">
                                         ${Object.keys(estimations).length > 0 ? `
                                             <span class="text-green-700 font-medium">
-                                                âœ… ${Object.keys(estimations).length} estimated
+                                                ✅ ${Object.keys(estimations).length} estimated
                                             </span>
                                         ` : ''}
                                         ${state.currentSession.participants.length - Object.keys(estimations).length > 0 ? `
@@ -1687,11 +1691,11 @@
             render();
         };
 
-        // ── DATA SOURCE TOGGLE ──────────────────────────────────────────────
-        // Set to true  → use hardcoded project/team data (no JIRA API calls)
-        // Set to false → use live JIRA API (requires JIRA_BASE_URL + token)
+        // -- DATA SOURCE TOGGLE ----------------------------------------------
+        // Set to true  ? use hardcoded project/team data (no JIRA API calls)
+        // Set to false ? use live JIRA API (requires JIRA_BASE_URL + token)
         const USE_HARDCODE = true;
-        // ───────────────────────────────────────────────────────────────────
+        // -------------------------------------------------------------------
 
         // Hardcoded project + team data
         const PROJECT_DATA = [
@@ -1715,7 +1719,7 @@
             if (!container) return;
 
             if (USE_HARDCODE) {
-                // ── HARDCODED MODE ──
+                // -- HARDCODED MODE --
                 const select = document.getElementById('projectName');
                 select.innerHTML = `<option value="">Select project...</option>` +
                     PROJECT_DATA.map(p => `<option value="${p.key}" data-name="${p.name}">${p.name} (${p.key})</option>`).join('');
@@ -1729,7 +1733,7 @@
                 return;
             }
 
-            // ── API MODE ──
+            // -- API MODE --
             try {
                 const response = await fetch(`${API_BASE_URL}/jira/projects`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 const data = await response.json();
@@ -1746,7 +1750,7 @@
                     if (hint) hint.textContent = `${data.projects.length} projects loaded`;
                 } else {
                     container.innerHTML = `<input type="text" id="projectName" placeholder="Enter project name" class="${INPUT_CLS}">`;
-                    if (hint) hint.textContent = 'JIRA not configured — enter manually';
+                    if (hint) hint.textContent = 'JIRA not configured � enter manually';
                     enableFreeTextFallback();
                 }
             } catch (error) {
@@ -1818,7 +1822,7 @@
                             if (hint) hint.textContent = `${teams.length} teams`;
                         } else {
                             container.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name" class="${INPUT_CLS}">`;
-                            if (hint) hint.textContent = 'No teams found — enter manually';
+                            if (hint) hint.textContent = 'No teams found � enter manually';
                             if (sprintContainer) {
                                 sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Enter Sprint value" class="${INPUT_CLS}">`;
                             }
@@ -1863,17 +1867,17 @@
                         return `<option value="${escapeHtml(s.name)}" ${selected}>${escapeHtml(s.name)}${badge}</option>`;
                     }).join('');
                     container.innerHTML = `<select id="sprintValue" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">${options}</select>`;
-                    if (hint) hint.textContent = `${data.sprints.length} sprints loaded — pre-selected: ${data.preSelectedSprintName || 'none'}`;
+                    if (hint) hint.textContent = `${sorted.length} sprints loaded � pre-selected: ${data.preSelectedSprintName || 'none'}`;
                 } else {
                     container.innerHTML = `<input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)"
                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-                    if (hint) hint.textContent = data.message || 'No sprints found — enter manually';
+                    if (hint) hint.textContent = data.message || 'No sprints found � enter manually';
                 }
             } catch (error) {
                 console.error('Error loading sprints:', error);
                 container.innerHTML = `<input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)"
                     class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-                if (hint) hint.textContent = 'Could not load sprints — enter manually';
+                if (hint) hint.textContent = 'Could not load sprints � enter manually';
             }
         }
 
@@ -2075,11 +2079,11 @@
             try {
                 const session = await getSession(state.sessionId);
                 if (session) {
-                    console.log('ðŸ”„ Polling - Session status:', session.status);
+                    console.log('🔄 Polling - Session status:', session.status);
                     
                     // Check if session has been closed
                     if (session.status === 'closed') {
-                        console.log('ðŸ›‘ Session closed detected!');
+                        console.log('🛑 Session closed detected!');
                         stopPolling();
                         state.currentSession = null;
                         state.sessionId = '';
@@ -2128,7 +2132,7 @@
             if (pollInterval) {
                 clearInterval(pollInterval);
                 pollInterval = null;
-                console.log('â¹ï¸ Stopped polling');
+                console.log('⏹️ Stopped polling');
             }
         }
 

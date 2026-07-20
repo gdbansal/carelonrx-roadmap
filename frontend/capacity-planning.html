@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     <title>Product 360 - Capacity Planning</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <script src="https://unpkg.com/lucide@0.383.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
     <script src="assets/session-manager.js?v=2.2"></script>
     <script src="assets/api-config.js"></script>
@@ -152,7 +152,7 @@
                             <td colspan="10" id="piBannerRow"
                                 class="text-center font-bold text-white py-2 text-base tracking-wide"
                                 style="background-color:#c45c1a;">
-                                PI —
+                                PI ï¿½
                             </td>
                         </tr>
                         <tr class="bg-gray-100" id="sprintHeaderRow">
@@ -546,7 +546,7 @@
 
             // Update title with team name
             const teamName = document.getElementById('teamFilter').value;
-            document.getElementById('capacityMatrixTitle').textContent = `Capacity Matrix — ${teamName}`;
+            document.getElementById('capacityMatrixTitle').textContent = `Capacity Matrix ï¿½ ${teamName}`;
 
             // Update PI banner colspan
             const colCount = 3 + sprintColumns.length;
@@ -686,8 +686,8 @@
                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="workingDays">${wd}</td>
                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="adminPct">${ap}%</td>
                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="contingencyPct">${cp}%</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">—</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">—</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">ï¿½</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">ï¿½</td>
                 </tr>`;
                 }
                 return `
@@ -711,15 +711,15 @@
                             data-sprint="${idx}" data-field="contingencyPct"
                             oninput="recalcAvailability(${idx})">
                     </td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">—</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">—</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">ï¿½</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">ï¿½</td>
                 </tr>`;
             }).join('');
 
             tfoot.innerHTML = `
                 <tr class="bg-green-50 font-bold">
                     <td class="border border-gray-300 px-4 py-2 text-center" colspan="5">Total</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center" id="avail-total">—</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center" id="avail-total">ï¿½</td>
                 </tr>`;
 
             // Compute all sprints after render

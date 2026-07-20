@@ -6,7 +6,7 @@
     <title>Product 360 - Analytics</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <script src="https://unpkg.com/lucide@0.383.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script src="assets/session-manager.js?v=2.2"></script>
     <script src="assets/api-config.js"></script>
@@ -989,7 +989,7 @@
 
         async function seLoadStats() {
             try {
-                const res = await fetch(`${SE_API}/audit-logs/stats`);
+                const res = await fetch(`${SE_API}/audit-logs/stats`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 if (res.ok) {
                     const stats = await res.json();
                     document.getElementById('se-totalLogs').textContent     = stats.totalLogs     || 0;
@@ -1015,7 +1015,7 @@
 
         async function seStatsFromSessions() {
             try {
-                const res  = await fetch(`${SE_API}/sessions`);
+                const res  = await fetch(`${SE_API}/sessions`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 const data = await res.json();
                 if (data.success) {
                     const sessions = data.sessions || [];
@@ -1042,9 +1042,9 @@
                 if (df) qp.append('dateFrom', df);
                 if (dt) qp.append('dateTo',   dt);
 
-                let res = await fetch(`${SE_API}/audit-logs/session-ids?${qp}`);
+                let res = await fetch(`${SE_API}/audit-logs/session-ids?${qp}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 if (!res.ok) {
-                    res = await fetch(`${SE_API}/sessions`);
+                    res = await fetch(`${SE_API}/sessions`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                     const data = await res.json();
                     if (data.success) {
                         const sel = document.getElementById('se-filterSessionId');
@@ -1081,7 +1081,7 @@
             try {
                 const qp = new URLSearchParams();
                 Object.entries(filters).forEach(([k, v]) => { if (v) qp.append(k, v); });
-                const res = await fetch(`${SE_API}/audit-logs?${qp}`);
+                const res = await fetch(`${SE_API}/audit-logs?${qp}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 if (!res.ok) throw new Error('Audit logs API not available');
                 const logs = await res.json();
                 loading.classList.add('hidden');
@@ -1165,7 +1165,7 @@
 
         async function seExportSessionsSummary() {
             try {
-                const res  = await fetch(`${SE_API}/sessions`);
+                const res  = await fetch(`${SE_API}/sessions`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 const data = await res.json();
                 if (data.success) {
                     const sessions = data.sessions || [];

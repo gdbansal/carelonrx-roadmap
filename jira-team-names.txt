@@ -1,0 +1,113 @@
+CarelonRx JIRA Team Names Export
+Generated: July 15, 2026 at 11:46am
+
+===================================================
+COMPLETE LIST OF AVAILABLE TEAM/PROJECT NAMES
+===================================================
+
+1. Accumulators Hub (AHUB)
+2. Archive (RCHV)
+3. Atlas (AUP)
+4. Automation of Annual Benefits Verification (AABV)
+5. Benefit Builder (BB)
+6. Benefits (IBP)
+7. BioPlus to CRx Migration (BTCM)
+8. Branding Hub (BHUB)
+9. Call Center (CALL)
+10. Care Control (CC)
+11. Care Optimization Program (COP)
+12. CarelonRx Claims Audit (AGI)
+13. CarelonRx Digital Experience Platform (CRXDXP)
+14. CarelonRx EDI Engineering (CEDI)
+15. CarelonRx Mass Market (CMM)
+16. CarelonRx Product Experience (CPE)
+17. CarelonRx Toolkit (CRX)
+18. Clinical (CLIN)
+19. ClinicalBridge (CB)
+20. ClinicalBridge Test (CBT)
+21. Clinical Communications (CCOM)
+22. Clinical Outreach (COUT)
+23. COBRA Maintenance (CM)
+24. Commercial (COMM)
+25. Commercial Banking (CBANK)
+26. Copays (COP2)
+27. Core Infrastructure (CI)
+28. Custom Reports (CREP)
+29. CyberArk (CA)
+30. Data Engineering (DENG)
+31. Digital Experience (DX)
+32. Digital Product Experience (DPE)
+33. DigitalRx Clinical (DRC)
+34. DigitalRx Pharmacy Operations (DPO)
+35. Electronic Prior Authorization (EPA)
+36. Enterprise Data Services (EDS)
+37. Enterprise Reporting (ER)
+38. Formulary Optimization (FO)
+39. Fraud, Waste and Abuse (FWA)
+40. Government Programs (GP)
+41. GRRPS2 Support and Maintenance (GSM)
+42. Healthcare Services Automation (HSA)
+43. HealthSpot (HS)
+44. HealthSpot Mobile (HSM)
+45. Immunization (IMMZ)
+46. InnovateRx (IRX)
+47. InnovateRx MVP (IMVP)
+48. Integration Hub (IH)
+49. Loyalty and Rewards (LR)
+50. Mail Order (MO)
+51. Mail Order Deliveries (MOD)
+52. Member Experience (MEX)
+53. Member Portal (MP)
+54. Member Portal API (MPA)
+55. Member Portal Enhancement (MPE)
+56. OCS Onboarding (OCSO)
+57. Pharmacy Configuration (PC)
+58. Pharmacy Operations (POPS)
+59. Point of Sale (POS)
+60. Prescription Edge (PE)
+61. Prior Authorization (PA)
+62. Product 360 (P360)
+63. Product Development (PD)
+64. Provider Experience (PX)
+65. Provider Network Management (PNM)
+66. Provider Portal (PP)
+67. Provider Quality Reporting (PQR)
+68. Reporting and Analytics (RA)
+69. RX SmartCard (RSC)
+70. Sentinel (SENT)
+71. SmartCard (SC)
+72. Specialty Patient Portal (SPP)
+73. Specialty Provider Portal (SRP)
+74. Spotlight MO-Business Testing (SMBT)
+75. Super GRRPS (SPRGRRPS)
+76. Tech Debt (TECD)
+77. Test Data Management (TDM)
+78. Test for BluePrint (TFB)
+79. Test Project (TP)
+80. UiPath (UIP)
+81. VP Finance (CPR)
+82. Zipdrug (ZIP)
+83. Zipdrug Operations and Support (ZOS)
+
+===================================================
+CATEGORIES BREAKDOWN
+===================================================
+
+IngenioRx Teams (Main Category):
+- Atlas, Benefits, Clinical, Data Engineering, Digital Experience
+- Enterprise Reporting, Innovation, Member Experience, Pharmacy Operations
+- Provider Experience, Specialty Patient Portal, etc.
+
+IngenioRx Kanban Projects:
+- Accumulators Hub, Benefit Builder, Branding Hub
+
+Zip Drug Category:
+- Archive, Call Center, Care Control, Tech Debt, Zipdrug, Zipdrug Operations
+
+===================================================
+TOTAL COUNT: 83 Active Teams/Projects
+===================================================
+
+Data Source: JIRA CarelonRx Instance
+API Endpoint: jira.carelonrx.com
+Filter: Active projects only (archived excluded)

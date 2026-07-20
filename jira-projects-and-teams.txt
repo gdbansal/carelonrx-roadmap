@@ -1,0 +1,514 @@
+CarelonRx JIRA - Projects & Teams Export
+Generated: July 15, 2026
+Source: JIRA MCP (jira.carelonrx.com)
+============================================================
+
+============================
+SECTION 1: ALL JIRA PROJECTS
+============================
+
+#   | Key        | Project Name                                      | Category
+----|------------|---------------------------------------------------|------------------------
+1   | AHUB       | Accumulators Hub                                  | IngenioRx Kanban Projects
+2   | RCHV       | Archive                                           | Zip Drug
+3   | AUP        | Atlas                                             | IngenioRx
+4   | AABV       | Automation of Annual Benefits Verification        | IngenioRx
+5   | BB         | Benefit Builder                                   | IngenioRx Kanban Projects
+6   | IBP        | Benefits                                          | IngenioRx
+7   | BTCM       | BioPlus to CRx Migration                          | IngenioRx
+8   | BHUB       | Branding Hub                                      | IngenioRx Kanban Projects
+9   | CALL       | Call Center                                       | Zip Drug
+10  | CC         | Care Control                                      | Zip Drug
+11  | COP        | Care Optimization Program                         | IngenioRx
+12  | AGI        | CarelonRx Claims Audit                            | IngenioRx
+13  | CRXDXP     | CarelonRx Digital Experience Platform             | IngenioRx
+14  | CEDI       | CarelonRx EDI Engineering                         | IngenioRx
+15  | CMM        | CarelonRx Mass Market                             | IngenioRx
+16  | CPE        | CarelonRx Product Experience                      | IngenioRx
+17  | CRX        | CarelonRx Toolkit                                 | IngenioRx
+18  | CLIN       | Clinical                                          | IngenioRx
+19  | CB         | ClinicalBridge                                    | IngenioRx
+20  | CBT        | ClinicalBridge Test                               | IngenioRx
+21  | CCOM       | Clinical Communications                           | IngenioRx
+22  | COUT       | Clinical Outreach                                 | IngenioRx
+23  | CM         | COBRA Maintenance                                 | IngenioRx
+24  | COMM       | Commercial                                        | IngenioRx
+25  | CBANK      | Commercial Banking                                | IngenioRx
+26  | COP2       | Copays                                            | IngenioRx
+27  | CI         | Core Infrastructure                               | IngenioRx
+28  | CREP       | Custom Reports                                    | IngenioRx
+29  | CA         | CyberArk                                          | IngenioRx
+30  | DENG       | Data Engineering                                  | IngenioRx
+31  | DX         | Digital Experience                                | IngenioRx
+32  | DPE        | Digital Product Experience                        | IngenioRx
+33  | DRC        | DigitalRx Clinical                                | IngenioRx
+34  | DPO        | DigitalRx Pharmacy Operations                     | IngenioRx
+35  | EPA        | Electronic Prior Authorization                    | IngenioRx
+36  | EDS        | Enterprise Data Services                          | IngenioRx
+37  | ER         | Enterprise Reporting                              | IngenioRx
+38  | FO         | Formulary Optimization                            | IngenioRx
+39  | FWA        | Fraud, Waste and Abuse                            | IngenioRx
+40  | GP         | Government Programs                               | IngenioRx
+41  | GSM        | GRRPS2 Support and Maintenance                    | IngenioRx
+42  | HSA        | Healthcare Services Automation                    | IngenioRx
+43  | HS         | HealthSpot                                        | IngenioRx
+44  | HSM        | HealthSpot Mobile                                 | IngenioRx
+45  | IMMZ       | Immunization                                      | IngenioRx
+46  | IRX        | InnovateRx                                        | IngenioRx
+47  | IMVP       | InnovateRx MVP                                    | IngenioRx
+48  | IH         | Integration Hub                                   | IngenioRx
+49  | LR         | Loyalty and Rewards                               | IngenioRx
+50  | MO         | Mail Order                                        | IngenioRx
+51  | MOD        | Mail Order Deliveries                             | IngenioRx
+52  | MEX        | Member Experience                                 | IngenioRx
+53  | MP         | Member Portal                                     | IngenioRx
+54  | MPA        | Member Portal API                                 | IngenioRx
+55  | MPE        | Member Portal Enhancement                         | IngenioRx
+56  | OCSO       | OCS Onboarding                                    | IngenioRx
+57  | PC         | Pharmacy Configuration                            | IngenioRx
+58  | POPS       | Pharmacy Operations                               | IngenioRx
+59  | POS        | Point of Sale                                     | IngenioRx
+60  | PE         | Prescription Edge                                 | IngenioRx
+61  | PA         | Prior Authorization                               | IngenioRx
+62  | P360       | Product 360                                       | IngenioRx
+63  | PD         | Product Development                               | IngenioRx
+64  | PX         | Provider Experience                               | IngenioRx
+65  | PNM        | Provider Network Management                       | IngenioRx
+66  | PP         | Provider Portal                                   | IngenioRx
+67  | PQR        | Provider Quality Reporting                        | IngenioRx
+68  | RA         | Reporting and Analytics                           | IngenioRx
+69  | RSC        | RX SmartCard                                      | IngenioRx
+70  | SENT       | Sentinel                                          | IngenioRx
+71  | SC         | SmartCard                                         | IngenioRx
+72  | SPP        | Specialty Patient Portal                          | IngenioRx
+73  | SRP        | Specialty Provider Portal                         | IngenioRx
+74  | SMBT       | Spotlight MO-Business Testing                     | IngenioRx
+75  | SPRGRRPS   | Super GRRPS                                       | IngenioRx
+76  | TECD       | Tech Debt                                         | Zip Drug
+77  | TDM        | Test Data Management                              | IngenioRx
+78  | TFB        | Test for BluePrint                                | IngenioRx
+79  | TP         | Test Project                                      | IngenioRx
+80  | UIP        | UiPath                                            | IngenioRx
+81  | CPR        | VP Finance                                        | IngenioRx
+82  | ZIP        | Zipdrug                                           | Zip Drug
+83  | ZOS        | Zipdrug Operations and Support                    | Zip Drug
+
+TOTAL PROJECTS: 83
+
+
+============================
+SECTION 2: ALL AGILE BOARDS / TEAMS (450+ boards)
+============================
+
+Board ID | Board Name                                                    | Type
+---------|---------------------------------------------------------------|--------
+4862     |  IRMB- Scrum                                                  | Scrum
+5028     |  Sparks team - Scrum Board                                    | Scrum
+5114     | (IR) Operational & Clinical                                   | Kanban
+5115     | (IR) Revenue Cycle & Finance                                  | Kanban
+5113     | (IR) Technology                                               | Kanban
+5109     | (NG) AWS Cloud Migration                                      | Kanban
+5110     | (NG) DripSync Orders Template                                 | Kanban
+5111     | (NG) Upgrade v8                                               | Kanban
+5128     | (RCM) Intake New Requests                                     | Kanban
+3161     | 23.2 PI Board                                                 | Kanban
+4866     | AABV Board                                                    | Scrum
+5034     | ABV 2026 Preparations                                         | Kanban
+71       | Accum Hub Team                                                | Scrum
+3122     | Advanced Home Delivery (AHD) - Data Lake                      | Kanban
+4623     | Aero Avengers                                                 | Scrum
+4802     | AHD e2e Testing                                               | Kanban
+4104     | AHD POD - Backlog                                             | Kanban
+4603     | AHD Production Stability & Reliability Improvements           | Scrum
+75       | AHUB Current SA Work                                          | Kanban
+1102     | AHUB Kanban                                                   | Kanban
+4585     | all RXG (test board)                                          | Scrum
+3461     | All VPIE Teams                                                | Scrum
+5031     | Annual Benefit verification 2025-26                           | Scrum
+521      | Anthem.com_Re-Imagined(ANREIMAGED)                            | Scrum
+1902     | Apex Scrum Board                                              | Scrum
+1942     | API                                                           | Scrum
+742      | API Geeks                                                     | Scrum
+1162     | API Geeks Board                                               | Kanban
+2641     | API Squad                                                     | Kanban
+4923     | Application Diagrams                                          | Scrum
+4924     | Application Runbooks                                          | Scrum
+5042     | Atlas - Scrum                                                 | Scrum
+5052     | Audit Genie                                                   | Scrum
+4863     | Automation of Annual Benefits Verification                    | Scrum
+1462     | AWS NLZ Migration                                             | Scrum
+3982     | back-up - PA Wizards Kanban                                   | Kanban
+90       | Benefit Builder Features                                      | Kanban
+89       | Benefit Builder Kanban                                        | Kanban
+2925     | Benefit Central Lights On                                     | Kanban
+82       | Benefits Team                                                 | Scrum
+4122     | Bio-plus Mobile Board                                         | Scrum
+3642     | BioPlus - Falcons and Topguns                                 | Scrum
+3801     | BioPlus DevOps                                                | Scrum
+3702     | Bioplus Feature Kanban                                        | Kanban
+3767     | Bioplus QA                                                    | Kanban
+4609     | Bioplus Specialty JIT E2E Testing                             | Kanban
+4424     | BioPlus UX Kanban                                             | Kanban
+364      | BotsInLoop                                                    | Scrum
+465      | Branding Hub Kanban Board                                     | Kanban
+22       | Branding Hub Scrum Board                                      | Scrum
+2421     | Bravo Team                                                    | Scrum
+5126     | CAB Lights On                                                 | Kanban
+1046     | CAL Rx Decommission                                           | Kanban
+4402     | CapBoard                                                      | Scrum
+3942     | CareAuth Kanban                                               | Kanban
+4990     | CarelonDevSecops                                              | Scrum
+1503     | CarelonRx CFX Feature Board                                   | Kanban
+304      | CarelonRx CFX Kanban Board                                    | Kanban
+303      | CarelonRx CFX Scrum Board                                     | Scrum
+4162     | CarelonRx Data Analytics Admin Support                        | Kanban
+3581     | CarelonRx DevOps                                              | Kanban
+5016     | CarelonRx DevSecOps Scrum Board                               | Scrum
+5081     | CarelonRx Team                                                | Kanban
+4543     | CarelonRx-Cloud DevSecOps                                     | Kanban
+4702     | CareTend Report Migration Kanban                              | Kanban
+4264     | CARS Board                                                    | Scrum
+5062     | CFX Scrum CWI                                                 | Scrum
+4624     | Champions                                                     | Scrum
+5117     | CLIO LO                                                       | Kanban
+5085     | CLM                                                           | Kanban
+5061     | Cloud File Exchange                                           | Kanban
+5021     | Cloud Musketeers                                              | Scrum
+1084     | CLOVR Dependencies                                            | Kanban
+1083     | CLOVR Program Board                                           | Kanban
+2545     | COE DevOps Delta Force                                        | Kanban
+4903     | Commercial PHS Scrum Board                                    | Scrum
+84       | Contraxx                                                      | Scrum
+3322     | CONZ Shared Services (Kanban)                                 | Kanban
+3721     | CPDL2-DataWizards                                             | Scrum
+3947     | CPDLStreams                                                   | Scrum
+3081     | CPFR                                                          | Kanban
+2642     | CPFR TEAM                                                     | Scrum
+4604     | CPRA Combined                                                 | Kanban
+4562     | CPRA Data Eng                                                 | Kanban
+4762     | CPTC Feature Development                                      | Scrum
+4425     | CRUX CarelonRx UX                                             | Kanban
+5125     | CRx tools support                                             | Kanban
+4742     | CSSP                                                          | Kanban
+76       | Current Work                                                  | Kanban
+3822     | D&A Cloud Engineering                                         | Kanban
+5123     | Dashboard Mgmt                                                | Kanban
+5124     | Dashboard Mgmt2                                               | Scrum
+2082     | Data & Analytics                                              | Kanban
+3762     | Data Migration                                                | Scrum
+2544     | Delta Force                                                   | Scrum
+2422     | Delta Team                                                    | Scrum
+4584     | Deuval's App and DE Team                                      | Kanban
+2981     | DevSecOps Goals                                               | Scrum
+3765     | DIG Snippers                                                  | Kanban
+2847     | Digital - Chords Team                                         | Scrum
+1962     | Digital Apex                                                  | Kanban
+601      | Digital API Epic Kanban Board                                 | Kanban
+621      | Digital API Feature Program Board                             | Kanban
+662      | Digital API Scrum                                             | Scrum
+2361     | Digital API SQUAD                                             | Kanban
+2870     | Digital Artists                                               | Scrum
+3002     | Digital Artists AHD                                           | Scrum
+2162     | Digital Board                                                 | Scrum
+2869     | Digital Chords                                                | Scrum
+2221     | Digital Chords                                                | Scrum
+3004     | Digital Chords AHD                                            | Scrum
+1381     | Digital Commandos                                             | Kanban
+4663     | Digital Conquerors                                            | Scrum
+2867     | Digital Dashers                                               | Scrum
+2922     | Digital Dashers                                               | Scrum
+4622     | Digital Divas                                                 | Scrum
+402      | Digital Epic Board                                            | Kanban
+358      | Digital Feature Program Board                                 | Kanban
+641      | Digital Features Program Board                                | Kanban
+4403     | Digital Marshals                                              | Kanban
+3003     | Digital Melody AHD                                            | Scrum
+4107     | Digital Melody- Client Portal                                 | Scrum
+606      | Digital Mobile Feature Program Board                          | Kanban
+608      | Digital Portal Feature Program Board                          | Kanban
+2929     | Digital Shooters                                              | Scrum
+2871     | Digital Shooters                                              | Scrum
+2482     | Digital Sprinters                                             | Kanban
+2930     | Digital Sprinters                                             | Scrum
+4062     | Digital Sprinters - Client Portal                             | Scrum
+2543     | Digital Sprinters 1                                           | Scrum
+3763     | Digital Standalone                                            | Kanban
+1201     | Digital Symphony Board                                        | Scrum
+3582     | Digital Symphony Ensure Rx Board                              | Scrum
+4063     | Digital UX team - Rx IRL-IND                                  | Kanban
+2341     | DigitalNLZ                                                    | Kanban
+3503     | Dispensing Partner                                            | Scrum
+605      | DSEV-IgnitedMinds                                             | Scrum
+607      | DSEV-Legato Rhythm                                            | Scrum
+1661     | Dublin                                                        | Scrum
+2181     | Dumbledorks (VPIEDD)                                          | Scrum
+355      | DV-IGnitedMinds                                               | Scrum
+356      | DV-Imagineers                                                 | Scrum
+357      | DV-LegatoRythm                                                | Scrum
+346      | DV-SuperKings                                                 | Scrum
+344      | DV-SuperSprinters                                             | Scrum
+1685     | DX Team                                                       | Scrum
+5077     | DxUtility-MDT                                                 | Scrum
+2522     | Echo Team                                                     | Scrum
+3063     | Echo Testing - UAT                                            | Scrum
+4145     | Enhance Warriors                                              | Scrum
+3501     | EnsureRx                                                      | Scrum
+3905     | Expert Services                                               | Kanban
+2542     | F-22 Raptors                                                  | Scrum
+3082     | Feature Kanban Board                                          | Kanban
+3262     | Finance CPFR PI Features                                      | Kanban
+3604     | Foundation Stories                                            | Scrum
+3302     | Foxtrot                                                       | Scrum
+65       | Framework Development                                         | Kanban
+2304     | Golden Gate (VPIEGG)                                          | Scrum
+3304     | Golf                                                          | Scrum
+1583     | GRRPS                                                         | Scrum
+248      | GRRPS Program Board                                           | Kanban
+245      | GRRPS Team 1                                                  | Scrum
+246      | GRRPS Team 2                                                  | Scrum
+247      | GRRPS Team 3                                                  | Scrum
+3862     | GRRPS_PI4                                                     | Scrum
+3313     | Gryffindor                                                    | Scrum
+3382     | Gryffindor Team Board                                         | Kanban
+4642     | GUARDIANS                                                     | Kanban
+3104     | HCC Team1 - Scrum Board                                       | Scrum
+1461     | Helsinki                                                      | Scrum
+1281     | IBP ALL Scrum Teams Board                                     | Scrum
+83       | IBP In Matrix Features for PI Refinement                      | Kanban
+86       | IBP Master Scrum Board                                        | Scrum
+1121     | IBP_Regression_Automation                                     | Scrum
+2873     | IDL LO                                                        | Kanban
+1043     | IDL Team 1                                                    | Scrum
+1221     | IDL Team 2                                                    | Scrum
+3321     | IDL Team 4                                                    | Scrum
+1561     | IDL Team-3 Scrum Board                                        | Scrum
+2843     | IDO Benefits & Eligibility Kanban Board                       | Kanban
+2885     | IDO Claim & Test Data Management Kanban Board                 | Kanban
+2886     | IDO Data & Pricing Analytics Kanban Board                     | Kanban
+2872     | IDO Digital Kanban Board                                      | Kanban
+2802     | IDO Feature Board                                             | Kanban
+2884     | IDO Finance & Clinical Kanban Board                           | Kanban
+3181     | IDO NLZ Kanban Board                                          | Kanban
+2842     | IDO Scrum Board                                               | Scrum
+3701     | IDO Specialty Pharmacy Management System Kanban Board         | Kanban
+3103     | IDO Tasks                                                     | Kanban
+4344     | IE UAT & Performance BUGs                                     | Kanban
+5072     | IEP Kanban                                                    | Kanban
+8        | IEP Scrum Board                                               | Scrum
+9        | IEP Team 1                                                    | Scrum
+10       | IEP Team 2                                                    | Scrum
+121      | IFSS Parent Features Board                                    | Kanban
+4662     | Infinity Squad                                                | Scrum
+1261     | IngenioRx Subrogation UI Board                                | Kanban
+2845     | Intel Engine PI Board                                         | Kanban
+3462     | Intel Teams                                                   | Scrum
+79       | IORR AWS                                                      | Scrum
+546      | IORR Epic Kanban Board                                        | Kanban
+77       | IORR ME Reporting                                             | Scrum
+542      | IORR Scrum Board                                              | Scrum
+1401     | IPP Maximizer 2.0 Scrum Board                                 | Scrum
+741      | IPP Scrum Board                                               | Scrum
+1141     | IPS Feature Backlog                                           | Kanban
+1921     | IPS Kanban Board                                              | Kanban
+143      | IPS Production Support                                        | Kanban
+5093     | IPS Scrum Board                                               | Scrum
+5029     | IPS- Pega Upgrade Scrum Board                                 | Scrum
+4922     | IRIS Scrum Board                                              | Scrum
+78       | IRMB Features Program Board                                   | Kanban
+501      | IRMB Phase 2                                                  | Scrum
+74       | IRMB UST Team                                                 | Scrum
+241      | IRx BnC Scrum Dashboard                                       | Scrum
+1903     | IRX Digital - Tech Debt                                       | Kanban
+1684     | IRx Digital Program Board                                     | Kanban
+122      | IRx Epic Program Board                                        | Kanban
+1601     | IRX LERD Scrum                                                | Scrum
+341      | IRx Performance Testing Kanban Board                          | Kanban
+85       | IRx Runout Claims                                             | Scrum
+7        | IRx Sprint Board                                              | Scrum
+1783     | IRX TDM Team                                                  | Scrum
+2342     | IRx_PAM                                                       | Scrum
+61       | IRX_TA_ModelOffice_Regression                                 | Scrum
+1086     | IVAN Iron Chefs Story Board                                   | Scrum
+3684     | Jade Team                                                     | Scrum
+2782     | JIT                                                           | Scrum
+5056     | Kanban Board -IPS                                             | Kanban
+4985     | KSP 2 Axium Sprint Board                                      | Scrum
+4462     | KSP Data Migration                                            | Kanban
+1941     | Locked and Loaded                                             | Kanban
+3222     | Maple                                                         | Scrum
+3904     | Maple for LERD                                                | Scrum
+3561     | Mavericks                                                     | Scrum
+701      | MDM Scrum Board                                               | Scrum
+68       | ME Survey (Standalone)                                        | Scrum
+4913     | Medicaid PHS Scrum Board                                      | Scrum
+3123     | Meri Board                                                    | Kanban
+3121     | Meri Muley Team Board                                         | Scrum
+5066     | Metrics POC                                                   | Kanban
+2281     | Mind Benders                                                  | Scrum
+2161     | Mischief Managed (VPIEMM)                                     | Scrum
+5096     | MO Automation                                                 | Scrum
+1943     | Mobile                                                        | Scrum
+3061     | Model Office Team E2E Files Processing                        | Kanban
+3962     | Moon Team Kanban                                              | Kanban
+3401     | Mule Monarchy                                                 | Scrum
+2546     | Muley Ingenio                                                 | Kanban
+2523     | Muleys Team                                                   | Scrum
+3983     | myBioPlus Kanban                                              | Kanban
+26       | Networking                                                    | Scrum
+5050     | NextGen - Scrum                                               | Scrum
+2621     | NLZ                                                           | Scrum
+2321     | NLZ Migration : D&A Train                                     | Scrum
+5118     | OPRA LO                                                       | Kanban
+562      | PA CRs Kanban Board                                           | Kanban
+141      | PA Hub Epic Program Board                                     | Kanban
+142      | PA Hub Feature Program Board                                  | Kanban
+3641     | PA Mod Release 3 issues                                       | Scrum
+3562     | PA Modernization Dependency Track                             | Kanban
+5076     | PA-Hub                                                        | Kanban
+5054     | Paragon                                                       | Kanban
+4723     | Paragon - E2E Testing                                         | Kanban
+4743     | Paragon - E2E Testing                                         | Kanban
+5024     | Paragon Reporting and Analysis - Kanban                       | Kanban
+4625     | Paragon Reporting and Analytics                               | Scrum
+5039     | Paragon SSIS                                                  | Scrum
+2661     | PAT/MAT                                                       | Kanban
+3606     | PAWizards                                                     | Scrum
+5099     | PAWS - Bioplus Intake                                         | Scrum
+5089     | PAWS - Data Enrichment                                        | Scrum
+5092     | PAWS - Data Extraction                                        | Scrum
+5091     | PAWS - HITL                                                   | Scrum
+5090     | PAWS - Inventory Mgt                                          | Scrum
+5088     | PAWS - PA Status                                              | Scrum
+5083     | PAWS Program                                                  | Scrum
+4427     | Pay Patrol                                                    | Scrum
+4202     | Pay Patrol                                                    | Kanban
+4342     | Pay Patrol Sprint Board                                       | Scrum
+4142     | Payment Issues Pod                                            | Scrum
+4203     | Payment Pioneers                                              | Kanban
+4343     | Payment Pioneers Sprint Board                                 | Scrum
+4842     | PCPE board                                                    | Scrum
+5027     | PGM                                                           | Scrum
+981      | PGMS Features                                                 | Kanban
+41       | PGMS Scrum Board                                              | Scrum
+5059     | PHARM2 IT team                                                | Scrum
+15       | Pharmatrix Team                                               | Scrum
+5075     | Phoenix Lights On                                             | Kanban
+1181     | PHS Aloha Care                                                | Scrum
+5094     | PHS Scrum Board                                               | Scrum
+16       | PHS Sprint Board                                              | Scrum
+161      | PHS_Epic                                                      | Kanban
+3623     | PI4 Planning - GRRPS                                          | Scrum
+5060     | Plenful Implementation                                        | Scrum
+3504     | PM Activity Board                                             | Kanban
+3563     | PM Board                                                      | Kanban
+322      | Pod 1 - Barcelona                                             | Scrum
+365      | Pod 2 - London                                                | Scrum
+323      | Pod 3 - Paris                                                 | Scrum
+1944     | Portal                                                        | Scrum
+5097     | Pre_sales Play book AI                                        | Kanban
+4147     | Prod Stability                                                | Scrum
+5051     | Product Kanban                                                | Kanban
+561      | Production Readiness Activities                               | Kanban
+3362     | Program Board                                                 | Kanban
+4146     | PST/Digital POD                                               | Scrum
+3781     | QA                                                            | Kanban
+382      | QA Automation                                                 | Scrum
+661      | QA Manual                                                     | Scrum
+3502     | Rangers                                                       | Scrum
+4605     | Raven_MO_E2E_Testing                                          | Scrum
+4606     | Raven_MO_E2E_Testing_Kanban                                   | Kanban
+4982     | Raven_WA_2026                                                 | Scrum
+4983     | Raven_WA_2026                                                 | Scrum
+5064     | RDM - Backlog Refinement                                      | Scrum
+5041     | RDM Development Team                                          | Scrum
+5065     | RDM-All stories                                               | Kanban
+5068     | RDM-UAT & Release Board                                       | Kanban
+4907     | Reporting and Data Pipeline automation (SSRS/SSIS/Tableau)    | Scrum
+4925     | Risk Parity 2.0                                               | Scrum
+4942     | Risk Parity Migrations                                        | Scrum
+93       | RM board                                                      | Kanban
+1001     | RunOut Subrogation Scrum Board                                | Scrum
+3541     | Rush Hour                                                     | Scrum
+23       | Rx Branding Tracking Board                                    | Scrum
+5084     | Rx Data Bots                                                  | Kanban
+102      | RX Financials Team 1                                          | Scrum
+103      | RX Financials Team 2                                          | Scrum
+104      | RX Financials Team 3                                          | Scrum
+105      | RX Financials Team 4                                          | Scrum
+106      | RX Financials Team 5                                          | Scrum
+4984     | RX Guide - Kanban Board                                       | Kanban
+5070     | Rx SOT LO Team                                                | Kanban
+98       | RX-Financials Team 1                                          | Scrum
+94       | RX-Financials Team 2                                          | Scrum
+97       | RX-Financials Team 3                                          | Scrum
+95       | RX-Financials Team 4                                          | Scrum
+100      | RX-Financials Team 5                                          | Scrum
+99       | RX-Financials Team 6                                          | Scrum
+101      | RX-Financials Team 7                                          | Scrum
+96       | RX-Financials Team 9                                          | Scrum
+5047     | RxBW Team 1                                                   | Scrum
+5048     | RxBW Team 2                                                   | Scrum
+4542     | RxEngineers                                                   | Kanban
+2863     | RxG PI Planning                                               | Kanban
+3683     | RxGuide Enhancements Team                                     | Scrum
+1087     | RxGuide Master Kanban Board                                   | Kanban
+3661     | RxGuide Product Team                                          | Scrum
+1088     | RXGuide Program Board                                         | Kanban
+1085     | RxGuide-IronChefs Board                                       | Scrum
+92       | RxSmart Scrum Board                                           | Scrum
+2461     | RxSmart- LO - Kanban                                          | Kanban
+4822     | RxSOT Team 1                                                  | Scrum
+4823     | RxSOT Team 2                                                  | Scrum
+4906     | Salesforce                                                    | Scrum
+4384     | SAMURAIS                                                      | Scrum
+5073     | SASViya2Bricks                                                | Scrum
+2041     | Scrumbledore (VPIESM)                                         | Scrum
+2902     | Scrummy Bears (VPIESDM)                                       | Scrum
+347      | ScrumRunners - Anthem.com Reimagined                          | Scrum
+3923     | SIT_Kanban                                                    | Kanban
+3963     | Sky Kanban                                                    | Kanban
+5035     | SODA KTLO                                                     | Scrum
+4912     | SODA KTLO Kanban                                              | Kanban
+5044     | SODA KTLO Kanban 2                                            | Kanban
+
+
+============================
+SECTION 3: VPIE TEAMS (Filtered)
+============================
+
+Board ID | Team Name                    | Type
+---------|------------------------------|-------
+3461     | All VPIE Teams               | Scrum
+2181     | Dumbledorks (VPIEDD)         | Scrum
+2304     | Golden Gate (VPIEGG)         | Scrum
+2161     | Mischief Managed (VPIEMM)    | Scrum
+2041     | Scrumbledore (VPIESM)        | Scrum
+2902     | Scrummy Bears (VPIESDM)      | Scrum
+3341     | VPIE App Board               | Scrum
+2601     | VPIE Intel Engine            | Scrum
+
+
+============================
+SECTION 4: IDL TEAMS (Filtered)
+============================
+
+Board ID | Team Name                    | Type
+---------|------------------------------|--------
+1043     | IDL Team 1                   | Scrum
+1221     | IDL Team 2                   | Scrum
+1561     | IDL Team-3 Scrum Board       | Scrum
+3321     | IDL Team 4                   | Scrum
+2873     | IDL LO                       | Kanban
+
+
+============================
+SUMMARY
+============================
+
+Total Projects  : 83
+Total Boards    : 450+ (partial - last pages canceled)
+VPIE Teams      : 8
+IDL Teams       : 5
+
+Note: Board list may be incomplete (~50 boards from the last pages were not fetched due to cancellation).
+Data Source     : JIRA MCP - jira.carelonrx.com

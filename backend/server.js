@@ -1780,6 +1780,7 @@ function jiraRequest(url) {
                 }
             });
         });
+        req.setTimeout(15000, () => { req.destroy(); reject(new Error('JIRA request timed out after 15s')); });
         req.on('error', reject);
         req.end();
     });
@@ -2243,6 +2244,7 @@ function jiraRequest2(url) {
                 }
             });
         });
+        req.setTimeout(15000, () => { req.destroy(); reject(new Error('JIRA2 request timed out after 15s')); });
         req.on('error', reject);
         req.end();
     });
@@ -2415,6 +2417,7 @@ function confluenceRequest(url) {
                 }
             });
         });
+        req.setTimeout(15000, () => { req.destroy(); reject(new Error('Confluence request timed out after 15s')); });
         req.on('error', reject);
         req.end();
     });
