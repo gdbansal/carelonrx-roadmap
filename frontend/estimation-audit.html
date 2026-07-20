@@ -1,0 +1,617 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product 360 - Audit Log Dashboard</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="assets/carelon-theme.css">
+    <style>
+        /* CarelonRx Brand Colors */
+        :root {
+            --carelon-purple: #5009B5;
+            --carelon-purple-dark: #3d0789;
+        }
+        
+        .btn-primary {
+            background-color: var(--carelon-purple);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: var(--carelon-purple-dark);
+        }
+        
+        .log-entry {
+            transition: all 0.2s ease;
+        }
+        .log-entry:hover {
+            background-color: #f9fafb;
+        }
+        
+        .json-details {
+            max-height: 100px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Top Navigation Bar -->
+    <nav style="background-color: #5009B5;" class="shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <img src="assets/carelon-rx-logo.png" alt="CarelonRx Logo" class="h-10 w-auto">
+                    <div>
+                        <h1 class="text-lg font-bold text-white">📊 Audit Log Dashboard</h1>
+                        <p class="text-xs text-gray-200">Product 360 - Monitor and analyze estimation activities</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.location.href='story-estimations.html'" 
+                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Back to Estimations</span>
+                    </button>
+                    <button onclick="refreshLogs()" 
+                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-600">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 font-medium">Total Log Entries</p>
+                        <p id="totalLogs" class="text-3xl font-bold text-blue-600">0</p>
+                    </div>
+                    <i data-lucide="file-text" class="w-12 h-12 text-blue-600 opacity-20"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-600">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 font-medium">Total Sessions</p>
+                        <p id="totalSessions" class="text-3xl font-bold text-green-600">0</p>
+                    </div>
+                    <i data-lucide="layers" class="w-12 h-12 text-green-600 opacity-20"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-600">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 font-medium">Unique Users</p>
+                        <p id="totalUsers" class="text-3xl font-bold text-purple-600">0</p>
+                    </div>
+                    <i data-lucide="users" class="w-12 h-12 text-purple-600 opacity-20"></i>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-orange-600">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600 font-medium">Last Activity</p>
+                        <p id="lastActivity" class="text-lg font-bold text-orange-600">-</p>
+                    </div>
+                    <i data-lucide="clock" class="w-12 h-12 text-orange-600 opacity-20"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center space-x-2">
+                <i data-lucide="filter" class="w-5 h-5 text-purple-600"></i>
+                <span>Filters</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+                    <input type="date" id="filterDateFrom" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" onchange="loadSessionIds()">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+                    <input type="date" id="filterDateTo" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" onchange="loadSessionIds()">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Session ID</label>
+                    <select id="filterSessionId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
+                        <option value="">All Sessions</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">User ID</label>
+                    <input type="text" id="filterUserId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm" placeholder="John_PO">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+                    <select id="filterEventType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm">
+                        <option value="">All Events</option>
+                        <option value="SESSION_CREATED">Session Created</option>
+                        <option value="SESSION_JOINED">Session Joined</option>
+                        <option value="ESTIMATION_PROVIDED">Estimation Provided</option>
+                        <option value="STORY_CREATED">Story Created</option>
+                        <option value="STORY_UPDATED">Story Updated</option>
+                        <option value="STORY_DELETED">Story Deleted</option>
+                        <option value="USER_LOGIN">User Login</option>
+                        <option value="USER_LOGOUT">User Logout</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="applyFilters()" class="w-full btn-primary px-4 py-2 rounded-lg transition text-sm font-medium">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+            <div class="mt-4 flex gap-2 flex-wrap">
+                <button onclick="clearFilters()" class="bg-gray-500 text-white px-3 py-2 rounded-lg hover:bg-gray-600 text-sm flex items-center space-x-1">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                    <span>Clear Filters</span>
+                </button>
+                <button onclick="exportLogs()" class="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm flex items-center space-x-1">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>Export Audit CSV</span>
+                </button>
+                <button onclick="exportEstimationAnalysis()" class="bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 text-sm flex items-center space-x-1">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                    <span>Export Deviation Analysis</span>
+                </button>
+                <button onclick="exportSessionsSummary()" class="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 text-sm flex items-center space-x-1">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    <span>Export Sessions Summary</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Event Type Statistics -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center space-x-2">
+                <i data-lucide="pie-chart" class="w-5 h-5 text-purple-600"></i>
+                <span>Event Distribution</span>
+            </h2>
+            <div id="eventStats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Audit Logs Table -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+                    <i data-lucide="list" class="w-5 h-5 text-purple-600"></i>
+                    <span>Audit Logs</span>
+                </h2>
+                <p class="text-sm text-gray-600 mt-1">Showing last <span id="logCount">0</span> entries</p>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Timestamp</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Event Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">User</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Session</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Details</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Loading state -->
+            <div id="loadingState" class="p-8 text-center text-gray-500">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <p class="mt-2">Loading audit logs...</p>
+            </div>
+            
+            <!-- No logs state -->
+            <div id="noLogsState" class="p-8 text-center text-gray-500 hidden">
+                <i data-lucide="inbox" class="w-16 h-16 mx-auto text-gray-400 mb-4"></i>
+                <p>No audit logs found matching the current filters.</p>
+                <p class="text-sm mt-2 text-gray-400">Note: Audit logging is currently being implemented.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://127.0.0.1:5000/api'
+            : 'https://carelonrx-roadmap.onrender.com/api';
+
+        let currentLogs = [];
+
+        // Check admin access
+        function checkAdminAccess() {
+            const user = localStorage.getItem('storyEstimatorUser');
+            if (!user) {
+                alert('Please login first');
+                window.location.href = 'story-estimations.html';
+                return false;
+            }
+            
+            const userData = JSON.parse(user);
+            if (userData.role !== 'Admin' && userData.role !== 'PO' && userData.role !== 'SM') {
+                alert('Access denied. Admin, PO, or SM privileges required.');
+                window.location.href = 'story-estimations.html';
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAdminAccess()) return;
+            
+            loadStats();
+            loadLogs();
+            loadSessionIds();
+            
+            // Set default date filter (today)
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filterDateFrom').value = today;
+            
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                // Try to load from audit logs API (when implemented)
+                const response = await fetch(`${API_BASE_URL}/audit-logs/stats`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                if (response.ok) {
+                    const stats = await response.json();
+                    
+                    document.getElementById('totalLogs').textContent = stats.totalLogs || 0;
+                    document.getElementById('totalSessions').textContent = stats.totalSessions || 0;
+                    document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+                    
+                    // Display event type statistics
+                    const eventStatsContainer = document.getElementById('eventStats');
+                    if (stats.eventTypeStats && stats.eventTypeStats.length > 0) {
+                        eventStatsContainer.innerHTML = stats.eventTypeStats.map(stat => `
+                            <div class="text-center p-3 border border-gray-200 rounded-lg">
+                                <div class="text-lg font-bold text-purple-600">${stat.count}</div>
+                                <div class="text-xs text-gray-600">${stat.event_type.replace(/_/g, ' ')}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        eventStatsContainer.innerHTML = '<p class="col-span-4 text-center text-gray-500 text-sm">No event data available</p>';
+                    }
+                } else {
+                    // Fallback: Load from sessions API
+                    await loadStatsFromSessions();
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                // Fallback: Load from sessions API
+                await loadStatsFromSessions();
+            }
+        }
+
+        // Fallback: Load stats from sessions
+        async function loadStatsFromSessions() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/sessions`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const sessions = data.sessions || [];
+                    const uniqueUsers = new Set();
+                    
+                    sessions.forEach(session => {
+                        if (session.participants) {
+                            session.participants.forEach(p => {
+                                uniqueUsers.add(`${p.name}_${p.role}`);
+                            });
+                        }
+                    });
+                    
+                    document.getElementById('totalLogs').textContent = '-';
+                    document.getElementById('totalSessions').textContent = sessions.length;
+                    document.getElementById('totalUsers').textContent = uniqueUsers.size;
+                    
+                    if (sessions.length > 0) {
+                        const lastSession = sessions[0];
+                        const lastActivity = new Date(lastSession.createdAt);
+                        document.getElementById('lastActivity').textContent = lastActivity.toLocaleTimeString();
+                    }
+                    
+                    // Show placeholder for event stats
+                    const eventStatsContainer = document.getElementById('eventStats');
+                    eventStatsContainer.innerHTML = '<p class="col-span-4 text-center text-gray-500 text-sm">Event tracking will be available soon</p>';
+                }
+            } catch (error) {
+                console.error('Error loading session stats:', error);
+            }
+        }
+
+        // Load session IDs based on date filters
+        async function loadSessionIds() {
+            try {
+                const queryParams = new URLSearchParams();
+                
+                const dateFrom = document.getElementById('filterDateFrom').value;
+                const dateTo = document.getElementById('filterDateTo').value;
+                
+                if (dateFrom) queryParams.append('dateFrom', dateFrom);
+                if (dateTo) queryParams.append('dateTo', dateTo);
+                
+                // Try audit logs API first
+                let response = await fetch(`${API_BASE_URL}/audit-logs/session-ids?${queryParams}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                
+                if (!response.ok) {
+                    // Fallback: Load from sessions API
+                    response = await fetch(`${API_BASE_URL}/sessions`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const sessionSelect = document.getElementById('filterSessionId');
+                        sessionSelect.innerHTML = '<option value="">All Sessions</option>';
+                        
+                        data.sessions.forEach(session => {
+                            const option = document.createElement('option');
+                            option.value = session.sessionId;
+                            option.textContent = `${session.sessionId} - ${session.teamName}`;
+                            sessionSelect.appendChild(option);
+                        });
+                    }
+                    return;
+                }
+                
+                const data = await response.json();
+                const sessionSelect = document.getElementById('filterSessionId');
+                const currentValue = sessionSelect.value;
+                
+                sessionSelect.innerHTML = '<option value="">All Sessions</option>';
+                
+                data.sessionIds.forEach(sessionId => {
+                    const option = document.createElement('option');
+                    option.value = sessionId;
+                    option.textContent = sessionId;
+                    if (sessionId === currentValue) {
+                        option.selected = true;
+                    }
+                    sessionSelect.appendChild(option);
+                });
+                
+            } catch (error) {
+                console.error('Error loading session IDs:', error);
+            }
+        }
+
+        // Load audit logs
+        async function loadLogs(filters = {}) {
+            const loadingState = document.getElementById('loadingState');
+            const noLogsState = document.getElementById('noLogsState');
+            const tableBody = document.getElementById('logsTableBody');
+            
+            loadingState.classList.remove('hidden');
+            noLogsState.classList.add('hidden');
+            tableBody.innerHTML = '';
+
+            try {
+                const queryParams = new URLSearchParams();
+                Object.entries(filters).forEach(([key, value]) => {
+                    if (value) queryParams.append(key, value);
+                });
+
+                const response = await fetch(`${API_BASE_URL}/audit-logs?${queryParams}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                
+                if (!response.ok) {
+                    throw new Error('Audit logs API not available yet');
+                }
+                
+                const logs = await response.json();
+                
+                currentLogs = logs;
+                loadingState.classList.add('hidden');
+                
+                if (logs.length === 0) {
+                    noLogsState.classList.remove('hidden');
+                    document.getElementById('logCount').textContent = '0';
+                    return;
+                }
+
+                document.getElementById('logCount').textContent = logs.length;
+
+                if (logs.length > 0) {
+                    const lastActivity = new Date(logs[0].timestamp);
+                    document.getElementById('lastActivity').textContent = lastActivity.toLocaleString();
+                }
+
+                tableBody.innerHTML = logs.map(log => {
+                    const eventTypeColor = getEventTypeColor(log.event_type);
+                    return `
+                        <tr class="log-entry">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ${new Date(log.timestamp).toLocaleString()}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs rounded-full ${eventTypeColor}">
+                                    ${log.event_type}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ${log.user_id || '-'}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600 font-mono">
+                                ${log.session_id ? log.session_id.substring(0, 15) + '...' : '-'}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-700">
+                                <div class="json-details">
+                                    <strong>${log.details.action || 'N/A'}</strong>
+                                    ${Object.entries(log.details).filter(([k,v]) => k !== 'action').map(([k,v]) => 
+                                        `<br><span class="text-gray-500">${k}:</span> ${JSON.stringify(v)}`
+                                    ).join('')}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                                ${log.ip_address || '-'}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                loadingState.classList.add('hidden');
+                noLogsState.classList.remove('hidden');
+            }
+        }
+
+        // Get color class for event type
+        function getEventTypeColor(eventType) {
+            const colors = {
+                'SESSION_CREATED': 'bg-green-100 text-green-800',
+                'SESSION_JOINED': 'bg-blue-100 text-blue-800',
+                'ESTIMATION_PROVIDED': 'bg-purple-100 text-purple-800',
+                'STORY_CREATED': 'bg-indigo-100 text-indigo-800',
+                'STORY_UPDATED': 'bg-orange-100 text-orange-800',
+                'STORY_DELETED': 'bg-red-100 text-red-800',
+                'USER_LOGIN': 'bg-emerald-100 text-emerald-800',
+                'USER_LOGOUT': 'bg-gray-100 text-gray-800'
+            };
+            return colors[eventType] || 'bg-gray-100 text-gray-800';
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const filters = {
+                sessionId: document.getElementById('filterSessionId').value,
+                userId: document.getElementById('filterUserId').value,
+                eventType: document.getElementById('filterEventType').value,
+                dateFrom: document.getElementById('filterDateFrom').value,
+                dateTo: document.getElementById('filterDateTo').value
+            };
+            
+            loadLogs(filters);
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('filterSessionId').value = '';
+            document.getElementById('filterUserId').value = '';
+            document.getElementById('filterEventType').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            
+            loadSessionIds();
+            loadLogs();
+        }
+
+        // Export logs as CSV
+        function exportLogs() {
+            const filters = {
+                sessionId: document.getElementById('filterSessionId').value,
+                userId: document.getElementById('filterUserId').value,
+                eventType: document.getElementById('filterEventType').value,
+                dateFrom: document.getElementById('filterDateFrom').value,
+                dateTo: document.getElementById('filterDateTo').value
+            };
+
+            const queryParams = new URLSearchParams();
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value) queryParams.append(key, value);
+            });
+
+            window.open(`${API_BASE_URL}/audit-logs/export?${queryParams}`, '_blank');
+        }
+
+        // Export estimation deviation analysis CSV
+        function exportEstimationAnalysis() {
+            const sessionId = document.getElementById('filterSessionId').value;
+            
+            if (!sessionId) {
+                alert('Please select a specific session to export estimation deviation analysis.');
+                return;
+            }
+
+            const queryParams = new URLSearchParams();
+            queryParams.append('sessionId', sessionId);
+
+            window.open(`${API_BASE_URL}/estimation-analysis/export?${queryParams}`, '_blank');
+        }
+
+        // Export sessions summary
+        async function exportSessionsSummary() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/sessions`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const sessions = data.sessions || [];
+                    const csv = [
+                        ['Session ID', 'Team Name', 'Sprint', 'Created By', 'Created At', 'Participants', 'Stories', 'Status'].join(','),
+                        ...sessions.map(s => [
+                            s.sessionId,
+                            s.teamName || 'N/A',
+                            s.sprintValue || 'N/A',
+                            s.createdBy || 'Unknown',
+                            new Date(s.createdAt).toLocaleString(),
+                            s.participants?.length || 0,
+                            s.stories?.length || 0,
+                            s.status
+                        ].join(','))
+                    ].join('\n');
+                    
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `sessions-summary-${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }
+            } catch (error) {
+                console.error('Error exporting sessions:', error);
+                alert('Failed to export sessions summary');
+            }
+        }
+
+        // Refresh logs
+        function refreshLogs() {
+            loadStats();
+            applyFilters();
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                loadStats();
+                applyFilters();
+            }
+        }, 30000);
+
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

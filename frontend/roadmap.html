@@ -337,6 +337,22 @@
     </div>
 
     <script>
+        function showToast(msg, type) {
+            type = type || 'info';
+            const colors = { info: '#6b7280', error: '#dc2626', success: '#16a34a', warn: '#d97706' };
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;padding:12px 20px;border-radius:8px;background:' + (colors[type]||colors.info) + ';color:#fff;font-size:14px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(function() { t.style.opacity = '1'; }, 10);
+            setTimeout(function() { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 300); }, 4000);
+        }
+        ;color:#fff;font-size:14px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s`;
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.style.opacity = '1', 10);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+        }
         lucide.createIcons();
 
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -608,7 +624,7 @@
                 }
             } catch (error) {
                 console.error('Error loading roadmap:', error);
-                alert('Unable to connect to server. Please ensure the backend is running.');
+                showToast('Unable to connect to server. Please ensure the backend is running.', 'error');
             }
         }
 
@@ -1172,7 +1188,7 @@
                 
             } catch (error) {
                 console.error('Error exporting roadmap:', error);
-                alert('Failed to export roadmap. Please try again.');
+                showToast('Failed to export roadmap. Please try again.', 'error');
                 
                 // Restore original styles and button visibility in case of error
                 const roadmapGrid = document.getElementById('roadmapGrid');
@@ -1190,7 +1206,7 @@
                 const initiatives = allInitiatives.filter(i => i.year === year);
                 
                 if (initiatives.length === 0) {
-                    alert('No initiatives found for the selected year.');
+                    showToast('No initiatives found for the selected year.', 'error');
                     return;
                 }
                 
@@ -1269,7 +1285,7 @@
                 
             } catch (error) {
                 console.error('Error exporting to Excel:', error);
-                alert('Failed to export to Excel. Please try again.');
+                showToast('Failed to export to Excel. Please try again.', 'error');
             }
         }
 

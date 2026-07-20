@@ -202,6 +202,22 @@
     </div>
 
     <script>
+        function showToast(msg, type) {
+            type = type || 'info';
+            const colors = { info: '#6b7280', error: '#dc2626', success: '#16a34a', warn: '#d97706' };
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;padding:12px 20px;border-radius:8px;background:' + (colors[type]||colors.info) + ';color:#fff;font-size:14px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(function() { t.style.opacity = '1'; }, 10);
+            setTimeout(function() { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 300); }, 4000);
+        }
+        ;color:#fff;font-size:14px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s`;
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.style.opacity = '1', 10);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+        }
         let currentInitiatives = [];
         let sortColumn = null;
         let sortDirection = 'asc';
@@ -459,7 +475,7 @@
                 }
             } catch (error) {
                 console.error('Error loading initiative:', error);
-                alert('Unable to load initiative details.');
+                showToast('Unable to load initiative details.', 'error');
             }
         }
 
@@ -716,11 +732,11 @@
                 if (data.success) {
                     loadDashboard();
                 } else {
-                    alert(data.message || 'Failed to delete initiative');
+                    showToast(data.message || 'Failed to delete initiative', 'error');
                 }
             } catch (error) {
                 console.error('Error deleting initiative:', error);
-                alert('Unable to connect to server.');
+                showToast('Unable to connect to server.', 'error');
             }
         }
 

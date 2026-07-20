@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -122,6 +122,22 @@
     <div id="app-container" class="container mx-auto px-4 py-6"></div>
 
     <script>
+        function showToast(msg, type) {
+            type = type || 'info';
+            const colors = { info: '#6b7280', error: '#dc2626', success: '#16a34a', warn: '#d97706' };
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;padding:12px 20px;border-radius:8px;background:' + (colors[type]||colors.info) + ';color:#fff;font-size:14px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(function() { t.style.opacity = '1'; }, 10);
+            setTimeout(function() { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 300); }, 4000);
+        }
+        ;color:#fff;font-size:14px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s`;
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.style.opacity = '1', 10);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+        }
         // ============================================
         // CONFIGURATION
         // ============================================
@@ -313,13 +329,13 @@
                 render();
             } catch (error) {
                 console.error('Error leaving session:', error);
-                alert('Failed to leave session. Please try again.');
+                showToast('Failed to leave session. Please try again.', 'error');
             }
         }
 
         async function endSession() {
             if (!hasPoPrivileges()) {
-                alert('Only Product Owners and Admins can end sessions.');
+                showToast('Only Product Owners and Admins can end sessions.', 'error');
                 return;
             }
 
@@ -345,11 +361,11 @@
                 state.stories = [];
                 localStorage.removeItem('storyPointEstimatorSessionId');
                 
-                alert('Session has been ended successfully. All participants will need to join a new session.');
+                showToast('Session has been ended successfully. All participants will need to join a new session.', 'error');
                 render();
             } catch (error) {
                 console.error('Error ending session:', error);
-                alert('Failed to end session. Please try again.');
+                showToast('Failed to end session. Please try again.', 'error');
             }
         }
 
@@ -393,7 +409,7 @@
         async function handleJoinSession(sessionId) {
             const session = await getSession(sessionId);
             if (!session) {
-                alert('Session not found');
+                showToast('Session not found', 'error');
                 return;
             }
 
@@ -434,7 +450,7 @@
 
         async function removeStory(id) {
             if (!isSessionCreator()) {
-                alert('Only the session creator can delete stories.');
+                showToast('Only the session creator can delete stories.', 'error');
                 return;
             }
             
@@ -446,7 +462,7 @@
 
         function startEditStory(storyId) {
             if (!isSessionCreator()) {
-                alert('Only the session creator can edit stories.');
+                showToast('Only the session creator can edit stories.', 'error');
                 return;
             }
             
@@ -469,7 +485,7 @@
             const newSummary = summaryInput.value.trim();
             
             if (!newNumber || !newSummary) {
-                alert('Story number and summary are required');
+                showToast('Story number and summary are required', 'error');
                 return;
             }
             
@@ -788,7 +804,7 @@
             
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert('✅ Share URL copied to clipboard!\n\nShare this link with your team members to join the session.');
+                    showToast('✅ Share URL copied to clipboard!\n\nShare this link with your team members to join the session.', 'error');
                 }).catch(() => {
                     prompt('Copy this URL to share:', shareUrl);
                 });
@@ -1360,7 +1376,7 @@
                         </div>
                     ` : ''}
 
-                    <!-- Add New Story � PO/Admin/Session Creator only -->
+                    <!-- Add New Story  - PO/Admin/Session Creator only -->
                     ${hasPoPrivileges() || isSessionCreator() ? `
                     <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
                         <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
@@ -1681,7 +1697,7 @@
             const role = document.getElementById('loginRole').value;
             
             if (!name || !role) {
-                alert('Please enter both name and role');
+                showToast('Please enter both name and role', 'error');
                 return;
             }
             
@@ -1750,7 +1766,7 @@
                     if (hint) hint.textContent = `${data.projects.length} projects loaded`;
                 } else {
                     container.innerHTML = `<input type="text" id="projectName" placeholder="Enter project name" class="${INPUT_CLS}">`;
-                    if (hint) hint.textContent = 'JIRA not configured � enter manually';
+                    if (hint) hint.textContent = 'JIRA not configured  - enter manually';
                     enableFreeTextFallback();
                 }
             } catch (error) {
@@ -1822,7 +1838,7 @@
                             if (hint) hint.textContent = `${teams.length} teams`;
                         } else {
                             container.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name" class="${INPUT_CLS}">`;
-                            if (hint) hint.textContent = 'No teams found � enter manually';
+                            if (hint) hint.textContent = 'No teams found  - enter manually';
                             if (sprintContainer) {
                                 sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Enter Sprint value" class="${INPUT_CLS}">`;
                             }
@@ -1867,17 +1883,17 @@
                         return `<option value="${escapeHtml(s.name)}" ${selected}>${escapeHtml(s.name)}${badge}</option>`;
                     }).join('');
                     container.innerHTML = `<select id="sprintValue" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">${options}</select>`;
-                    if (hint) hint.textContent = `${sorted.length} sprints loaded � pre-selected: ${data.preSelectedSprintName || 'none'}`;
+                    if (hint) hint.textContent = `${sorted.length} sprints loaded  - pre-selected: ${data.preSelectedSprintName || 'none'}`;
                 } else {
                     container.innerHTML = `<input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)"
                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-                    if (hint) hint.textContent = data.message || 'No sprints found � enter manually';
+                    if (hint) hint.textContent = data.message || 'No sprints found  - enter manually';
                 }
             } catch (error) {
                 console.error('Error loading sprints:', error);
                 container.innerHTML = `<input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)"
                     class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-                if (hint) hint.textContent = 'Could not load sprints � enter manually';
+                if (hint) hint.textContent = 'Could not load sprints  - enter manually';
             }
         }
 
@@ -1889,14 +1905,14 @@
             const sprintValue = document.getElementById('sprintValue').value.trim();
             
             if (!teamName || !sprintValue) {
-                alert('Please enter team name and sprint value');
+                showToast('Please enter team name and sprint value', 'error');
                 return;
             }
             
             try {
                 await handleCreateSession(teamName, sprintValue, projectName);
             } catch (error) {
-                alert('Failed to create session: ' + error.message);
+                showToast('Failed to create session: ' + error.message, 'error');
             }
         };
 
@@ -1904,14 +1920,14 @@
             const sessionId = document.getElementById('sessionIdInput').value.trim();
             
             if (!sessionId) {
-                alert('Please enter a session ID');
+                showToast('Please enter a session ID', 'error');
                 return;
             }
             
             try {
                 await handleJoinSession(sessionId);
             } catch (error) {
-                alert('Failed to join session: ' + error.message);
+                showToast('Failed to join session: ' + error.message, 'error');
             }
         };
 
@@ -1941,7 +1957,7 @@
             const qaOnly = state.qaOnlyToggle;
             
             if (!number || !summary) {
-                alert('Please enter both story number and summary');
+                showToast('Please enter both story number and summary', 'error');
                 return;
             }
             
@@ -1953,7 +1969,7 @@
                 state.qaOnlyToggle = false;
                 render();
             } catch (error) {
-                alert('Failed to add story: ' + error.message);
+                showToast('Failed to add story: ' + error.message, 'error');
             }
         };
 
@@ -2020,7 +2036,7 @@
             checkboxes.forEach(cb => {
                 if (cb.checked) selected.push(jiraIssuesCache[parseInt(cb.dataset.index)]);
             });
-            if (selected.length === 0) { alert('Select at least one issue to import'); return; }
+            if (selected.length === 0) { showToast('Select at least one issue to import', 'error'); return; }
             try {
                 for (const issue of selected) {
                     await addStory(issue.key, issue.summary, false, false);
@@ -2028,7 +2044,7 @@
                 window.closeJiraImportModal();
                 render();
             } catch (e) {
-                alert('Failed to import some issues: ' + e.message);
+                showToast('Failed to import some issues: ' + e.message, 'error');
             }
         };
 
@@ -2089,7 +2105,7 @@
                         state.sessionId = '';
                         state.stories = [];
                         localStorage.removeItem('storyPointEstimatorSessionId');
-                        alert(`Session has been ended by ${session.closedBy || 'the session creator'}. You will need to join a new session.`);
+                        showToast(`Session has been ended by ${session.closedBy || 'the session creator'}. You will need to join a new session.`, 'warn');
                         render();
                         return;
                     }
@@ -2167,7 +2183,7 @@
                         }
                     } catch (error) {
                         console.error('Failed to load session from URL:', error);
-                        alert('Session not found. Please check the URL or create a new session.');
+                        showToast('Session not found. Please check the URL or create a new session.', 'error');
                     }
                 } else {
                     // Try to load saved session from localStorage

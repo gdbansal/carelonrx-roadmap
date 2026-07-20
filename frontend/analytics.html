@@ -461,6 +461,22 @@
     </div><!-- end container -->
 
     <script>
+        function showToast(msg, type) {
+            type = type || 'info';
+            const colors = { info: '#6b7280', error: '#dc2626', success: '#16a34a', warn: '#d97706' };
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;padding:12px 20px;border-radius:8px;background:' + (colors[type]||colors.info) + ';color:#fff;font-size:14px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(function() { t.style.opacity = '1'; }, 10);
+            setTimeout(function() { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 300); }, 4000);
+        }
+        ;color:#fff;font-size:14px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s`;
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.style.opacity = '1', 10);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+        }
         lucide.createIcons();
 
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -468,7 +484,7 @@
             window.location.href = 'login.html';
         }
 
-        // ── Tab Switching ─────────────────────────────────────────────
+        // -- Tab Switching ---------------------------------------------
         function switchTab(tab) {
             document.querySelectorAll('.analytics-tab').forEach(btn => {
                 btn.classList.remove('active', 'border-carelon-purple', 'text-carelon-purple');
@@ -542,7 +558,7 @@
         async function loadAnalytics() {
             try {
                 // Load users
-                const usersResponse = await fetch((window.PRODUCT360_API_BASE||'https://carelonrx-roadmap.onrender.com') + '/api/users', {
+                const usersResponse = await fetch((window.PRODUCT360_API_BASE||'') + '/api/users', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -550,7 +566,7 @@
                 const usersData = await usersResponse.json();
                 
                 // Load initiatives
-                const initiativesResponse = await fetch((window.PRODUCT360_API_BASE||'https://carelonrx-roadmap.onrender.com') + '/api/initiatives', {
+                const initiativesResponse = await fetch((window.PRODUCT360_API_BASE||'') + '/api/initiatives', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -568,7 +584,7 @@
                 }
             } catch (error) {
                 console.error('Error loading analytics:', error);
-                alert('Unable to load analytics data. Please ensure the backend is running.');
+                showToast('Unable to load analytics data. Please ensure the backend is running.', 'error');
             }
         }
 
@@ -838,9 +854,9 @@
             });
         }
 
-        const API_BASE = window.PRODUCT360_API_BASE || 'https://carelonrx-roadmap.onrender.com';
+        const API_BASE = window.PRODUCT360_API_BASE || '';
 
-        // ── Capacity Matrix ──────────────────────────────────────────
+        // -- Capacity Matrix ------------------------------------------
         async function initCapacityFilters() {
             try {
                 const res = await fetch(`${API_BASE}/api/capacity-plans`, {
@@ -971,7 +987,7 @@
         loadAnalytics();
         lucide.createIcons();
 
-        // ── Story Estimations Audit ────────────────────────────────────
+        // -- Story Estimations Audit ------------------------------------
         const SE_API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://127.0.0.1:5000/api'
             : (window.PRODUCT360_API_BASE ? window.PRODUCT360_API_BASE + '/api' : 'https://carelonrx-roadmap.onrender.com/api');
@@ -1159,7 +1175,7 @@
 
         function seExportEstimationAnalysis() {
             const sessionId = document.getElementById('se-filterSessionId').value;
-            if (!sessionId) { alert('Please select a specific session to export estimation deviation analysis.'); return; }
+            if (!sessionId) { showToast('Please select a specific session to export estimation deviation analysis.', 'error'); return; }
             window.open(`${SE_API}/estimation-analysis/export?sessionId=${sessionId}`, '_blank');
         }
 
@@ -1182,7 +1198,7 @@
                     a.download = `sessions-summary-${new Date().toISOString().split('T')[0]}.csv`;
                     document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 }
-            } catch(e) { alert('Failed to export sessions summary'); }
+            } catch(e) { showToast('Failed to export sessions summary', 'error'); }
         }
     </script>
 </body>
