@@ -211,15 +211,6 @@
                         </div>
 
                         <div>
-                            <label for="businessCommitmentDate" class="block text-sm font-semibold text-gray-700 mb-2">
-                                Business Commitment Date (if known)
-                            </label>
-                            <input type="date" id="businessCommitmentDate"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <p class="text-xs text-gray-500 mt-1">Committed date during PI Planning</p>
-                        </div>
-
-                        <div>
                             <label for="budgetApproved" class="block text-sm font-semibold text-gray-700 mb-2">
                                 Budget Status
                             </label>
@@ -833,7 +824,6 @@
                     document.getElementById('sitEndDate').value = initiative.sitEndDate || '';
                     document.getElementById('uatStartDate').value = initiative.uatStartDate || '';
                     document.getElementById('uatEndDate').value = initiative.uatEndDate || '';
-                    document.getElementById('businessCommitmentDate').value = initiative.businessCommitmentDate || '';
                     document.getElementById('budgetApproved').value = initiative.budgetApproved || '';
                     document.getElementById('priority').value = initiative.priority || '';
                     document.getElementById('holdReason').value = initiative.holdReason || '';
@@ -987,7 +977,6 @@
                 'sitEndDate': 'SIT End Date',
                 'uatStartDate': 'UAT Start Date',
                 'uatEndDate': 'UAT End Date',
-                'businessCommitmentDate': 'Business Commitment Date',
                 'budgetApproved': 'Budget Status',
                 'priority': 'Priority',
                 'wsjf': 'WSJF Score',
@@ -1010,8 +999,7 @@
             }
             
             if (field === 'startDate' || field === 'deliveryDate' || field === 'sitStartDate' || 
-                field === 'sitEndDate' || field === 'uatStartDate' || field === 'uatEndDate' || 
-                field === 'businessCommitmentDate') {
+                field === 'sitEndDate' || field === 'uatStartDate' || field === 'uatEndDate') {
                 return new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
             }
             
@@ -1110,7 +1098,6 @@
                 sitEndDate: document.getElementById('sitEndDate').value || null,
                 uatStartDate: document.getElementById('uatStartDate').value || null,
                 uatEndDate: document.getElementById('uatEndDate').value || null,
-                businessCommitmentDate: document.getElementById('businessCommitmentDate').value || null,
                 budgetApproved: document.getElementById('budgetApproved').value || null,
                 priority: document.getElementById('priority').value,
                 holdReason: document.getElementById('holdReason').value || null,
