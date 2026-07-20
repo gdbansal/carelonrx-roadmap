@@ -6,7 +6,7 @@
     <title>Product 360 - Story Estimations</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <script src="https://unpkg.com/lucide@0.383.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
     <script src="assets/session-manager.js?v=2.2"></script>
     <script src="assets/api-config.js"></script>
     <script src="assets/product360-sidebar.js" defer></script>
@@ -1973,7 +1973,7 @@
             try {
                 const teamName = state.currentSession.teamName;
                 const sprintName = state.currentSession.sprintValue;
-                const res = await fetch(`${API_BASE_URL}/jira/sprint-issues?teamName=${encodeURIComponent(teamName)}&sprintName=${encodeURIComponent(sprintName)}`);
+                const res = await fetch(`${API_BASE_URL}/jira/sprint-issues?teamName=${encodeURIComponent(teamName)}&sprintName=${encodeURIComponent(sprintName)}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 const data = await res.json();
                 if (data.success && data.issues && data.issues.length > 0) {
                     jiraIssuesCache = data.issues;
