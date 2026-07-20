@@ -3607,8 +3607,8 @@ app.post('/api/story-mapping/fetch-confluence', authMiddleware, async (req, res)
     try {
         const { url } = req.body;
         if (!url) return res.status(400).json({ success: false, message: 'Confluence URL is required' });
-        if (!process.env.JIRA_API_TOKEN) {
-            return res.status(503).json({ success: false, message: 'JIRA token not configured on server' });
+        if (!process.env.CONFLUENCE_BASE_URL || !process.env.CONFLUENCE_API_TOKEN) {
+            return res.status(503).json({ success: false, message: 'Confluence not configured on server' });
         }
 
         // Extract page ID from URL â€” supports /pages/123456 and /display/SPACE/Title?pageId=123456
@@ -3617,12 +3617,10 @@ app.post('/api/story-mapping/fetch-confluence', authMiddleware, async (req, res)
         if (pageIdMatch) pageId = pageIdMatch[1];
         if (!pageId) return res.status(400).json({ success: false, message: 'Could not extract page ID from Confluence URL' });
 
-        const confBase = process.env.CONFLUENCE_BASE_URL
-            ? process.env.CONFLUENCE_BASE_URL.replace(/\/$/, '')
-            : 'https://confluence.carelonrx.com';
+        const confBase = process.env.CONFLUENCE_BASE_URL.replace(/\/$/, '');
 
-        // Use same jiraRequest pattern â€” reuse helper with confluence base
-        const { status, body } = await jiraRequest(
+        // Use confluenceRequest with CONFLUENCE_API_TOKEN
+        const { status, body } = await confluenceRequest(
             `${confBase}/rest/api/content/${pageId}?expand=body.view,body.storage`
         );
         if (status !== 200) return res.status(status).json({ success: false, message: `Confluence returned ${status}` });
