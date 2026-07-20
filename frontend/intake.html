@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -661,7 +661,7 @@
         
         async function loadLinesOfBusiness() {
             try {
-                const response = await fetch((window.PRODUCT360_API_BASE||'') + '/api/line-of-business/active');
+                const response = await fetch((window.PRODUCT360_API_BASE||'') + '/api/line-of-business/active', { headers: { 'Authorization': Bearer  } });
                 const data = await response.json();
                 
                 if (data.success && data.lobs) {

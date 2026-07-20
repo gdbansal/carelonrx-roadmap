@@ -1731,7 +1731,7 @@
 
             // ── API MODE ──
             try {
-                const response = await fetch(`${API_BASE_URL}/jira/projects`);
+                const response = await fetch(`${API_BASE_URL}/jira/projects`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 const data = await response.json();
                 if (data.success && data.projects && data.projects.length > 0) {
                     const select = document.getElementById('projectName');
@@ -1804,7 +1804,7 @@
                 container.innerHTML = `<select id="teamName" class="${INPUT_CLS}" disabled><option value="">Loading teams...</option></select>`;
                 if (hint) hint.textContent = 'Loading teams from JIRA...';
                 try {
-                    const res = await fetch(`${API_BASE_URL}/jira/active-teams`);
+                    const res = await fetch(`${API_BASE_URL}/jira/active-teams`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                     const data = await res.json();
                     if (data.success && data.data) {
                         const proj = data.data.find(p => p.projectKey === projectKey);
