@@ -73,8 +73,9 @@ const initiativeSchema = new mongoose.Schema({
         default: null
     },
     budgetApproved: {
-        type: Boolean,
-        default: false
+        type: String,
+        enum: ['Approved', 'Pending', 'Rejected', null],
+        default: 'Pending'
     },
     priority: {
         type: String,

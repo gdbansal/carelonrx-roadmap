@@ -669,8 +669,8 @@ app.get('/api/stats', authMiddleware, async (req, res) => {
             byYear: {},
             byQuarter: {},
             byPriority: {},
-            budgetApproved: initiatives.filter(i => i.budgetApproved).length,
-            budgetPending: initiatives.filter(i => !i.budgetApproved).length
+            budgetApproved: initiatives.filter(i => i.budgetApproved === 'Approved').length,
+            budgetPending: initiatives.filter(i => i.budgetApproved !== 'Approved').length
         };
         
         initiatives.forEach(initiative => {
@@ -2883,9 +2883,10 @@ app.get('/api/team-members', authMiddleware, async (req, res) => {
 // Get unique project names
 app.get('/api/team-members/projects', authMiddleware, async (req, res) => {
     try {
-        const { team } = req.query;
+        const { team, lob } = req.query;
         const query = { isActive: true, project: { $exists: true, $ne: '' } };
         if (team) query.team = team;
+        if (lob) query.lineOfBusiness = lob;
         const projects = await TeamMember.distinct('project', query);
         res.json({
             success: true,
@@ -2950,7 +2951,7 @@ app.post('/api/team-members', authMiddleware, async (req, res) => {
             });
         }
         
-        const { name, role, team, project, email } = req.body;
+        const { name, role, team, project, lineOfBusiness, email } = req.body;
         
         if (!name || !role || !team) {
             return res.status(400).json({
@@ -2964,6 +2965,7 @@ app.post('/api/team-members', authMiddleware, async (req, res) => {
             role,
             team: team.trim(),
             project: project?.trim(),
+            lineOfBusiness: lineOfBusiness?.trim(),
             email: email?.trim(),
             createdBy: req.user.username
         });
@@ -2993,7 +2995,7 @@ app.put('/api/team-members/:id', authMiddleware, async (req, res) => {
             });
         }
         
-        const { name, role, team, project, email, isActive } = req.body;
+        const { name, role, team, project, lineOfBusiness, email, isActive } = req.body;
         
         if (!isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid ID format' });
         const member = await TeamMember.findById(req.params.id);
@@ -3009,6 +3011,7 @@ app.put('/api/team-members/:id', authMiddleware, async (req, res) => {
         if (role) member.role = role;
         if (team) member.team = team.trim();
         if (project !== undefined) member.project = project?.trim();
+        if (lineOfBusiness !== undefined) member.lineOfBusiness = lineOfBusiness?.trim();
         if (email !== undefined) member.email = email?.trim();
         if (isActive !== undefined) member.isActive = isActive;
         

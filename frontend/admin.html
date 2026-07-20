@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -184,6 +184,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Role</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Team</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Project</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Line of Business</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
@@ -426,6 +427,16 @@
                         placeholder="Enter email (optional)">
                 </div>
 
+                <div>
+                    <label for="memberLob" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Line of Business
+                    </label>
+                    <select id="memberLob"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select Line of Business (optional)</option>
+                    </select>
+                </div>
+
                 <div id="memberStatusContainer" class="hidden">
                     <label class="flex items-center space-x-2">
                         <input type="checkbox" id="memberIsActive" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
@@ -519,7 +530,7 @@
     </div>
 
     <script>
-        const API_BASE = window.PRODUCT360_API_BASE || 'https://carelonrx-roadmap.onrender.com';
+        const API_BASE = window.PRODUCT360_API_BASE || '';
         let editingUserId = null;
         let editingLobId = null;
         let editingMemberId = null;
@@ -663,6 +674,7 @@
                 (m.role || '').toLowerCase().includes(q) ||
                 (m.team || '').toLowerCase().includes(q) ||
                 (m.project || '').toLowerCase().includes(q) ||
+                (m.lineOfBusiness || '').toLowerCase().includes(q) ||
                 (m.email || '').toLowerCase().includes(q)
             );
             renderTeamMembers(filtered, true);
@@ -746,7 +758,7 @@
                     });
                 }
             } catch (e) {
-                sel.innerHTML = '<option value="">Failed to load roles â€” please refresh</option>';
+                sel.innerHTML = '<option value="">Failed to load roles — please refresh</option>';
             }
             if (selectedValue) sel.value = selectedValue;
         }
@@ -1171,6 +1183,9 @@
                         <div class="text-sm text-gray-600">${member.project || '-'}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-600">${member.lineOfBusiness || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-600">${member.email || '-'}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -1406,6 +1421,7 @@
             document.getElementById('teamMemberModal').classList.remove('hidden');
             activeJiraSource = 'jira1';
             jiraProjectsLoaded = false;
+            loadLobsIntoMemberModal();
             jiraProjectList = [];
             jiraTeamList = [];
             document.getElementById('jiraSource1Btn').className = 'flex-1 px-4 py-2 text-sm font-medium bg-blue-600 text-white transition';
@@ -1437,6 +1453,7 @@
                     setProjectValue(data.member.project || '');
                     await loadJiraTeams();
                     setTeamValue(data.member.team);
+                    document.getElementById('memberLob').value = data.member.lineOfBusiness || '';
                     lucide.createIcons();
                 }
             } catch (error) {
@@ -1478,12 +1495,31 @@
             editingMemberId = null;
         }
 
+        async function loadLobsIntoMemberModal() {
+            const sel = document.getElementById('memberLob');
+            if (sel.options.length > 1) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/line-of-business/active`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                if (data.success && data.lobs) {
+                    data.lobs.forEach(lob => {
+                        const opt = document.createElement('option');
+                        opt.value = lob; opt.textContent = lob;
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.error('Failed to load LOBs into member modal', e); }
+        }
+
         async function saveTeamMember() {
             const memberData = {
                 name: document.getElementById('memberName').value.trim(),
                 role: document.getElementById('memberRole').value,
                 team: getTeamValue(),
                 project: getProjectValue(),
+                lineOfBusiness: document.getElementById('memberLob').value,
                 email: document.getElementById('memberEmail').value.trim()
             };
 
@@ -1535,9 +1571,9 @@
         const MODULES = [
             { key: 'requirementsIntake', label: 'Requirements Intake' },
             { key: 'roadmap',            label: 'Roadmap' },
+            { key: 'loeEstimation',      label: 'LOE Estimation' },
             { key: 'capacityPlanning',   label: 'Capacity Planning' },
             { key: 'storyMapping',       label: 'Story Mapping' },
-            { key: 'loeEstimation',      label: 'LOE Estimation' },
             { key: 'storyEstimations',   label: 'Story Estimations' }
         ];
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -102,7 +102,7 @@
             const password = document.getElementById('password').value;
             
             try {
-                const response = await fetch((window.PRODUCT360_API_BASE||'https://carelonrx-roadmap.onrender.com') + '/api/login', {
+                const response = await fetch((window.PRODUCT360_API_BASE||'') + '/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -136,14 +136,14 @@
             }, 5000);
         }
 
-        const MODULE_ORDER = ['requirements-intake', 'roadmap', 'capacity-planning', 'story-mapping', 'loe-estimation', 'story-estimations'];
+        const MODULE_ORDER = ['requirements-intake', 'roadmap', 'loe-estimation', 'capacity-planning', 'story-mapping', 'story-estimations'];
         const MODULE_KEY_MAP_LOGIN = { 'requirements-intake': 'requirementsIntake', 'roadmap': 'roadmap', 'capacity-planning': 'capacityPlanning', 'story-mapping': 'storyMapping', 'loe-estimation': 'loeEstimation', 'story-estimations': 'storyEstimations' };
         const MODULE_DEFAULT_PAGE_LOGIN = { 'requirements-intake': 'dashboard.html', 'roadmap': 'roadmap.html', 'capacity-planning': 'capacity-planning.html', 'story-mapping': 'story-mapping.html', 'loe-estimation': 'loe-estimation.html', 'story-estimations': 'story-estimations.html' };
 
         async function redirectToFirstAllowedModule(user, token) {
             if (user.role === 'admin' || user.role === 'Admin') { window.location.href = 'dashboard.html'; return; }
             try {
-                const res = await fetch((window.PRODUCT360_API_BASE||'https://carelonrx-roadmap.onrender.com') + '/api/role-module-mappings', { headers: { 'Authorization': 'Bearer ' + token } });
+                const res = await fetch((window.PRODUCT360_API_BASE||'') + '/api/role-module-mappings', { headers: { 'Authorization': 'Bearer ' + token } });
                 const data = await res.json();
                 if (data.success && data.mappings) {
                     const toDisplay = r => r.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());

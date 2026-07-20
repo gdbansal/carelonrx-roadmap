@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -152,7 +152,7 @@
                             <td colspan="10" id="piBannerRow"
                                 class="text-center font-bold text-white py-2 text-base tracking-wide"
                                 style="background-color:#c45c1a;">
-                                PI —
+                                PI �
                             </td>
                         </tr>
                         <tr class="bg-gray-100" id="sprintHeaderRow">
@@ -213,7 +213,7 @@
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">No Capacity Plan Loaded</h3>
             <p class="text-gray-600 mb-4">Select PI, LOB, Project, and Team to load team members and plan capacity.</p>
-            <p class="text-sm text-gray-500">Team members must be added in Admin Panel → Team Members first.</p>
+            <p class="text-sm text-gray-500">Team members must be added in Admin Panel ? Team Members first.</p>
         </div>
     </div>
 
@@ -230,7 +230,7 @@
     </div>
 
     <script>
-        const API_BASE = window.PRODUCT360_API_BASE || 'https://carelonrx-roadmap.onrender.com';
+        const API_BASE = window.PRODUCT360_API_BASE || '';
         let teamMembers = [];
         let isViewMode = false;
 
@@ -322,9 +322,8 @@
         // Load LOBs
         async function loadLOBs() {
             try {
-                const token = localStorage.getItem('token');
                 const response = await fetch(`${API_BASE}/api/line-of-business/active`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await response.json();
                 
@@ -547,7 +546,7 @@
 
             // Update title with team name
             const teamName = document.getElementById('teamFilter').value;
-            document.getElementById('capacityMatrixTitle').textContent = `Capacity Matrix — ${teamName}`;
+            document.getElementById('capacityMatrixTitle').textContent = `Capacity Matrix � ${teamName}`;
 
             // Update PI banner colspan
             const colCount = 3 + sprintColumns.length;
@@ -687,8 +686,8 @@
                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="workingDays">${wd}</td>
                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="adminPct">${ap}%</td>
                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="contingencyPct">${cp}%</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">—</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">—</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">�</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">�</td>
                 </tr>`;
                 }
                 return `
@@ -712,15 +711,15 @@
                             data-sprint="${idx}" data-field="contingencyPct"
                             oninput="recalcAvailability(${idx})">
                     </td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">—</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">—</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">�</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">�</td>
                 </tr>`;
             }).join('');
 
             tfoot.innerHTML = `
                 <tr class="bg-green-50 font-bold">
                     <td class="border border-gray-300 px-4 py-2 text-center" colspan="5">Total</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center" id="avail-total">—</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center" id="avail-total">�</td>
                 </tr>`;
 
             // Compute all sprints after render
@@ -874,7 +873,7 @@
 
             const sprintHeaders = sprintColumns.map(s => s.name);
 
-            // ── Section 1: Metadata ──
+            // -- Section 1: Metadata --
             const allRows = [
                 ['Capacity Plan'],
                 ['PI', pi],
@@ -884,7 +883,7 @@
                 []
             ];
 
-            // ── Section 2: Capacity Matrix ──
+            // -- Section 2: Capacity Matrix --
             allRows.push(['Resource Name', 'Role', 'Capacity %', ...sprintHeaders, 'Avg Capacity']);
             teamMembers.forEach(member => {
                 const capPct = member._savedCapacityPct !== undefined ? member._savedCapacityPct : 100;
@@ -900,7 +899,7 @@
                 allRows.push([member.name, member.role, `${capPct}%`, ...caps, avg]);
             });
 
-            // ── Section 3: Avg Points per Sprint ──
+            // -- Section 3: Avg Points per Sprint --
             allRows.push([]);
             allRows.push(['Avg Points per Sprint', ...sprintHeaders]);
             const avgPtsRow = ['Avg Points a person can complete in a sprint when available 100%'];
@@ -912,7 +911,7 @@
             });
             allRows.push(avgPtsRow);
 
-            // ── Section 4: Team Availability ──
+            // -- Section 4: Team Availability --
             allRows.push([]);
             allRows.push(['Team Availability']);
             allRows.push(['Sprint', 'Working Days (Team Avg)', 'Admin Work %', 'Contingency %', 'Availability (days/sprint)', 'Suggested Points per Sprint']);

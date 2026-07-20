@@ -21,6 +21,10 @@ const teamMemberSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    lineOfBusiness: {
+        type: String,
+        trim: true
+    },
     email: {
         type: String,
         trim: true

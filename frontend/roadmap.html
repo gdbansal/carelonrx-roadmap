@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -207,7 +207,7 @@
     <div id="main-content" class="container mx-auto px-6 py-8">
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-2xl font-bold text-gray-800">Product Roadmap Timeline</h2>
+                <h2 class="text-2xl font-bold text-gray-800">Product Roadmap</h2>
                 <div class="flex items-center space-x-4">
                     <select id="yearFilter" class="border rounded-lg px-4 py-2">
                         <option value="2024">2024</option>
@@ -583,7 +583,7 @@
 
         async function loadRoadmap() {
             try {
-                const response = await fetch((window.PRODUCT360_API_BASE||'https://carelonrx-roadmap.onrender.com') + '/api/initiatives', {
+                const response = await fetch((window.PRODUCT360_API_BASE||'') + '/api/initiatives', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -884,7 +884,7 @@
             const el = document.getElementById(containerId);
             if (!el) return;
             try {
-                const res = await fetch(`${window.PRODUCT360_API_BASE||'https://carelonrx-roadmap.onrender.com'}/api/jira/issue/${encodeURIComponent(issueKey)}`, {
+                const res = await fetch(`${window.PRODUCT360_API_BASE||''}/api/jira/issue/${encodeURIComponent(issueKey)}`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await res.json();
@@ -930,8 +930,11 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Budget Status</p>
-                            <span class="px-3 py-1 text-xs font-semibold rounded-full ${initiative.budgetApproved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                                ${initiative.budgetApproved ? 'Approved' : 'Pending'}
+                            <span class="px-3 py-1 text-xs font-semibold rounded-full ${
+                                initiative.budgetApproved === 'Approved' ? 'bg-green-100 text-green-800' :
+                                initiative.budgetApproved === 'Rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'}">
+                                ${initiative.budgetApproved || 'Pending'}
                             </span>
                         </div>
                     </div>
