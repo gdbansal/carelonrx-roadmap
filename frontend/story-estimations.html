@@ -1848,7 +1848,7 @@
                 class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" disabled>`;
             if (hint) hint.textContent = 'Fetching sprints from JIRA...';
             try {
-                const response = await fetch(`${API_BASE_URL}/jira/sprint-for-team?teamName=${encodeURIComponent(teamName)}`);
+                const response = await fetch(`${API_BASE_URL}/jira/sprint-for-team?teamName=${encodeURIComponent(teamName)}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 const data = await response.json();
                 if (data.success && data.sprints && data.sprints.length > 0) {
                     const stateOrder = { active: 0, future: 1, closed: 2 };
