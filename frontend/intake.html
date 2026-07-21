@@ -600,7 +600,7 @@
         let systemCounter = 0;
         let pmSpocNames = new Set();
         let businessUnits = new Set();
-        let currentLobSystems = [...dependentSystems]; // fallback to hardcoded list
+        let currentLobSystems = [];
 
         async function loadSystemsForLob(lob) {
             if (!lob) { currentLobSystems = []; refreshAllSystemDropdowns(); return; }
