@@ -454,14 +454,16 @@ app.get('/api/initiatives/:id', authMiddleware, async (req, res) => {
 
 app.post('/api/initiatives', authMiddleware, async (req, res) => {
     try {
-        const wsjfValue = parseFloat(req.body.wsjf);
-        const existingWSJF = await Initiative.findOne({ wsjf: wsjfValue });
-        
-        if (existingWSJF) {
-            return res.status(400).json({
-                success: false,
-                message: `WSJF value ${wsjfValue.toFixed(2)} is already used by initiative "${existingWSJF.name}". Please use a unique WSJF value.`
-            });
+        const wsjfValue = req.body.wsjf !== undefined && req.body.wsjf !== null && req.body.wsjf !== '' ? parseFloat(req.body.wsjf) : null;
+        if (wsjfValue !== null && !isNaN(wsjfValue)) {
+            const existingWSJF = await Initiative.findOne({ wsjf: wsjfValue });
+            if (existingWSJF) {
+                return res.status(400).json({
+                    success: false,
+                    message: `WSJF value ${wsjfValue.toFixed(2)} is already used by initiative "${existingWSJF.name}". Please use a unique WSJF value.`
+                });
+            }
+        }
         }
         
         const timestamp = new Date();

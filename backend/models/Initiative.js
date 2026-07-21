@@ -88,7 +88,7 @@ const initiativeSchema = new mongoose.Schema({
     },
     wsjf: {
         type: Number,
-        required: true
+        default: null
     },
     userBusinessValue: {
         type: Number,
