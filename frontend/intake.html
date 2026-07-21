@@ -812,6 +812,8 @@
                     console.log('businessUnit from API:', initiative.businessUnit);
                     document.getElementById('initiativeName').value = initiative.name || '';
                     document.getElementById('description').value = initiative.description || '';
+                    // Ensure LOB options are loaded before setting value
+                    await loadLinesOfBusiness();
                     document.getElementById('businessUnit').value = initiative.businessUnit || '';
                     console.log('businessUnit field value after setting:', document.getElementById('businessUnit').value);
                     document.getElementById('program').value = initiative.program || '';
