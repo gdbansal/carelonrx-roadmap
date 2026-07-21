@@ -1,22 +1,18 @@
 /**
  * Unit Tests: /api/jira/sprint-issues
- * Tests the logic that filters sprint tickets to the correct team board only.
+ * Tests the logic that filters sprint tickets using "Team Name" custom field in JQL.
+ * This ensures only tickets belonging to the specified team are returned,
+ * even when multiple teams share the same sprint.
  *
  * Run: npm test
  */
 
-// ─── Mock jiraRequest ───────────────────────────────────────────────────────
-// We extract the core filtering logic into a testable helper so we don't
-// need to spin up the Express server or hit real Jira.
+// ─── Core logic (mirrors server.js sprint-issues handler) ────────────────────
 
-/**
- * Replicates the sprint-issues filtering logic from server.js.
- * Returns { boardName, sprintName, projectKeys, jql, issues }
- */
 async function sprintIssuesLogic(teamName, sprintName, jiraRequest) {
     const jiraBase = 'https://jira.carelonrx.com';
 
-    // Step 1: Find board matching teamName
+    // Step 1: Find board matching teamName (exact, case-insensitive)
     let matchedBoard = null;
     let boardStart = 0;
     let boardTotal = 1;
@@ -32,7 +28,7 @@ async function sprintIssuesLogic(teamName, sprintName, jiraRequest) {
     }
     if (!matchedBoard) return { error: `No board found for team: ${teamName}` };
 
-    // Step 2: Find sprint on that board
+    // Step 2: Find sprint on that board (exact, case-insensitive)
     let matchedSprint = null;
     let sprintStart = 0;
     let sprintTotal = 1;
@@ -48,27 +44,8 @@ async function sprintIssuesLogic(teamName, sprintName, jiraRequest) {
     }
     if (!matchedSprint) return { error: `No sprint found: ${sprintName}` };
 
-    // Step 3: Get board project keys from board configuration
-    let boardProjectKeys = [];
-    const { status: confStatus, body: confBody } = await jiraRequest(
-        `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/configuration`
-    );
-    if (confStatus === 200 && confBody.filter && confBody.filter.query) {
-        const jqlFilter = confBody.filter.query;
-        const projectMatches = jqlFilter.match(/project\s+(?:in\s*\(([^)]+)\)|=\s*([A-Z0-9_]+))/i);
-        if (projectMatches) {
-            const raw = projectMatches[1] || projectMatches[2] || '';
-            boardProjectKeys = raw.split(',').map(k => k.trim().replace(/['"]/g, '').toUpperCase()).filter(Boolean);
-        }
-    }
-
-    // Step 4: Build JQL scoped to board project keys
-    const projectFilter = boardProjectKeys.length > 0
-        ? ` AND project in (${boardProjectKeys.map(k => `"${k}"`).join(',')})`
-        : '';
-    const jql = `sprint = ${matchedSprint.id}${projectFilter} ORDER BY created DESC`;
-
-    // Step 5: Fetch issues
+    // Step 3: Fetch issues scoped by sprint + "Team Name" custom field
+    const jql = `sprint = ${matchedSprint.id} AND "Team Name" = "${teamName}" ORDER BY created DESC`;
     let allIssues = [];
     let issueStart = 0;
     let issueTotal = 1;
@@ -93,7 +70,7 @@ async function sprintIssuesLogic(teamName, sprintName, jiraRequest) {
         url: `${jiraBase}/browse/${issue.key}`
     }));
 
-    return { boardName: matchedBoard.name, sprintName: matchedSprint.name, boardProjectKeys, jql, issues };
+    return { boardName: matchedBoard.name, sprintName: matchedSprint.name, jql, issues };
 }
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
@@ -106,74 +83,54 @@ const MOCK_BOARDS = [
 
 const MOCK_SPRINTS = {
     101: [{ id: 201, name: '26.3.3 (7/22 - 8/4)', state: 'active' }],
-    102: [{ id: 201, name: '26.3.3 (7/22 - 8/4)', state: 'active' }], // same sprint id shared
+    102: [{ id: 201, name: '26.3.3 (7/22 - 8/4)', state: 'active' }], // same sprint shared across teams
     103: [{ id: 301, name: 'Sprint 10', state: 'future' }]
 };
 
-const MOCK_BOARD_CONFIG = {
-    101: { filter: { query: 'project in (AER, AER2)' } },
-    102: { filter: { query: 'project in (SOT)' } },
-    103: { filter: { query: 'project = PLT' } }
-};
-
-// Mixed issues from sprint 201 (shared sprint - has both AER and SOT tickets)
+// All issues in sprint 201 before Team Name filtering (mixed teams)
 const ALL_SPRINT_201_ISSUES = [
-    { id: '1', key: 'AER-100', fields: { summary: 'Aero feature A', status: { name: 'In Progress' }, issuetype: { name: 'Story' }, assignee: { displayName: 'Alice' } } },
-    { id: '2', key: 'AER-101', fields: { summary: 'Aero bug fix', status: { name: 'To Do' }, issuetype: { name: 'Bug' }, assignee: null } },
-    { id: '3', key: 'SOT-7431', fields: { summary: 'SOT task', status: { name: 'Ready' }, issuetype: { name: 'Task' }, assignee: { displayName: 'Bob' } } },
-    { id: '4', key: 'SOT-7399', fields: { summary: 'SOT bug', status: { name: 'Done' }, issuetype: { name: 'Bug' }, assignee: { displayName: 'Carol' } } }
+    { id: '1', key: 'AER-100', teamName: 'Aero Avengers', fields: { summary: 'Aero feature A', status: { name: 'In Progress' }, issuetype: { name: 'Story' }, assignee: { displayName: 'Alice' } } },
+    { id: '2', key: 'AER-101', teamName: 'Aero Avengers', fields: { summary: 'Aero bug fix', status: { name: 'To Do' }, issuetype: { name: 'Bug' }, assignee: null } },
+    { id: '3', key: 'SOT-7431', teamName: 'SOT Team', fields: { summary: 'SOT task', status: { name: 'Ready' }, issuetype: { name: 'Task' }, assignee: { displayName: 'Bob' } } },
+    { id: '4', key: 'SOT-7399', teamName: 'SOT Team', fields: { summary: 'SOT bug', status: { name: 'Done' }, issuetype: { name: 'Bug' }, assignee: { displayName: 'Carol' } } }
 ];
 
-// Filtered issues per project
-const FILTERED_ISSUES = {
-    'AER': ALL_SPRINT_201_ISSUES.filter(i => i.key.startsWith('AER')),
-    'SOT': ALL_SPRINT_201_ISSUES.filter(i => i.key.startsWith('SOT'))
-};
-
 /**
- * Mock jiraRequest that simulates Jira API responses
+ * Mock jiraRequest — simulates Jira filtering by "Team Name" in JQL
  */
-function makeMockJiraRequest(projectKeysFilter = null) {
+function makeMockJiraRequest() {
     return async (url) => {
-        // Boards list
+        const decoded = decodeURIComponent(url);
+
         if (url.includes('/rest/agile/1.0/board?')) {
             return { status: 200, body: { values: MOCK_BOARDS, total: MOCK_BOARDS.length } };
         }
-        // Sprints for a board
+
         const sprintMatch = url.match(/\/board\/(\d+)\/sprint/);
         if (sprintMatch) {
             const boardId = parseInt(sprintMatch[1]);
-            return { status: 200, body: { values: MOCK_SPRINTS[boardId] || [], total: (MOCK_SPRINTS[boardId] || []).length } };
+            const sprints = MOCK_SPRINTS[boardId] || [];
+            return { status: 200, body: { values: sprints, total: sprints.length } };
         }
-        // Board configuration
-        const configMatch = url.match(/\/board\/(\d+)\/configuration/);
-        if (configMatch) {
-            const boardId = parseInt(configMatch[1]);
-            return { status: 200, body: MOCK_BOARD_CONFIG[boardId] || {} };
-        }
-        // Issue search - simulate filtering by project
+
         if (url.includes('/rest/api/2/search')) {
-            const decodedUrl = decodeURIComponent(url);
+            // Simulate "Team Name" = "X" filtering in JQL
+            const teamMatch = decoded.match(/"Team Name"\s*=\s*"([^"]+)"/i);
             let issues = ALL_SPRINT_201_ISSUES;
-            // Apply project filter if present in JQL
-            if (decodedUrl.includes('project in')) {
-                const keys = Object.keys(FILTERED_ISSUES);
-                for (const key of keys) {
-                    if (decodedUrl.includes(`"${key}"`)) {
-                        issues = FILTERED_ISSUES[key];
-                        break;
-                    }
-                }
+            if (teamMatch) {
+                const filterTeam = teamMatch[1].toLowerCase();
+                issues = ALL_SPRINT_201_ISSUES.filter(i => i.teamName.toLowerCase() === filterTeam);
             }
             return { status: 200, body: { issues, total: issues.length } };
         }
+
         return { status: 404, body: {} };
     };
 }
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
-describe('/api/jira/sprint-issues - Team Isolation', () => {
+describe('/api/jira/sprint-issues - Team Isolation via "Team Name" JQL', () => {
 
     test('TC01: Returns only Aero Avengers tickets, not SOT tickets', async () => {
         const result = await sprintIssuesLogic('Aero Avengers', '26.3.3 (7/22 - 8/4)', makeMockJiraRequest());
@@ -182,76 +139,60 @@ describe('/api/jira/sprint-issues - Team Isolation', () => {
         expect(result.boardName).toBe('Aero Avengers');
         expect(result.issues.length).toBeGreaterThan(0);
 
-        // Must NOT contain SOT tickets
         const sotTickets = result.issues.filter(i => i.key.startsWith('SOT'));
         expect(sotTickets.length).toBe(0);
 
-        // Must contain only AER tickets
-        result.issues.forEach(issue => {
-            expect(issue.key).toMatch(/^AER/);
-        });
+        result.issues.forEach(issue => expect(issue.key).toMatch(/^AER/));
     });
 
-    test('TC02: Board project keys extracted correctly from board config', async () => {
-        const result = await sprintIssuesLogic('Aero Avengers', '26.3.3 (7/22 - 8/4)', makeMockJiraRequest());
-
-        expect(result.boardProjectKeys).toContain('AER');
-        expect(result.boardProjectKeys).toContain('AER2');
-        expect(result.boardProjectKeys).not.toContain('SOT');
-    });
-
-    test('TC03: JQL contains project filter scoped to board', async () => {
+    test('TC02: JQL uses "Team Name" custom field, not project key', async () => {
         const result = await sprintIssuesLogic('Aero Avengers', '26.3.3 (7/22 - 8/4)', makeMockJiraRequest());
 
         expect(result.jql).toContain('sprint = 201');
-        expect(result.jql).toContain('project in');
-        expect(result.jql).toContain('"AER"');
-        expect(result.jql).not.toContain('"SOT"');
+        expect(result.jql).toContain('"Team Name" = "Aero Avengers"');
+        expect(result.jql).not.toContain('project in');
     });
 
-    test('TC04: SOT Team gets only SOT tickets from same shared sprint', async () => {
+    test('TC03: SOT Team gets only SOT tickets from the same shared sprint', async () => {
         const result = await sprintIssuesLogic('SOT Team', '26.3.3 (7/22 - 8/4)', makeMockJiraRequest());
 
         expect(result.error).toBeUndefined();
-        expect(result.boardProjectKeys).toContain('SOT');
 
         const aerTickets = result.issues.filter(i => i.key.startsWith('AER'));
         expect(aerTickets.length).toBe(0);
 
-        result.issues.forEach(issue => {
-            expect(issue.key).toMatch(/^SOT/);
-        });
+        result.issues.forEach(issue => expect(issue.key).toMatch(/^SOT/));
     });
 
-    test('TC05: Returns error when team name not found', async () => {
+    test('TC04: Returns error when team name not found in boards', async () => {
         const result = await sprintIssuesLogic('Unknown Team', '26.3.3 (7/22 - 8/4)', makeMockJiraRequest());
 
         expect(result.error).toBeDefined();
         expect(result.error).toContain('No board found for team: Unknown Team');
     });
 
-    test('TC06: Returns error when sprint not found for team', async () => {
+    test('TC05: Returns error when sprint not found for the team board', async () => {
         const result = await sprintIssuesLogic('Platform Tigers', 'Non Existent Sprint', makeMockJiraRequest());
 
         expect(result.error).toBeDefined();
         expect(result.error).toContain('No sprint found');
     });
 
-    test('TC07: Case-insensitive team name matching', async () => {
+    test('TC06: Team name matching is case-insensitive', async () => {
         const result = await sprintIssuesLogic('aero avengers', '26.3.3 (7/22 - 8/4)', makeMockJiraRequest());
 
         expect(result.error).toBeUndefined();
         expect(result.boardName).toBe('Aero Avengers');
     });
 
-    test('TC08: Case-insensitive sprint name matching', async () => {
+    test('TC07: Sprint name matching is case-insensitive', async () => {
         const result = await sprintIssuesLogic('Aero Avengers', '26.3.3 (7/22 - 8/4)'.toUpperCase(), makeMockJiraRequest());
 
         expect(result.error).toBeUndefined();
         expect(result.sprintName).toBe('26.3.3 (7/22 - 8/4)');
     });
 
-    test('TC09: Issue fields mapped correctly', async () => {
+    test('TC08: All required issue fields are present in response', async () => {
         const result = await sprintIssuesLogic('Aero Avengers', '26.3.3 (7/22 - 8/4)', makeMockJiraRequest());
 
         const issue = result.issues[0];
@@ -265,11 +206,18 @@ describe('/api/jira/sprint-issues - Team Isolation', () => {
         expect(issue.url).toContain(issue.key);
     });
 
-    test('TC10: Unassigned tickets show Unassigned instead of null', async () => {
+    test('TC09: Unassigned tickets show "Unassigned" instead of null', async () => {
         const result = await sprintIssuesLogic('Aero Avengers', '26.3.3 (7/22 - 8/4)', makeMockJiraRequest());
 
         const unassigned = result.issues.find(i => i.key === 'AER-101');
         expect(unassigned).toBeDefined();
         expect(unassigned.assignee).toBe('Unassigned');
+    });
+
+    test('TC10: "Team Name" value in JQL matches exact teamName passed in request', async () => {
+        const teamName = 'Aero Avengers';
+        const result = await sprintIssuesLogic(teamName, '26.3.3 (7/22 - 8/4)', makeMockJiraRequest());
+
+        expect(result.jql).toContain(`"Team Name" = "${teamName}"`);
     });
 });

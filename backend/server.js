@@ -2077,19 +2077,21 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             return res.json({ success: false, message: `No board found for team: ${teamName}`, sprints: [], preSelectedSprintId: null });
         }
 
-        // Step 2: Fetch ALL sprints (closed + active + future) paginated
+        // Step 2: Fetch only active + future sprints (exclude closed)
         let allSprints = [];
-        let sprintStart = 0;
-        let sprintTotal = 1;
-        while (sprintStart < sprintTotal) {
-            const { status: ss, body: sprintsBody } = await jiraRequest(
-                `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?maxResults=50&startAt=${sprintStart}`
-            );
-            if (ss !== 200 || !sprintsBody.values) break;
-            allSprints = allSprints.concat(sprintsBody.values);
-            sprintTotal = sprintsBody.total || 0;
-            sprintStart += 50;
-            if (sprintsBody.values.length === 0) break;
+        for (const state of ['active', 'future']) {
+            let sprintStart = 0;
+            let sprintTotal = 1;
+            while (sprintStart < sprintTotal) {
+                const { status: ss, body: sprintsBody } = await jiraRequest(
+                    `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${state}&maxResults=50&startAt=${sprintStart}`
+                );
+                if (ss !== 200 || !sprintsBody.values) break;
+                allSprints = allSprints.concat(sprintsBody.values);
+                sprintTotal = sprintsBody.total || 0;
+                sprintStart += 50;
+                if (sprintsBody.values.length === 0) break;
+            }
         }
 
         // Step 3: Sort by startDate ascending
@@ -2181,33 +2183,16 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
             return res.json({ success: false, message: `No sprint found: ${sprintName}`, issues: [] });
         }
 
-        // Step 3: Get project keys scoped to this board so we only return that team's tickets
-        let boardProjectKeys = [];
-        const { status: confStatus, body: confBody } = await jiraRequest(
-            `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/configuration`
-        );
-        if (confStatus === 200 && confBody.filter && confBody.filter.query) {
-            // Extract project keys from board JQL filter e.g. "project in (KEY1, KEY2)"
-            const jqlFilter = confBody.filter.query;
-            const projectMatches = jqlFilter.match(/project\s+(?:in\s*\(([^)]+)\)|=\s*([A-Z0-9_]+))/i);
-            if (projectMatches) {
-                const raw = projectMatches[1] || projectMatches[2] || '';
-                boardProjectKeys = raw.split(',').map(k => k.trim().replace(/['"]/g, '').toUpperCase()).filter(Boolean);
-            }
-        }
-
-        // Step 4: Fetch issues using JQL scoped to sprint + board project keys
+        // Step 3: Fetch issues scoped to sprint + "Team Name" custom field to avoid cross-team tickets
         let allIssues = [];
         let issueStart = 0;
         let issueTotal = 1;
-        const projectFilter = boardProjectKeys.length > 0
-            ? ` AND project in (${boardProjectKeys.map(k => `"${k}"`).join(',')})`
-            : '';
-        const jql = encodeURIComponent(`sprint = ${matchedSprint.id}${projectFilter} ORDER BY created DESC`);
+        let usedFallback = false;
+        const teamJql = encodeURIComponent(`sprint = ${matchedSprint.id} AND "Team Name" = "${teamName}" ORDER BY created DESC`);
 
         while (issueStart < issueTotal) {
             const { status: is, body: issuesBody } = await jiraRequest(
-                `${jiraBase}/rest/api/2/search?jql=${jql}&maxResults=50&startAt=${issueStart}&fields=summary,status,issuetype,assignee`
+                `${jiraBase}/rest/api/2/search?jql=${teamJql}&maxResults=50&startAt=${issueStart}&fields=summary,status,issuetype,assignee`
             );
             if (is !== 200 || !issuesBody.issues) break;
             allIssues = allIssues.concat(issuesBody.issues);
@@ -2216,21 +2201,46 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
             if (issuesBody.issues.length === 0) break;
         }
 
-        const issues = allIssues.map(issue => ({
-            id: issue.id,
-            key: issue.key,
-            summary: issue.fields.summary,
-            status: issue.fields.status ? issue.fields.status.name : 'Unknown',
-            issueType: issue.fields.issuetype ? issue.fields.issuetype.name : 'Story',
-            assignee: issue.fields.assignee ? issue.fields.assignee.displayName : 'Unassigned',
-            url: `${jiraBase}/browse/${issue.key}`
-        }));
+        // Fallback: "Team Name" field not configured — retry with sprint only, include teamName field per issue
+        if (allIssues.length === 0) {
+            usedFallback = true;
+            const fallbackJql = encodeURIComponent(`sprint = ${matchedSprint.id} ORDER BY created DESC`);
+            let fbStart = 0;
+            let fbTotal = 1;
+            while (fbStart < fbTotal) {
+                const { status: fs, body: fbBody } = await jiraRequest(
+                    `${jiraBase}/rest/api/2/search?jql=${fallbackJql}&maxResults=50&startAt=${fbStart}&fields=summary,status,issuetype,assignee,customfield_10317`
+                );
+                if (fs !== 200 || !fbBody.issues) break;
+                allIssues = allIssues.concat(fbBody.issues);
+                fbTotal = fbBody.total || 0;
+                fbStart += 50;
+                if (fbBody.issues.length === 0) break;
+            }
+        }
+
+        const issues = allIssues.map(issue => {
+            const mapped = {
+                id: issue.id,
+                key: issue.key,
+                summary: issue.fields.summary,
+                status: issue.fields.status ? issue.fields.status.name : 'Unknown',
+                issueType: issue.fields.issuetype ? issue.fields.issuetype.name : 'Story',
+                assignee: issue.fields.assignee ? issue.fields.assignee.displayName : 'Unassigned',
+                url: `${jiraBase}/browse/${issue.key}`
+            };
+            if (usedFallback) {
+                mapped.teamName = issue.fields.customfield_10317 ? issue.fields.customfield_10317.value : null;
+            }
+            return mapped;
+        });
 
         res.json({
             success: true,
             boardName: matchedBoard.name,
             sprintName: matchedSprint.name,
             total: issues.length,
+            fallback: usedFallback,
             issues
         });
     } catch (error) {

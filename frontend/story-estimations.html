@@ -1403,11 +1403,25 @@
                     <div id="jiraImportModal" role="dialog" aria-modal="true" aria-labelledby="jiraImportModalTitle" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 flex flex-col" style="max-height:80vh">
                             <div class="flex items-center justify-between p-4 border-b">
-                                <div>
+                                <div class="flex-1">
                                     <h3 id="jiraImportModalTitle" class="text-base font-semibold text-gray-900">Import from JIRA</h3>
                                     <p class="text-xs text-gray-500 mt-0.5">Team: <strong>${state.currentSession ? state.currentSession.teamName : ''}</strong> &nbsp;|&nbsp; Sprint: <strong>${state.currentSession ? state.currentSession.sprintValue : ''}</strong></p>
                                 </div>
-                                <button type="button" onclick="closeJiraImportModal()" aria-label="Close dialog" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                                <div class="flex items-center gap-2">
+                                    <select id="jiraTeamFilter" onchange="filterJiraIssues()" class="text-xs border border-gray-300 rounded-md px-2 py-1.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent hidden">
+                                        <option value="">All Teams</option>
+                                    </select>
+                                    <select id="jiraStatusFilter" onchange="filterJiraIssues()" class="text-xs border border-gray-300 rounded-md px-2 py-1.5 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                        <option value="">All Statuses</option>
+                                        <option value="Open">Open</option>
+                                        <option value="Ready">Ready</option>
+                                        <option value="Refining">Refining</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="In Review">In Review</option>
+                                        <option value="Done">Done</option>
+                                    </select>
+                                    <button type="button" onclick="closeJiraImportModal()" aria-label="Close dialog" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                                </div>
                             </div>
                             <div id="jiraImportContent" class="flex-1 overflow-y-auto p-4">
                                 <div class="text-center py-8 text-gray-500 text-sm">Loading JIRA issues...</div>
@@ -1982,6 +1996,8 @@
             modal.classList.remove('hidden');
             const content = document.getElementById('jiraImportContent');
             const countEl = document.getElementById('jiraImportCount');
+            const statusFilter = document.getElementById('jiraStatusFilter');
+            if (statusFilter) statusFilter.value = '';
             content.innerHTML = '<div class="text-center py-8 text-gray-500 text-sm">Loading JIRA issues...</div>';
             jiraIssuesCache = [];
             try {
@@ -1991,21 +2007,22 @@
                 const data = await res.json();
                 if (data.success && data.issues && data.issues.length > 0) {
                     jiraIssuesCache = data.issues;
+
+                    // If fallback was used, show team filter dropdown populated from issue teamNames
+                    const teamFilterEl = document.getElementById('jiraTeamFilter');
+                    if (data.fallback && teamFilterEl) {
+                        const sessionTeam = state.currentSession ? state.currentSession.teamName : '';
+                        const uniqueTeams = [...new Set(data.issues.map(i => i.teamName).filter(Boolean))].sort();
+                        teamFilterEl.innerHTML = '<option value="">All Teams</option>' +
+                            uniqueTeams.map(t => `<option value="${escapeHtml(t)}" ${t === sessionTeam ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('');
+                        teamFilterEl.classList.remove('hidden');
+                    } else if (teamFilterEl) {
+                        teamFilterEl.classList.add('hidden');
+                        teamFilterEl.value = '';
+                    }
+
                     if (countEl) countEl.textContent = `${data.issues.length} issues found`;
-                    content.innerHTML = data.issues.map((issue, i) => `
-                        <label class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0">
-                            <input type="checkbox" class="jira-issue-cb mt-0.5 w-4 h-4 accent-purple-600" data-index="${i}" checked>
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2">
-                                    <a href="${escapeHtml(issue.url)}" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-carelon-purple hover:underline shrink-0">${escapeHtml(issue.key)}</a>
-                                    <span class="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">${escapeHtml(issue.issueType)}</span>
-                                    <span class="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">${escapeHtml(issue.status)}</span>
-                                </div>
-                                <p class="text-sm text-gray-700 mt-0.5 truncate">${escapeHtml(issue.summary)}</p>
-                                <p class="text-xs text-gray-400">${escapeHtml(issue.assignee)}</p>
-                            </div>
-                        </label>
-                    `).join('');
+                    filterJiraIssues();
                 } else {
                     content.innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">${escapeHtml(data.message || 'No issues found for this sprint')}</div>`;
                     if (countEl) countEl.textContent = '';
@@ -2015,9 +2032,47 @@
             }
         };
 
+        window.filterJiraIssues = function() {
+            const statusVal = (document.getElementById('jiraStatusFilter') || {}).value || '';
+            const teamVal   = (document.getElementById('jiraTeamFilter')  || {}).value || '';
+            const countEl   = document.getElementById('jiraImportCount');
+            const content   = document.getElementById('jiraImportContent');
+
+            const filtered = jiraIssuesCache.filter(i => {
+                const statusMatch = !statusVal || i.status.toLowerCase() === statusVal.toLowerCase();
+                const teamMatch   = !teamVal   || (i.teamName || '').toLowerCase() === teamVal.toLowerCase();
+                return statusMatch && teamMatch;
+            });
+
+            if (filtered.length === 0) {
+                content.innerHTML = '<div class="text-center py-8 text-gray-500 text-sm">No issues match the selected filters</div>';
+                if (countEl) countEl.textContent = '0 issues';
+                return;
+            }
+            if (countEl) countEl.textContent = `${filtered.length} issue${filtered.length !== 1 ? 's' : ''} shown`;
+            content.innerHTML = filtered.map(issue => `
+                <label class="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0">
+                    <input type="checkbox" class="jira-issue-cb mt-0.5 w-4 h-4 accent-purple-600" data-index="${jiraIssuesCache.indexOf(issue)}" checked>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <a href="${escapeHtml(issue.url)}" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-carelon-purple hover:underline shrink-0">${escapeHtml(issue.key)}</a>
+                            <span class="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">${escapeHtml(issue.issueType)}</span>
+                            <span class="text-xs text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded">${escapeHtml(issue.status)}</span>
+                        </div>
+                        <p class="text-sm text-gray-700 mt-0.5 truncate">${escapeHtml(issue.summary)}</p>
+                        <p class="text-xs text-gray-400">${escapeHtml(issue.assignee)}</p>
+                    </div>
+                </label>
+            `).join('');
+        };
+
         window.closeJiraImportModal = function() {
             const modal = document.getElementById('jiraImportModal');
             if (modal) modal.classList.add('hidden');
+            const teamFilterEl = document.getElementById('jiraTeamFilter');
+            if (teamFilterEl) { teamFilterEl.classList.add('hidden'); teamFilterEl.value = ''; }
+            const statusFilterEl = document.getElementById('jiraStatusFilter');
+            if (statusFilterEl) statusFilterEl.value = '';
         };
 
         window.selectAllJiraIssues = function(checked) {
