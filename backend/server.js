@@ -2181,13 +2181,33 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
             return res.json({ success: false, message: `No sprint found: ${sprintName}`, issues: [] });
         }
 
-        // Step 3: Fetch all issues in that sprint (paginated)
+        // Step 3: Get project keys scoped to this board so we only return that team's tickets
+        let boardProjectKeys = [];
+        const { status: confStatus, body: confBody } = await jiraRequest(
+            `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/configuration`
+        );
+        if (confStatus === 200 && confBody.filter && confBody.filter.query) {
+            // Extract project keys from board JQL filter e.g. "project in (KEY1, KEY2)"
+            const jqlFilter = confBody.filter.query;
+            const projectMatches = jqlFilter.match(/project\s+(?:in\s*\(([^)]+)\)|=\s*([A-Z0-9_]+))/i);
+            if (projectMatches) {
+                const raw = projectMatches[1] || projectMatches[2] || '';
+                boardProjectKeys = raw.split(',').map(k => k.trim().replace(/['"]/g, '').toUpperCase()).filter(Boolean);
+            }
+        }
+
+        // Step 4: Fetch issues using JQL scoped to sprint + board project keys
         let allIssues = [];
         let issueStart = 0;
         let issueTotal = 1;
+        const projectFilter = boardProjectKeys.length > 0
+            ? ` AND project in (${boardProjectKeys.map(k => `"${k}"`).join(',')})`
+            : '';
+        const jql = encodeURIComponent(`sprint = ${matchedSprint.id}${projectFilter} ORDER BY created DESC`);
+
         while (issueStart < issueTotal) {
             const { status: is, body: issuesBody } = await jiraRequest(
-                `${jiraBase}/rest/agile/1.0/sprint/${matchedSprint.id}/issue?maxResults=50&startAt=${issueStart}&fields=summary,status,issuetype,assignee`
+                `${jiraBase}/rest/api/2/search?jql=${jql}&maxResults=50&startAt=${issueStart}&fields=summary,status,issuetype,assignee`
             );
             if (is !== 200 || !issuesBody.issues) break;
             allIssues = allIssues.concat(issuesBody.issues);
