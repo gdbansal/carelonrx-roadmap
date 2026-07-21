@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smoke Test - Product Roadmap</title>
+    <style>
+        body { font-family: monospace; background: #111; color: #eee; padding: 20px; }
+        h1 { color: #7c3aed; }
+        .pass { color: #22c55e; }
+        .fail { color: #ef4444; }
+        .warn { color: #f59e0b; }
+        .section { margin: 20px 0; border-left: 3px solid #7c3aed; padding-left: 12px; }
+        button { background: #7c3aed; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; margin: 4px; }
+        button:hover { background: #6d28d9; }
+        pre { background: #1e1e1e; padding: 10px; border-radius: 6px; font-size: 12px; overflow-x: auto; }
+        #log { background: #1e1e1e; padding: 10px; border-radius: 6px; height: 300px; overflow-y: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Product Roadmap — Smoke Test</h1>
+    <p style="color:#aaa">Run these tests after every deployment to catch regressions early.</p>
+
+    <div class="section">
+        <h3>1. Auth & localStorage</h3>
+        <button onclick="testAuth()">Run Auth Tests</button>
+        <div id="authResults"></div>
+    </div>
+
+    <div class="section">
+        <h3>2. API Connectivity</h3>
+        <button onclick="testAPIs()">Run API Tests</button>
+        <div id="apiResults"></div>
+    </div>
+
+    <div class="section">
+        <h3>3. Page Load Check</h3>
+        <button onclick="testPages()">Check All Pages</button>
+        <div id="pageResults"></div>
+    </div>
+
+    <div class="section">
+        <h3>4. showToast Function</h3>
+        <button onclick="testToast()">Test Toast Notifications</button>
+        <div id="toastResults"></div>
+    </div>
+
+    <div class="section">
+        <h3>Console Log</h3>
+        <button onclick="document.getElementById('log').innerHTML=''">Clear</button>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const BASE = window.location.origin;
+        const token = localStorage.getItem('token');
+
+        function log(msg, type = 'info') {
+            const el = document.getElementById('log');
+            const color = { pass: '#22c55e', fail: '#ef4444', warn: '#f59e0b', info: '#93c5fd' }[type] || '#eee';
+            el.innerHTML += `<span style="color:${color}">[${new Date().toLocaleTimeString()}] ${msg}</span>\n`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function result(containerId, label, passed, detail = '') {
+            const el = document.getElementById(containerId);
+            const cls = passed === true ? 'pass' : passed === 'warn' ? 'warn' : 'fail';
+            const icon = passed === true ? '✓' : passed === 'warn' ? '⚠' : '✗';
+            el.innerHTML += `<div class="${cls}">${icon} ${label}${detail ? ' — ' + detail : ''}</div>`;
+            log(`${icon} ${label}${detail ? ' — ' + detail : ''}`, cls);
+        }
+
+        // ---- Test 1: Auth ----
+        function testAuth() {
+            document.getElementById('authResults').innerHTML = '';
+            result('authResults', 'localStorage available', typeof localStorage !== 'undefined');
+            result('authResults', 'token in localStorage', !!token, token ? 'token present' : 'NOT FOUND — user not logged in');
+            const user = localStorage.getItem('user');
+            result('authResults', 'user object in localStorage', !!user, user ? JSON.parse(user).name || 'ok' : 'NOT FOUND');
+            if (user) {
+                const u = JSON.parse(user);
+                result('authResults', 'user has role field', !!u.role, u.role || 'missing');
+                result('authResults', 'user has name/username', !!(u.name || u.username), u.name || u.username || 'missing');
+            }
+        }
+
+        // ---- Test 2: API connectivity ----
+        async function testAPIs() {
+            document.getElementById('apiResults').innerHTML = '';
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+            const endpoints = [
+                { label: 'GET /api/line-of-business/active', url: `${BASE}/api/line-of-business/active` },
+                { label: 'GET /api/sprints', url: `${BASE}/api/sprints` },
+                { label: 'GET /api/initiatives', url: `${BASE}/api/initiatives` },
+                { label: 'GET /api/teams', url: `${BASE}/api/teams` },
+                { label: 'GET /api/audit-logs (auth)', url: `${BASE}/api/audit-logs`, requiresAuth: true },
+            ];
+
+            for (const ep of endpoints) {
+                if (ep.requiresAuth && !token) {
+                    result('apiResults', ep.label, 'warn', 'Skipped — no token');
+                    continue;
+                }
+                try {
+                    const res = await fetch(ep.url, { headers });
+                    const ok = res.status < 400;
+                    result('apiResults', ep.label, ok, `HTTP ${res.status}`);
+                } catch (e) {
+                    result('apiResults', ep.label, false, e.message);
+                }
+            }
+        }
+
+        // ---- Test 3: Page load check ----
+        async function testPages() {
+            document.getElementById('pageResults').innerHTML = '';
+            const pages = [
+                'dashboard.html', 'roadmap.html', 'story-estimations.html',
+                'loe-estimation.html', 'analytics.html', 'story-mapping.html',
+                'admin.html', 'profile.html', 'estimation-audit.html'
+            ];
+            for (const page of pages) {
+                try {
+                    const res = await fetch(`${BASE}/${page}`);
+                    const text = await res.text();
+                    const hasScript = text.includes('<script');
+                    const hasCorrupt = /(<script\s+[^>]*src="[^"]*"[^>]*>)\s*\n?\s*[^<\s]/.test(text);
+                    const missingToast = text.includes('showToast(') && !text.includes('function showToast');
+                    let issues = [];
+                    if (hasCorrupt) issues.push('CORRUPT_SCRIPT_TAG');
+                    if (missingToast) issues.push('MISSING_SHOWTOAST_DEF');
+                    result('pageResults', page, issues.length === 0, issues.length ? issues.join(', ') : `HTTP ${res.status} OK`);
+                } catch (e) {
+                    result('pageResults', page, false, e.message);
+                }
+            }
+        }
+
+        // ---- Test 4: showToast ----
+        function showToast(msg, type) {
+            type = type || 'info';
+            const colors = { info: '#6b7280', error: '#dc2626', success: '#16a34a', warn: '#d97706' };
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;padding:12px 20px;border-radius:8px;background:' + (colors[type]||colors.info) + ';color:#fff;font-size:14px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(function() { t.style.opacity = '1'; }, 10);
+            setTimeout(function() { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 300); }, 4000);
+        }
+
+        function testToast() {
+            document.getElementById('toastResults').innerHTML = '';
+            try {
+                showToast('Info toast working', 'info');
+                setTimeout(() => showToast('Success toast working', 'success'), 500);
+                setTimeout(() => showToast('Warning toast working', 'warn'), 1000);
+                setTimeout(() => showToast('Error toast working', 'error'), 1500);
+                result('toastResults', 'showToast function', true, '4 toasts fired — check bottom-right corner');
+            } catch(e) {
+                result('toastResults', 'showToast function', false, e.message);
+            }
+        }
+
+        // Auto-run on load
+        window.onload = () => {
+            log('Smoke test loaded. Click buttons to run each test group.', 'info');
+            log(`Server: ${BASE}`, 'info');
+            log(`Token present: ${!!token}`, token ? 'pass' : 'warn');
+        };
+    </script>
+</body>
+</html>
