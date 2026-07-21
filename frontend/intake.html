@@ -603,15 +603,15 @@
         let currentLobSystems = [...dependentSystems]; // fallback to hardcoded list
 
         async function loadSystemsForLob(lob) {
-            if (!lob) { currentLobSystems = [...dependentSystems]; refreshAllSystemDropdowns(); return; }
+            if (!lob) { currentLobSystems = []; refreshAllSystemDropdowns(); return; }
             try {
                 const res = await fetch((window.PRODUCT360_API_BASE||'') + '/api/lob-systems/' + encodeURIComponent(lob), {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await res.json();
-                currentLobSystems = (data.success && data.systems && data.systems.length) ? data.systems : [...dependentSystems];
+                currentLobSystems = (data.success && data.systems) ? data.systems : [];
             } catch (e) {
-                currentLobSystems = [...dependentSystems];
+                currentLobSystems = [];
             }
             refreshAllSystemDropdowns();
         }
