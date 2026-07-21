@@ -13,7 +13,7 @@
     } else if (/^10\./.test(host) || /^192\.168\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host)) {
         base = 'http://' + host + ':5000';
     } else {
-        base = 'https://carelonrx-roadmap.onrender.com';
+        base = '';
     }
     window.PRODUCT360_API_BASE = base;
 })();

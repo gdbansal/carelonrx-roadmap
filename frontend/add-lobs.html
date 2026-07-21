@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -62,7 +62,7 @@
     </div>
 
     <script>
-        const API_BASE = window.PRODUCT360_API_BASE || 'https://carelonrx-roadmap.onrender.com';
+        const API_BASE = window.PRODUCT360_API_BASE || '';
 
         const lobs = [
             'Elevance Health Digital Experience Product Engineering (EDEPT)',
@@ -157,20 +157,20 @@
                     if (data.success) {
                         successCount++;
                         resultHTML = `<div class="flex items-center space-x-2 text-green-600">
-                            <span class="font-bold">✓</span>
+                            <span class="font-bold">?</span>
                             <span class="text-sm">${lobName}</span>
                         </div>`;
                     } else {
                         if (data.message && data.message.includes('already exists')) {
                             skippedCount++;
                             resultHTML = `<div class="flex items-center space-x-2 text-yellow-600">
-                                <span class="font-bold">⊘</span>
+                                <span class="font-bold">?</span>
                                 <span class="text-sm">${lobName} (already exists)</span>
                             </div>`;
                         } else {
                             failCount++;
                             resultHTML = `<div class="flex items-center space-x-2 text-red-600">
-                                <span class="font-bold">✗</span>
+                                <span class="font-bold">?</span>
                                 <span class="text-sm">${lobName} - ${data.message}</span>
                             </div>`;
                         }
@@ -182,7 +182,7 @@
                 } catch (error) {
                     failCount++;
                     resultsList.innerHTML += `<div class="flex items-center space-x-2 text-red-600">
-                        <span class="font-bold">✗</span>
+                        <span class="font-bold">?</span>
                         <span class="text-sm">${lobName} - ${error.message}</span>
                     </div>`;
                 }
