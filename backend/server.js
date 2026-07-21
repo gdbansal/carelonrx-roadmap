@@ -299,8 +299,8 @@ app.post('/api/login', authLimiter, async (req, res) => {
         console.log('Login attempt for user:', req.body?.username);
         const { username, password } = req.body;
         
-        // Find user by username only
-        const user = await User.findOne({ username });
+        // Find user by username only (select +password needed since field has select:false)
+        const user = await User.findOne({ username }).select('+password');
         
         if (!user) {
             return res.status(401).json({
@@ -1000,7 +1000,7 @@ app.get('/api/profile', authMiddleware, async (req, res) => {
 
 app.put('/api/profile', authMiddleware, apiLimiter, async (req, res) => {
     try {
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id).select('+password');
         
         if (!user) {
             return res.status(404).json({
