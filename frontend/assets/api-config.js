@@ -12,6 +12,8 @@
         base = 'http://localhost:5000';
     } else if (/^10\./.test(host) || /^192\.168\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host)) {
         base = 'http://' + host + ':5000';
+    } else if (host === 'carelonrx-roadmap1.onrender.com') {
+        base = 'https://carelonrx-roadmap.onrender.com';
     } else {
         base = '';
     }
