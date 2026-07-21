@@ -21,6 +21,9 @@ const RoleModuleMapping = require('./models/RoleModuleMapping');
 const LoeEstimation = require('./models/LoeEstimation');
 const { logAuditEvent } = require('./middleware/auditLogger');
 const crypto = require('crypto');
+const xss = require('xss');
+const hpp = require('hpp');
+const mongoSanitize = require('express-mongo-sanitize');
 
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
 
@@ -80,6 +83,8 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json({ limit: '2mb' }));
+app.use(mongoSanitize());
+app.use(hpp());
 
 // S4: Rate limiting on auth endpoints
 const authLimiter = rateLimit({
