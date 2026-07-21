@@ -743,15 +743,15 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <span class="text-blue-600 font-semibold">${user.name.charAt(0).toUpperCase()}</span>
+                                <span class="text-blue-600 font-semibold">${escapeHtml(user.name.charAt(0).toUpperCase())}</span>
                             </div>
                             <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${user.name}</div>
+                                <div class="text-sm font-medium text-gray-900">${escapeHtml(user.name)}</div>
                             </div>
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${user.username}</div>
+                        <div class="text-sm text-gray-900">${escapeHtml(user.username)}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleBadgeClass(user.role)}">
@@ -774,6 +774,16 @@
                 </tr>
             `).join('');
             lucide.createIcons();
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         function getRoleBadgeClass(role) {
@@ -1052,10 +1062,10 @@
             tbody.innerHTML = lobs.map(lob => `
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">${lob.name}</div>
+                        <div class="text-sm font-medium text-gray-900">${escapeHtml(lob.name)}</div>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="text-sm text-gray-600">${lob.description || '-'}</div>
+                        <div class="text-sm text-gray-600">${escapeHtml(lob.description) || '-'}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${lob.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
@@ -1063,7 +1073,7 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-600">${lob.createdBy}</div>
+                        <div class="text-sm text-gray-600">${escapeHtml(lob.createdBy)}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <button type="button" onclick="editLob('${lob._id}')" class="text-blue-600 hover:text-blue-900">
@@ -1370,22 +1380,22 @@
             tbody.innerHTML = members.map(member => `
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">${member.name}</div>
+                        <div class="text-sm font-medium text-gray-900">${escapeHtml(member.name)}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-600">${member.role}</div>
+                        <div class="text-sm text-gray-600">${escapeHtml(member.role)}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-600">${member.team}</div>
+                        <div class="text-sm text-gray-600">${escapeHtml(member.team)}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-600">${member.project || '-'}</div>
+                        <div class="text-sm text-gray-600">${escapeHtml(member.project) || '-'}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-600">${member.lineOfBusiness || '-'}</div>
+                        <div class="text-sm text-gray-600">${escapeHtml(member.lineOfBusiness) || '-'}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-600">${member.email || '-'}</div>
+                        <div class="text-sm text-gray-600">${escapeHtml(member.email) || '-'}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${member.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
