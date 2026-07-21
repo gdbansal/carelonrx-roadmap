@@ -2982,7 +2982,6 @@ app.delete('/api/lob-systems/:lob', authMiddleware, async (req, res) => {
     }
 });
 
-
 // ========== TEAM MEMBERS MANAGEMENT ==========
 
 // Get all team members
@@ -3720,6 +3719,7 @@ app.post('/api/story-mapping/fetch-jira', authMiddleware, async (req, res) => {
             acceptanceCriteria,
             issueType: fields.issuetype?.name || 'Feature',
             project: { key: fields.project?.key, name: fields.project?.name },
+            teamName: fields.customfield_10317?.value || null,
             url
         });
     } catch (error) {
@@ -3866,12 +3866,41 @@ app.post('/api/story-mapping/analyze', authMiddleware, async (req, res) => {
 // POST /api/story-mapping/create-tickets â€” create approved tickets in JIRA
 app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) => {
     try {
-        const { items, projectKey, jiraBaseUrl } = req.body;
+        const { items, projectKey, jiraBaseUrl, teamName, sprintName } = req.body;
         if (!items || !projectKey) return res.status(400).json({ success: false, message: 'items and projectKey are required' });
 
         const { base, token } = getJiraCredentials(jiraBaseUrl || '');
         if (!base || !token) return res.status(503).json({ success: false, message: 'JIRA not configured' });
         const jiraBase = base.replace(/\/$/, '');
+
+        // Resolve sprint ID from sprint name if provided
+        let sprintId = null;
+        if (sprintName && teamName) {
+            try {
+                let boardStart = 0, boardTotal = 1, matchedBoard = null;
+                while (boardStart < boardTotal && !matchedBoard) {
+                    const { status: bs, body: bb } = await jiraRequest(`${jiraBase}/rest/agile/1.0/board?maxResults=50&startAt=${boardStart}`);
+                    if (bs !== 200 || !bb.values) break;
+                    matchedBoard = bb.values.find(b => b.name.toLowerCase() === teamName.toLowerCase());
+                    boardTotal = bb.total || 0; boardStart += 50;
+                    if (bb.values.length === 0) break;
+                }
+                if (matchedBoard) {
+                    for (const st of ['active,future', 'closed']) {
+                        let ss = 0, st2 = 1;
+                        while (ss < st2 && !sprintId) {
+                            const { status: xs, body: xb } = await jiraRequest(`${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${st}&maxResults=50&startAt=${ss}`);
+                            if (xs !== 200 || !xb.values) break;
+                            const found = xb.values.find(s => s.name.toLowerCase() === sprintName.toLowerCase());
+                            if (found) sprintId = found.id;
+                            st2 = xb.total || 0; ss += 50;
+                            if (xb.values.length === 0) break;
+                        }
+                        if (sprintId) break;
+                    }
+                }
+            } catch(e) { console.error('Sprint lookup error:', e.message); }
+        }
 
         const created = [];
         const failed = [];
@@ -3879,14 +3908,15 @@ app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) =
         for (const item of items) {
             if (!item.approved || item.type === 'Epic') continue;
             try {
-                const issueBody = {
-                    fields: {
-                        project: { key: projectKey },
-                        summary: item.summary,
-                        description: item.summary,
-                        issuetype: { name: item.type }
-                    }
+                const issueFields = {
+                    project: { key: projectKey },
+                    summary: item.summary,
+                    description: item.summary,
+                    issuetype: { name: item.type }
                 };
+                if (teamName) issueFields.customfield_10317 = { value: teamName };
+                if (sprintId) issueFields.customfield_10020 = sprintId;
+                const issueBody = { fields: issueFields };
                 const https = require('https');
                 const payload = JSON.stringify(issueBody);
                 const parsedUrl = new URL(`${jiraBase}/rest/api/2/issue`);

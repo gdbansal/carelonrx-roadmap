@@ -203,6 +203,19 @@
                             <option value="elevancehealth">jira.elevancehealth.com</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Team Name</label>
+                        <input id="createTeamName" type="text" placeholder="e.g. Aero Avengers"
+                            oninput="loadSprintsForMapping(this.value)"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Sprint</label>
+                        <select id="createSprintName" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <option value="">Enter team name first</option>
+                        </select>
+                        <p id="createSprintHint" class="text-xs text-gray-400 mt-0.5"></p>
+                    </div>
                 </div>
                 <div id="approvedCount" class="text-xs text-gray-500 mb-3"></div>
                 <button type="button" onclick="createTickets()" id="createBtn"
@@ -366,8 +379,12 @@
                 document.getElementById('confPreviewContent').textContent = 'Solutioning notes not available � analysis will use JIRA content only.';
             }
 
-            // Pre-fill project key
+            // Pre-fill project key and team name from fetched JIRA issue
             if (jiraData.project?.key) document.getElementById('createProjectKey').value = jiraData.project.key;
+            if (jiraData.teamName) {
+                document.getElementById('createTeamName').value = jiraData.teamName;
+                loadSprintsForMapping(jiraData.teamName);
+            }
 
             document.getElementById('step-preview').classList.remove('hidden');
         } catch(e) {
@@ -531,6 +548,41 @@
         setStep(1);
     }
 
+    async function loadSprintsForMapping(teamName) {
+        const sprintEl = document.getElementById('createSprintName');
+        const hintEl = document.getElementById('createSprintHint');
+        if (!teamName || teamName.length < 2) {
+            sprintEl.innerHTML = '<option value="">Enter team name first</option>';
+            if (hintEl) hintEl.textContent = '';
+            return;
+        }
+        sprintEl.innerHTML = '<option value="">Loading sprints...</option>';
+        sprintEl.disabled = true;
+        if (hintEl) hintEl.textContent = 'Fetching sprints...';
+        try {
+            const res = await fetch(`${API_BASE}/jira/sprint-for-team?teamName=${encodeURIComponent(teamName)}`, { headers: authHeaders() });
+            const data = await res.json();
+            if (data.success && data.sprints && data.sprints.length > 0) {
+                const activeFuture = data.sprints.filter(s => s.state === 'active' || s.state === 'future');
+                const list = activeFuture.length > 0 ? activeFuture : data.sprints;
+                sprintEl.innerHTML = '<option value="">Select a sprint...</option>' +
+                    list.map(s => {
+                        const badge = s.state === 'active' ? ' [Active]' : s.state === 'future' ? ' [Future]' : '';
+                        return `<option value="${s.name}">${s.name}${badge}</option>`;
+                    }).join('');
+                sprintEl.disabled = false;
+                if (hintEl) hintEl.textContent = `${list.length} sprints available`;
+            } else {
+                sprintEl.innerHTML = '<option value="">No sprints found</option>';
+                if (hintEl) hintEl.textContent = data.message || 'No sprints found for this team';
+            }
+        } catch(e) {
+            sprintEl.innerHTML = '<option value="">Error loading sprints</option>';
+            if (hintEl) hintEl.textContent = 'Could not load sprints';
+        }
+        sprintEl.disabled = false;
+    }
+
     async function createTickets() {
         const projectKey = document.getElementById('createProjectKey').value.trim();
         if (!projectKey) { showToast('Please enter a Project Key', 'error'); return; }
@@ -538,45 +590,38 @@
         if (approvedItems.length === 0) { showToast('No approved tickets to create. Please approve at least one item.', 'error'); return; }
 
         const instance = document.getElementById('createJiraInstance').value;
-        const jiraBase = instance === 'elevancehealth'
-            ? 'https://jira.elevancehealth.com'
-            : 'https://jira.carelonrx.com';
+        const teamName = document.getElementById('createTeamName').value.trim();
+        const sprintName = document.getElementById('createSprintName').value.trim();
 
         const btn = document.getElementById('createBtn');
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner"></span> Creating...';
         setStep(5);
 
-        const token = localStorage.getItem('token');
-        const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
         const created = [];
         const failed  = [];
 
-        for (const item of approvedItems) {
-            try {
-                const res = await fetch(`${jiraBase}/rest/api/2/issue`, {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify({
-                        fields: {
-                            project: { key: projectKey },
-                            summary: item.summary,
-                            description: item.summary,
-                            issuetype: { name: item.type }
-                        }
-                    })
-                });
-                const body = await res.json();
-                if (res.status === 201) {
-                    created.push({ key: body.key, url: `${jiraBase}/browse/${body.key}` });
-                } else {
-                    failed.push({ summary: item.summary, error: body.errorMessages?.join(', ') || JSON.stringify(body.errors || body) });
-                }
-            } catch(e) {
-                failed.push({ summary: item.summary, error: e.message });
+        try {
+            const res = await fetch(`${API_BASE}/story-mapping/create-tickets`, {
+                method: 'POST',
+                headers: authHeaders(),
+                body: JSON.stringify({
+                    items: approvedItems,
+                    projectKey,
+                    jiraBaseUrl: instance,
+                    teamName: teamName || undefined,
+                    sprintName: sprintName || undefined
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                created.push(...(data.created || []));
+                failed.push(...(data.failed || []));
+            } else {
+                showToast(data.message || 'Failed to create tickets', 'error');
             }
+        } catch(e) {
+            showToast('Failed to connect to server: ' + e.message, 'error');
         }
 
         document.getElementById('created-list').innerHTML = created.length ? `
