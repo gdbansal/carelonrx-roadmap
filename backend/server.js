@@ -13,6 +13,7 @@ const AuditLog = require('./models/AuditLog');
 const EstimationUser = require('./models/EstimationUser');
 const UserSession = require('./models/UserSession');
 const LineOfBusiness = require('./models/LineOfBusiness');
+const LobSystems = require('./models/LobSystems');
 const TeamMember = require('./models/TeamMember');
 const CapacityPlan = require('./models/CapacityPlan');
 const mongoose = require('mongoose');
@@ -2912,6 +2913,75 @@ app.delete('/api/line-of-business/:id', authMiddleware, async (req, res) => {
     }
 });
 
+// ========== LOB VS SYSTEMS MANAGEMENT ==========
+
+// Get all LOB-Systems mappings
+app.get('/api/lob-systems', authMiddleware, async (req, res) => {
+    try {
+        const mappings = await LobSystems.find().sort({ lob: 1 });
+        res.json({ success: true, mappings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch LOB systems' });
+    }
+});
+
+// Get systems for a specific LOB (for intake dropdown)
+app.get('/api/lob-systems/:lob', authMiddleware, async (req, res) => {
+    try {
+        const mapping = await LobSystems.findOne({ lob: decodeURIComponent(req.params.lob) });
+        res.json({ success: true, systems: mapping ? mapping.systems : [] });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch systems for LOB' });
+    }
+});
+
+// Create or update LOB-Systems mapping (Admin only)
+app.post('/api/lob-systems', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin access required' });
+        const { lob, systems } = req.body;
+        if (!lob) return res.status(400).json({ success: false, message: 'LOB name is required' });
+        const timestamp = new Date();
+        const mapping = await LobSystems.findOneAndUpdate(
+            { lob: lob.trim() },
+            { lob: lob.trim(), systems: (systems || []).map(s => s.trim()).filter(Boolean), updatedBy: req.user.username, updatedAt: timestamp },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        if (!mapping.createdBy) { mapping.createdBy = req.user.username; mapping.createdAt = timestamp; await mapping.save(); }
+        res.json({ success: true, message: 'LOB systems saved successfully', mapping });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to save LOB systems' });
+    }
+});
+
+// Delete a system from a LOB mapping (Admin only)
+app.delete('/api/lob-systems/:lob/system', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin access required' });
+        const { system } = req.body;
+        const mapping = await LobSystems.findOne({ lob: decodeURIComponent(req.params.lob) });
+        if (!mapping) return res.status(404).json({ success: false, message: 'LOB mapping not found' });
+        mapping.systems = mapping.systems.filter(s => s !== system);
+        mapping.updatedBy = req.user.username;
+        mapping.updatedAt = new Date();
+        await mapping.save();
+        res.json({ success: true, message: 'System removed', mapping });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to remove system' });
+    }
+});
+
+// Delete entire LOB mapping (Admin only)
+app.delete('/api/lob-systems/:lob', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin access required' });
+        await LobSystems.findOneAndDelete({ lob: decodeURIComponent(req.params.lob) });
+        res.json({ success: true, message: 'LOB mapping deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to delete LOB mapping' });
+    }
+});
+
 // ========== TEAM MEMBERS MANAGEMENT ==========
 
 // Get all team members
@@ -3649,6 +3719,7 @@ app.post('/api/story-mapping/fetch-jira', authMiddleware, async (req, res) => {
             acceptanceCriteria,
             issueType: fields.issuetype?.name || 'Feature',
             project: { key: fields.project?.key, name: fields.project?.name },
+            teamName: fields.customfield_10317?.value || null,
             url
         });
     } catch (error) {
@@ -3795,12 +3866,41 @@ app.post('/api/story-mapping/analyze', authMiddleware, async (req, res) => {
 // POST /api/story-mapping/create-tickets â€” create approved tickets in JIRA
 app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) => {
     try {
-        const { items, projectKey, jiraBaseUrl } = req.body;
+        const { items, projectKey, jiraBaseUrl, teamName, sprintName } = req.body;
         if (!items || !projectKey) return res.status(400).json({ success: false, message: 'items and projectKey are required' });
 
         const { base, token } = getJiraCredentials(jiraBaseUrl || '');
         if (!base || !token) return res.status(503).json({ success: false, message: 'JIRA not configured' });
         const jiraBase = base.replace(/\/$/, '');
+
+        // Resolve sprint ID from sprint name if provided
+        let sprintId = null;
+        if (sprintName && teamName) {
+            try {
+                let boardStart = 0, boardTotal = 1, matchedBoard = null;
+                while (boardStart < boardTotal && !matchedBoard) {
+                    const { status: bs, body: bb } = await jiraRequest(`${jiraBase}/rest/agile/1.0/board?maxResults=50&startAt=${boardStart}`);
+                    if (bs !== 200 || !bb.values) break;
+                    matchedBoard = bb.values.find(b => b.name.toLowerCase() === teamName.toLowerCase());
+                    boardTotal = bb.total || 0; boardStart += 50;
+                    if (bb.values.length === 0) break;
+                }
+                if (matchedBoard) {
+                    for (const st of ['active,future', 'closed']) {
+                        let ss = 0, st2 = 1;
+                        while (ss < st2 && !sprintId) {
+                            const { status: xs, body: xb } = await jiraRequest(`${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${st}&maxResults=50&startAt=${ss}`);
+                            if (xs !== 200 || !xb.values) break;
+                            const found = xb.values.find(s => s.name.toLowerCase() === sprintName.toLowerCase());
+                            if (found) sprintId = found.id;
+                            st2 = xb.total || 0; ss += 50;
+                            if (xb.values.length === 0) break;
+                        }
+                        if (sprintId) break;
+                    }
+                }
+            } catch(e) { console.error('Sprint lookup error:', e.message); }
+        }
 
         const created = [];
         const failed = [];
@@ -3808,14 +3908,15 @@ app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) =
         for (const item of items) {
             if (!item.approved || item.type === 'Epic') continue;
             try {
-                const issueBody = {
-                    fields: {
-                        project: { key: projectKey },
-                        summary: item.summary,
-                        description: item.summary,
-                        issuetype: { name: item.type }
-                    }
+                const issueFields = {
+                    project: { key: projectKey },
+                    summary: item.summary,
+                    description: item.summary,
+                    issuetype: { name: item.type }
                 };
+                if (teamName) issueFields.customfield_10317 = { value: teamName };
+                if (sprintId) issueFields.customfield_10020 = sprintId;
+                const issueBody = { fields: issueFields };
                 const https = require('https');
                 const payload = JSON.stringify(issueBody);
                 const parsedUrl = new URL(`${jiraBase}/rest/api/2/issue`);
