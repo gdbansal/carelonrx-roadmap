@@ -74,6 +74,10 @@
                         <i data-lucide="briefcase" class="w-4 h-4"></i>
                         <span>Line of Business</span>
                     </button>
+                    <button type="button" onclick="switchTab('lobsystems')" id="lobsystemsTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                        <i data-lucide="link" class="w-4 h-4"></i>
+                        <span>LOB vs Systems</span>
+                    </button>
                     <button type="button" onclick="switchTab('team')" id="teamTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
                         <i data-lucide="users" class="w-4 h-4"></i>
                         <span>Team Members</span>
@@ -151,6 +155,57 @@
                             </tr>
                         </thead>
                         <tbody id="lobTableBody" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- LOB vs Systems Tab -->
+        <div id="lobsystemsContent" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">LOB vs Dependent Systems</h2>
+                        <p class="text-sm text-gray-600 mt-1">Map dependent systems to Lines of Business. These systems appear in intake form based on selected LOB.</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 mb-6">
+                    <h3 class="text-base font-semibold text-gray-700 mb-4">Add / Update LOB Mapping</h3>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Line of Business <span class="text-red-500">*</span></label>
+                            <select id="lobsLobSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" onchange="onLobSystemsLobChange()">
+                                <option value="">Select LOB...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Add System</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="lobsNewSystem" placeholder="Enter system name..." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                <button type="button" onclick="addSystemToLob()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm flex items-center space-x-1">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <span>Add</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="lobsCurrentSystemsWrapper" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Systems for selected LOB</label>
+                            <div id="lobsCurrentSystems" class="flex flex-wrap gap-2 min-h-8"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Line of Business</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Dependent Systems</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lobSystemsTableBody" class="bg-white divide-y divide-gray-200">
                         </tbody>
                     </table>
                 </div>
@@ -942,6 +997,11 @@
                 document.getElementById('lobTab').classList.remove('border-transparent', 'text-gray-500');
                 document.getElementById('lobContent').classList.remove('hidden');
                 loadLobs();
+            } else if (tab === 'lobsystems') {
+                document.getElementById('lobsystemsTab').classList.add('active', 'border-blue-600', 'text-blue-600');
+                document.getElementById('lobsystemsTab').classList.remove('border-transparent', 'text-gray-500');
+                document.getElementById('lobsystemsContent').classList.remove('hidden');
+                loadLobSystems();
             } else if (tab === 'team') {
                 document.getElementById('teamTab').classList.add('active', 'border-blue-600', 'text-blue-600');
                 document.getElementById('teamTab').classList.remove('border-transparent', 'text-gray-500');
@@ -1134,6 +1194,145 @@
                 console.error('Error saving LOB:', error);
                 showError('Unable to connect to server: ' + error.message);
             }
+        }
+
+        // ============================================
+        // LOB VS SYSTEMS MANAGEMENT
+        // ============================================
+        let allLobSystems = [];
+
+        async function loadLobSystems() {
+            try {
+                const [mappingsRes, lobsRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/lob-systems`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+                    fetch(`${API_BASE}/api/line-of-business/active`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+                ]);
+                const mappingsData = await mappingsRes.json();
+                const lobsData = await lobsRes.json();
+                allLobSystems = mappingsData.success ? mappingsData.mappings : [];
+                const sel = document.getElementById('lobsLobSelect');
+                sel.innerHTML = '<option value="">Select LOB...</option>';
+                if (lobsData.success && lobsData.lobs) {
+                    lobsData.lobs.forEach(lob => {
+                        const opt = document.createElement('option');
+                        opt.value = lob; opt.textContent = lob;
+                        sel.appendChild(opt);
+                    });
+                }
+                renderLobSystemsTable();
+                lucide.createIcons();
+            } catch (e) { console.error('Error loading LOB systems:', e); }
+        }
+
+        function renderLobSystemsTable() {
+            const tbody = document.getElementById('lobSystemsTableBody');
+            if (!allLobSystems.length) {
+                tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No LOB-System mappings yet. Select a LOB and add systems above.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = allLobSystems.map(m => `
+                <tr>
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900 align-top w-1/3">${m.lob}</td>
+                    <td class="px-6 py-4 align-top">
+                        <div class="flex flex-wrap gap-1">
+                            ${(m.systems || []).map(s => `
+                                <span class="inline-flex items-center bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                                    ${s}
+                                    <button type="button" onclick="removeSystemFromLob('${encodeURIComponent(m.lob)}','${s.replace(/'/g, "\\'")}')" class="ml-1 text-blue-600 hover:text-red-600">
+                                        <i data-lucide="x" class="w-3 h-3"></i>
+                                    </button>
+                                </span>`).join('') || '<span class="text-gray-400 text-xs">No systems</span>'}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 align-top">
+                        <button type="button" onclick="deleteLobMapping('${encodeURIComponent(m.lob)}')" class="text-red-600 hover:text-red-800 text-sm flex items-center space-x-1">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <span>Delete</span>
+                        </button>
+                    </td>
+                </tr>`).join('');
+            lucide.createIcons();
+        }
+
+        function onLobSystemsLobChange() {
+            const lob = document.getElementById('lobsLobSelect').value;
+            const wrapper = document.getElementById('lobsCurrentSystemsWrapper');
+            const container = document.getElementById('lobsCurrentSystems');
+            if (!lob) { wrapper.classList.add('hidden'); return; }
+            wrapper.classList.remove('hidden');
+            const mapping = allLobSystems.find(m => m.lob === lob);
+            const systems = mapping ? mapping.systems : [];
+            container.innerHTML = systems.length
+                ? systems.map(s => `
+                    <span class="inline-flex items-center bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                        ${s}
+                        <button type="button" onclick="removeSystemFromLob('${encodeURIComponent(lob)}','${s.replace(/'/g, "\\'")}')" class="ml-1 text-blue-600 hover:text-red-600">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </span>`).join('')
+                : '<span class="text-gray-400 text-xs">No systems mapped yet</span>';
+            lucide.createIcons();
+        }
+
+        async function addSystemToLob() {
+            const lob = document.getElementById('lobsLobSelect').value;
+            const systemInput = document.getElementById('lobsNewSystem');
+            const system = systemInput.value.trim();
+            if (!lob) { alert('Please select a Line of Business first.'); return; }
+            if (!system) { alert('Please enter a system name.'); return; }
+            const existing = allLobSystems.find(m => m.lob === lob);
+            const systems = existing ? [...existing.systems] : [];
+            if (systems.includes(system)) { alert('This system is already mapped to this LOB.'); return; }
+            systems.push(system);
+            try {
+                const res = await fetch(`${API_BASE}/api/lob-systems`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: JSON.stringify({ lob, systems })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    systemInput.value = '';
+                    await loadLobSystems();
+                    document.getElementById('lobsLobSelect').value = lob;
+                    onLobSystemsLobChange();
+                } else { alert('Error: ' + data.message); }
+            } catch (e) { alert('Failed to save system.'); }
+        }
+
+        async function removeSystemFromLob(encodedLob, system) {
+            const lob = decodeURIComponent(encodedLob);
+            if (!confirm(`Remove "${system}" from "${lob}"?`)) return;
+            const existing = allLobSystems.find(m => m.lob === lob);
+            if (!existing) return;
+            const systems = existing.systems.filter(s => s !== system);
+            try {
+                const res = await fetch(`${API_BASE}/api/lob-systems`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: JSON.stringify({ lob, systems })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    await loadLobSystems();
+                    document.getElementById('lobsLobSelect').value = lob;
+                    onLobSystemsLobChange();
+                } else { alert('Error: ' + data.message); }
+            } catch (e) { alert('Failed to remove system.'); }
+        }
+
+        async function deleteLobMapping(encodedLob) {
+            const lob = decodeURIComponent(encodedLob);
+            if (!confirm(`Delete all system mappings for "${lob}"?`)) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/lob-systems/${encodedLob}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                if (data.success) { await loadLobSystems(); }
+                else { alert('Error: ' + data.message); }
+            } catch (e) { alert('Failed to delete mapping.'); }
         }
 
         // ============================================

@@ -13,6 +13,7 @@ const AuditLog = require('./models/AuditLog');
 const EstimationUser = require('./models/EstimationUser');
 const UserSession = require('./models/UserSession');
 const LineOfBusiness = require('./models/LineOfBusiness');
+const LobSystems = require('./models/LobSystems');
 const TeamMember = require('./models/TeamMember');
 const CapacityPlan = require('./models/CapacityPlan');
 const mongoose = require('mongoose');
@@ -2891,6 +2892,76 @@ app.delete('/api/line-of-business/:id', authMiddleware, async (req, res) => {
             message: 'Failed to delete Line of Business' });
     }
 });
+
+// ========== LOB VS SYSTEMS MANAGEMENT ==========
+
+// Get all LOB-Systems mappings
+app.get('/api/lob-systems', authMiddleware, async (req, res) => {
+    try {
+        const mappings = await LobSystems.find().sort({ lob: 1 });
+        res.json({ success: true, mappings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch LOB systems' });
+    }
+});
+
+// Get systems for a specific LOB (for intake dropdown)
+app.get('/api/lob-systems/:lob', authMiddleware, async (req, res) => {
+    try {
+        const mapping = await LobSystems.findOne({ lob: decodeURIComponent(req.params.lob) });
+        res.json({ success: true, systems: mapping ? mapping.systems : [] });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch systems for LOB' });
+    }
+});
+
+// Create or update LOB-Systems mapping (Admin only)
+app.post('/api/lob-systems', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin access required' });
+        const { lob, systems } = req.body;
+        if (!lob) return res.status(400).json({ success: false, message: 'LOB name is required' });
+        const timestamp = new Date();
+        const mapping = await LobSystems.findOneAndUpdate(
+            { lob: lob.trim() },
+            { lob: lob.trim(), systems: (systems || []).map(s => s.trim()).filter(Boolean), updatedBy: req.user.username, updatedAt: timestamp },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        if (!mapping.createdBy) { mapping.createdBy = req.user.username; mapping.createdAt = timestamp; await mapping.save(); }
+        res.json({ success: true, message: 'LOB systems saved successfully', mapping });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to save LOB systems' });
+    }
+});
+
+// Delete a system from a LOB mapping (Admin only)
+app.delete('/api/lob-systems/:lob/system', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin access required' });
+        const { system } = req.body;
+        const mapping = await LobSystems.findOne({ lob: decodeURIComponent(req.params.lob) });
+        if (!mapping) return res.status(404).json({ success: false, message: 'LOB mapping not found' });
+        mapping.systems = mapping.systems.filter(s => s !== system);
+        mapping.updatedBy = req.user.username;
+        mapping.updatedAt = new Date();
+        await mapping.save();
+        res.json({ success: true, message: 'System removed', mapping });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to remove system' });
+    }
+});
+
+// Delete entire LOB mapping (Admin only)
+app.delete('/api/lob-systems/:lob', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin access required' });
+        await LobSystems.findOneAndDelete({ lob: decodeURIComponent(req.params.lob) });
+        res.json({ success: true, message: 'LOB mapping deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to delete LOB mapping' });
+    }
+});
+
 
 // ========== TEAM MEMBERS MANAGEMENT ==========
 
