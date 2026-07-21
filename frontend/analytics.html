@@ -471,12 +471,6 @@
             setTimeout(function() { t.style.opacity = '1'; }, 10);
             setTimeout(function() { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 300); }, 4000);
         }
-        ;color:#fff;font-size:14px;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s`;
-            t.textContent = msg;
-            document.body.appendChild(t);
-            setTimeout(() => t.style.opacity = '1', 10);
-            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
-        }
         lucide.createIcons();
 
         const user = JSON.parse(localStorage.getItem('user') || '{}');
