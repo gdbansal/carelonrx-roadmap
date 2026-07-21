@@ -454,14 +454,15 @@ app.get('/api/initiatives/:id', authMiddleware, async (req, res) => {
 
 app.post('/api/initiatives', authMiddleware, async (req, res) => {
     try {
-        const wsjfValue = parseFloat(req.body.wsjf);
-        const existingWSJF = await Initiative.findOne({ wsjf: wsjfValue });
-        
-        if (existingWSJF) {
-            return res.status(400).json({
-                success: false,
-                message: `WSJF value ${wsjfValue.toFixed(2)} is already used by initiative "${existingWSJF.name}". Please use a unique WSJF value.`
-            });
+        const wsjfValue = req.body.wsjf !== undefined && req.body.wsjf !== null && req.body.wsjf !== '' ? parseFloat(req.body.wsjf) : null;
+        if (wsjfValue !== null && !isNaN(wsjfValue)) {
+            const existingWSJF = await Initiative.findOne({ wsjf: wsjfValue });
+            if (existingWSJF) {
+                return res.status(400).json({
+                    success: false,
+                    message: `WSJF value ${wsjfValue.toFixed(2)} is already used by initiative "${existingWSJF.name}". Please use a unique WSJF value.`
+                });
+            }
         }
         
         const timestamp = new Date();
@@ -526,17 +527,18 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
             });
         }
         
-        const wsjfValue = parseFloat(req.body.wsjf);
-        const existingWSJF = await Initiative.findOne({ 
-            _id: { $ne: req.params.id }, 
-            wsjf: wsjfValue 
-        });
-        
-        if (existingWSJF) {
-            return res.status(400).json({
-                success: false,
-                message: `WSJF value ${wsjfValue.toFixed(2)} is already used by initiative "${existingWSJF.name}". Please use a unique WSJF value.`
+        const wsjfValue = req.body.wsjf !== undefined && req.body.wsjf !== null && req.body.wsjf !== '' ? parseFloat(req.body.wsjf) : null;
+        if (wsjfValue !== null && !isNaN(wsjfValue)) {
+            const existingWSJF = await Initiative.findOne({ 
+                _id: { $ne: req.params.id }, 
+                wsjf: wsjfValue 
             });
+            if (existingWSJF) {
+                return res.status(400).json({
+                    success: false,
+                    message: `WSJF value ${wsjfValue.toFixed(2)} is already used by initiative "${existingWSJF.name}". Please use a unique WSJF value.`
+                });
+            }
         }
         
         const timestamp = new Date();
@@ -2163,22 +2165,42 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
             return res.json({ success: false, message: `No board found for team: ${teamName}`, issues: [] });
         }
 
-        // Step 2: Find sprint matching sprintName on that board
+        // Step 2: Find sprint by name — search active+future on board first, then fallback to all states
         let matchedSprint = null;
-        let sprintStart = 0;
-        let sprintTotal = 1;
-        while (sprintStart < sprintTotal && !matchedSprint) {
-            const { status: ss, body: sprintsBody } = await jiraRequest(
-                `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?maxResults=50&startAt=${sprintStart}`
-            );
-            if (ss !== 200 || !sprintsBody.values) break;
-            matchedSprint = sprintsBody.values.find(s =>
-                s.name.toLowerCase() === sprintName.toLowerCase()
-            );
-            sprintTotal = sprintsBody.total || 0;
-            sprintStart += 50;
-            if (sprintsBody.values.length === 0) break;
+        for (const stateFilter of ['active,future', 'closed', '']) {
+            let sprintStart = 0;
+            let sprintTotal = 1;
+            const stateParam = stateFilter ? `&state=${stateFilter}` : '';
+            while (sprintStart < sprintTotal && !matchedSprint) {
+                const { status: ss, body: sprintsBody } = await jiraRequest(
+                    `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?maxResults=50&startAt=${sprintStart}${stateParam}`
+                );
+                if (ss !== 200 || !sprintsBody.values) break;
+                matchedSprint = sprintsBody.values.find(s =>
+                    s.name.toLowerCase() === sprintName.toLowerCase()
+                );
+                sprintTotal = sprintsBody.total || 0;
+                sprintStart += 50;
+                if (sprintsBody.values.length === 0) break;
+            }
+            if (matchedSprint) break;
         }
+
+        // Final fallback: search sprint by name across ALL boards via JQL
+        if (!matchedSprint) {
+            const sprintSearchJql = encodeURIComponent(`sprint = "${sprintName}" ORDER BY created DESC`);
+            const { status: sjs, body: sjBody } = await jiraRequest(
+                `${jiraBase}/rest/api/2/search?jql=${sprintSearchJql}&maxResults=1&fields=sprint`
+            );
+            if (sjs === 200 && sjBody.issues && sjBody.issues.length > 0) {
+                const sprintField = sjBody.issues[0].fields && (
+                    sjBody.issues[0].fields.sprint ||
+                    Object.values(sjBody.issues[0].fields).find(f => f && f.name && f.name.toLowerCase() === sprintName.toLowerCase())
+                );
+                if (sprintField) matchedSprint = sprintField;
+            }
+        }
+
         if (!matchedSprint) {
             return res.json({ success: false, message: `No sprint found: ${sprintName}`, issues: [] });
         }
