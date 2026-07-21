@@ -464,7 +464,6 @@ app.post('/api/initiatives', authMiddleware, async (req, res) => {
                 });
             }
         }
-        }
         
         const timestamp = new Date();
         const allowedCreateFields = ['name', 'description', 'businessUnit', 'program', 'year', 'quarter',
@@ -528,17 +527,18 @@ app.put('/api/initiatives/:id', authMiddleware, async (req, res) => {
             });
         }
         
-        const wsjfValue = parseFloat(req.body.wsjf);
-        const existingWSJF = await Initiative.findOne({ 
-            _id: { $ne: req.params.id }, 
-            wsjf: wsjfValue 
-        });
-        
-        if (existingWSJF) {
-            return res.status(400).json({
-                success: false,
-                message: `WSJF value ${wsjfValue.toFixed(2)} is already used by initiative "${existingWSJF.name}". Please use a unique WSJF value.`
+        const wsjfValue = req.body.wsjf !== undefined && req.body.wsjf !== null && req.body.wsjf !== '' ? parseFloat(req.body.wsjf) : null;
+        if (wsjfValue !== null && !isNaN(wsjfValue)) {
+            const existingWSJF = await Initiative.findOne({ 
+                _id: { $ne: req.params.id }, 
+                wsjf: wsjfValue 
             });
+            if (existingWSJF) {
+                return res.status(400).json({
+                    success: false,
+                    message: `WSJF value ${wsjfValue.toFixed(2)} is already used by initiative "${existingWSJF.name}". Please use a unique WSJF value.`
+                });
+            }
         }
         
         const timestamp = new Date();
