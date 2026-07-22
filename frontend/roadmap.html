@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="assets/session-manager.js?v=2.2"></script>
     <script src="assets/api-config.js"></script>
     <script src="assets/product360-sidebar.js" defer></script>
@@ -1197,7 +1197,7 @@
         function exportToExcel() {
             try {
                 const year = document.getElementById('yearFilter').value;
-                const initiatives = allInitiatives.filter(i => i.year === year);
+                const initiatives = allInitiatives.filter(i => String(i.year) === String(year));
                 
                 if (initiatives.length === 0) {
                     showToast('No initiatives found for the selected year.', 'error');
