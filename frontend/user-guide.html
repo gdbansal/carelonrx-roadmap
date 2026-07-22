@@ -65,12 +65,21 @@
             <!-- Table of Contents -->
             <div class="mb-12 section">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Table of Contents</h2>
-                <ol class="list-decimal list-inside space-y-2 carelon-purple-text">
+                                <ol class="list-decimal list-inside space-y-2 carelon-purple-text">
                     <li><a href="#introduction" class="hover:underline">Introduction to Product 360</a></li>
                     <li><a href="#getting-started" class="hover:underline">Getting Started</a></li>
                     <li><a href="#navigation" class="hover:underline">Product 360 Navigation</a></li>
                     <li><a href="#user-roles" class="hover:underline">User Roles</a></li>
-                    <li><a href="#login-signup" class="hover:underline">Login & Signup</a></li>
+                    <li><a href="#login-signup" class="hover:underline">Login &amp; Signup</a></li>
+                    <li><a href="#requirements-intake-module" class="hover:underline">Requirements Intake Module</a>
+                        <ol class="list-decimal list-inside ml-6 mt-1 space-y-1">
+                            <li><a href="#intake-overview" class="hover:underline">Overview</a></li>
+                            <li><a href="#intake-submitting" class="hover:underline">Submitting an Intake</a></li>
+                            <li><a href="#intake-wsjf" class="hover:underline">WSJF Scoring</a></li>
+                            <li><a href="#intake-dependent-systems" class="hover:underline">Dependent Systems</a></li>
+                            <li><a href="#intake-editing" class="hover:underline">Editing &amp; Deleting</a></li>
+                        </ol>
+                    </li>
                     <li><a href="#roadmap-module" class="hover:underline">Roadmap Module</a>
                         <ol class="list-decimal list-inside ml-6 mt-1 space-y-1">
                             <li><a href="#dashboard" class="hover:underline">Dashboard</a></li>
@@ -79,6 +88,40 @@
                             <li><a href="#roadmap-view" class="hover:underline">Roadmap View</a></li>
                             <li><a href="#analytics-dashboard" class="hover:underline">Analytics Dashboard</a></li>
                         </ol>
+                    </li>
+                    <li><a href="#loe-estimation-module" class="hover:underline">LOE Estimation Module</a></li>
+                    <li><a href="#capacity-planning" class="hover:underline">Capacity Planning Module</a>
+                        <ol class="list-decimal list-inside ml-6 mt-1 space-y-1">
+                            <li><a href="#cp-filters" class="hover:underline">Selecting PI, Team &amp; Project</a></li>
+                            <li><a href="#cp-matrix" class="hover:underline">Capacity Matrix</a></li>
+                            <li><a href="#cp-avg-points" class="hover:underline">Avg Points per Sprint</a></li>
+                            <li><a href="#cp-availability" class="hover:underline">Team Availability &amp; Suggested Points</a></li>
+                        </ol>
+                    </li>
+                    <li><a href="#story-mapping-module" class="hover:underline">Story Mapping Module</a></li>
+                    <li><a href="#story-estimations" class="hover:underline">Story Estimations Module</a>
+                        <ol class="list-decimal list-inside ml-6 mt-1 space-y-1">
+                            <li><a href="#creating-session" class="hover:underline">Creating a Session</a></li>
+                            <li><a href="#joining-session" class="hover:underline">Joining a Session</a></li>
+                            <li><a href="#adding-stories" class="hover:underline">Adding Stories</a></li>
+                            <li><a href="#estimating-stories" class="hover:underline">Estimating Stories</a></li>
+                            <li><a href="#revealing-estimates" class="hover:underline">Revealing Estimates</a></li>
+                        </ol>
+                    </li>
+                    <li><a href="#user-profile" class="hover:underline">User Profile</a></li>
+                    <li><a href="#admin-panel" class="hover:underline">Admin Panel</a>
+                        <ol class="list-decimal list-inside ml-6 mt-1 space-y-1">
+                            <li><a href="#admin-users" class="hover:underline">User Management</a></li>
+                            <li><a href="#admin-lob" class="hover:underline">Line of Business</a></li>
+                            <li><a href="#admin-lob-systems" class="hover:underline">LOB vs Systems</a></li>
+                            <li><a href="#admin-team" class="hover:underline">Team Members</a></li>
+                            <li><a href="#admin-role-module" class="hover:underline">Role vs Module Mapping</a></li>
+                        </ol>
+                    </li>
+                    <li><a href="#session-management" class="hover:underline">Session Management</a></li>
+                    <li><a href="#data-persistence" class="hover:underline">Data Persistence</a></li>
+                    <li><a href="#troubleshooting" class="hover:underline">Troubleshooting</a></li>
+                </ol>
                     </li>
                     <li><a href="#loe-estimation-module" class="hover:underline">LOE Estimation Module</a></li>
                     <li><a href="#story-mapping-module" class="hover:underline">Story Mapping Module</a></li>
@@ -349,6 +392,113 @@
                 </ol>
             </div>
 
+            <!-- Requirements Intake Module -->
+            <div id="requirements-intake-module" class="mb-12 section">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">6. Requirements Intake Module</h2>
+                <p class="text-gray-700 mb-4">The Requirements Intake module is the starting point for capturing product initiatives. It provides a structured form with WSJF scoring, priority, budget status, dependent systems, and SIT/UAT date tracking.</p>
+
+                <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6">
+                    <p class="font-semibold text-purple-800 mb-1">Access:</p>
+                    <p class="text-gray-700 text-sm">Click <strong>"Requirements Intake"</strong> in the Product 360 left sidebar.</p>
+                </div>
+
+                <div id="intake-overview" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">6.1 Overview</h3>
+                    <p class="text-gray-700 mb-3">The intake form lets you submit new initiatives and edit existing ones. All submitted initiatives appear on the Roadmap Dashboard.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 ml-4">
+                        <li>View all existing initiatives in the table at the top of the page</li>
+                        <li>Click <strong>"New Intake"</strong> to open a blank form</li>
+                        <li>Click the <strong>edit icon</strong> on any row to load that initiative for editing</li>
+                        <li>Use the <strong>search / filter</strong> fields to find specific initiatives</li>
+                    </ul>
+                </div>
+
+                <div id="intake-submitting" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">6.2 Submitting an Intake</h3>
+                    <ol class="list-decimal list-inside space-y-3 text-gray-700 ml-4 mb-4">
+                        <li>Click <strong>"New Intake"</strong></li>
+                        <li>Fill in <strong>Basic Information</strong>:
+                            <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                                <li><strong>Initiative Name</strong> (required)</li>
+                                <li><strong>Description</strong> (required)</li>
+                                <li><strong>Line of Business</strong> (required) &mdash; select from admin-configured LOBs</li>
+                                <li><strong>Program</strong> (required)</li>
+                                <li><strong>Year</strong> (required): 2025&ndash;2030</li>
+                                <li><strong>Quarter</strong> (required): Q1&ndash;Q4</li>
+                                <li><strong>Start Date</strong> (optional)</li>
+                                <li><strong>Delivery Date</strong> (optional)</li>
+                                <li><strong>Business Commitment Date</strong> (optional)</li>
+                                <li><strong>SIT Start / End Date</strong> (optional)</li>
+                                <li><strong>UAT Start / End Date</strong> (optional)</li>
+                            </ul>
+                        </li>
+                        <li>Set <strong>Priority</strong> (required): Critical, High, Medium, Low, or <strong>On Hold</strong>
+                            <ul class="list-disc list-inside ml-6 mt-1">
+                                <li>Selecting <strong>On Hold</strong> reveals a <strong>Hold Reason</strong> field (required)</li>
+                            </ul>
+                        </li>
+                        <li>Set <strong>Budget Status</strong> (required): Approved, Pending, or Rejected</li>
+                        <li>Enter <strong>Business Owner</strong> (required)</li>
+                        <li>Enter <strong>Business Value</strong> and <strong>Risks</strong></li>
+                        <li>Add <strong>Dependent Systems</strong> (see section 6.4)</li>
+                        <li>Click <strong>"Submit Initiative"</strong></li>
+                    </ol>
+                </div>
+
+                <div id="intake-wsjf" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">6.3 WSJF Scoring</h3>
+                    <p class="text-gray-700 mb-3">WSJF (Weighted Shortest Job First) is an optional prioritization score calculated automatically from four Fibonacci inputs.</p>
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
+                        <p class="font-semibold text-yellow-800 mb-2">Formula:</p>
+                        <p class="font-mono text-gray-700">WSJF = (User-Business Value + Time Criticality + Risk Reduction/OE) &divide; Job Size</p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                        <li>Use Fibonacci numbers: 1, 2, 3, 5, 8, 13, 21</li>
+                        <li>All four fields are optional; score calculates only when all four are provided</li>
+                        <li>Job Size cannot be 0 if provided</li>
+                        <li>Score is auto-calculated and displayed instantly</li>
+                    </ul>
+                </div>
+
+                <div id="intake-dependent-systems" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">6.4 Dependent Systems</h3>
+                    <p class="text-gray-700 mb-3">Each initiative can list one or more dependent systems. The available systems are filtered by the selected <strong>Line of Business</strong> (configured in Admin &rarr; LOB vs Systems).</p>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-4">
+                        <li>Select a <strong>System</strong> from the dropdown (filtered by LOB)</li>
+                        <li>Enter <strong>PM / SPOC</strong> name for that system</li>
+                        <li>Enter <strong>JIRA URL</strong> for the system ticket (optional)</li>
+                        <li>Click <strong>"Add Another System"</strong> to add more</li>
+                        <li>Click the <strong>remove icon</strong> to delete a system row</li>
+                    </ol>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4">
+                        <p class="font-semibold text-blue-800 mb-1">Roadmap Tooltip:</p>
+                        <p class="text-gray-700 text-sm">The Roadmap hover tooltip shows the PM/SPOC name and JIRA ticket key for each dependent system.</p>
+                    </div>
+                </div>
+
+                <div id="intake-editing" class="mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">6.5 Editing &amp; Deleting</h3>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                        <p class="font-semibold text-blue-800 mb-1">Permissions:</p>
+                        <p class="text-gray-700 text-sm">You can edit initiatives you created. Admins can edit all initiatives.</p>
+                    </div>
+                    <p class="font-semibold text-gray-800 mb-2">Edit:</p>
+                    <ol class="list-decimal list-inside space-y-1 text-gray-700 ml-4 mb-4">
+                        <li>Click the <strong>edit icon</strong> on the initiative row</li>
+                        <li>Modify any fields</li>
+                        <li>Click <strong>"Update Initiative"</strong></li>
+                        <li>Changes are logged with your username and timestamp</li>
+                    </ol>
+                    <p class="font-semibold text-gray-800 mb-2">Delete:</p>
+                    <ol class="list-decimal list-inside space-y-1 text-gray-700 ml-4">
+                        <li>Click the <strong>trash icon</strong></li>
+                        <li>Confirm deletion</li>
+                        <li>Initiative is permanently removed</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Roadmap Module -->
             <!-- Dashboard -->
             <div id="dashboard" class="mb-12 section">
                 <h2 class="text-3xl font-bold text-gray-800 mb-4">5. Dashboard</h2>
