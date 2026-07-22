@@ -1469,16 +1469,15 @@
                 const res = await fetch(`${getJiraApiBase()}/projects`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
-                if (!res.ok) {
-                    const errData = await res.json().catch(() => ({}));
-                    const msg = errData.message || `JIRA unavailable (${res.status})`;
-                    sel.innerHTML = `<option value="">⚠ ${msg}</option><option value="__other__">Other (enter manually)</option>`;
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.success) {
+                    const msg = data.message || `JIRA unavailable (${res.status})`;
+                    sel.innerHTML = `<option value="">⚠ ${msg} — enter manually below</option>`;
                     document.getElementById('memberProject').style.display = 'block';
                     document.getElementById('memberProject').required = true;
                     lucide.createIcons();
                     return;
                 }
-                const data = await res.json();
                 const projects = data.projects || [];
                 jiraProjectList = projects.map(p => ({ key: p.key, name: p.name })).filter(p => p.name).sort((a,b) => a.name.localeCompare(b.name));
                 jiraProjectsLoaded = true;

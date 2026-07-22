@@ -2315,7 +2315,7 @@ function jiraRequest2(url) {
 app.get('/api/jira2/projects', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA2_BASE_URL || !process.env.JIRA2_API_TOKEN) {
-            return res.status(503).json({ success: false, message: 'JIRA2 integration not configured', projects: [] });
+            return res.json({ success: false, message: 'JIRA2 integration not configured', projects: [] });
         }
         const jiraBase = process.env.JIRA2_BASE_URL.replace(/\/$/, '');
         const url = `${jiraBase}/rest/api/2/project?maxResults=200`;
@@ -2335,7 +2335,7 @@ app.get('/api/jira2/projects', authMiddleware, async (req, res) => {
 app.get('/api/jira2/teams', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA2_BASE_URL || !process.env.JIRA2_API_TOKEN) {
-            return res.status(503).json({ success: false, message: 'JIRA2 integration not configured', teams: [] });
+            return res.json({ success: false, message: 'JIRA2 integration not configured', teams: [] });
         }
         const { projectKey } = req.query;
         if (!projectKey) {
@@ -2367,7 +2367,7 @@ app.get('/api/jira2/teams', authMiddleware, async (req, res) => {
 app.get('/api/jira2/boards', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA2_BASE_URL || !process.env.JIRA2_API_TOKEN) {
-            return res.status(503).json({ success: false, message: 'JIRA2 integration not configured', boards: [] });
+            return res.json({ success: false, message: 'JIRA2 integration not configured', boards: [] });
         }
         const { projectKey } = req.query;
         if (!projectKey) {
