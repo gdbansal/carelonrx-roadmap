@@ -1835,7 +1835,9 @@
 
             try {
                 const [rolesRes, mappingsRes] = await Promise.all([
-                    fetch(`${API_BASE}/api/roles`),
+                    fetch(`${API_BASE}/api/roles`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
                     fetch(`${API_BASE}/api/role-module-mappings`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     })
@@ -1958,7 +1960,12 @@
                     body: JSON.stringify({ mappings: roleMappings })
                 });
                 const data = await res.json();
-                data.success ? showSuccess('Role mappings saved successfully!') : showError(data.message || 'Failed to save');
+                if (data.success) {
+                    showSuccess('Role mappings saved successfully!');
+                    await loadRoleMappings();
+                } else {
+                    showError(data.message || 'Failed to save');
+                }
             } catch (e) { showError('Connection error: ' + e.message); }
         }
 
