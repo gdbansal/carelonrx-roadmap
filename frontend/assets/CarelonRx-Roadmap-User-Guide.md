@@ -1461,6 +1461,29 @@ The Admin Panel provides four main tabs for system administration:
 - ✅ **Update regularly** to reflect team changes
 - 🔍 **Check capacity plans** before deleting members
 
+### LOB vs Systems Tab
+
+**Purpose**: Map dependent systems to Lines of Business. Systems configured here appear in the Requirements Intake form's Dependent Systems section, filtered by the user's selected LOB.
+
+**How It Works**:
+- Each LOB can have one or more systems mapped to it
+- When a user picks an LOB in the intake form, only that LOB's mapped systems appear in the Dependent Systems dropdown
+- Changes take effect immediately for all users
+
+**Adding a System to an LOB**:
+1. Click **"LOB vs Systems"** tab in Admin Panel
+2. Select the **Line of Business** from the dropdown
+3. Type the **system name** in the Add System field
+4. Click **"Add"**
+5. System appears as a tag and in the table
+
+**Removing a System**:
+- Click the **&times;** on a system tag, or use the delete icon in the table row
+- System is immediately removed from that LOB's mapping
+- Existing initiatives that already reference the system are unaffected
+
+---
+
 ### Role vs Module Mapping Tab
 
 **Purpose**: Control which modules are visible in the sidebar for each user role. This allows admins to show only relevant modules to each role without changing code.
