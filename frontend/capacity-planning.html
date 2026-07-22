@@ -517,6 +517,9 @@
                         document.getElementById('saveBtn').classList.remove('hidden');
                         document.getElementById('editBtn').classList.add('hidden');
                     }
+                    // Fetch sprints from JIRA for this team, filtered by selected PI quarter
+                    await loadSprintsForTeam(team);
+
                     renderCapacityMatrix();
                     document.getElementById('emptyState').classList.add('hidden');
                     document.getElementById('capacityMatrix').classList.remove('hidden');
@@ -529,15 +532,77 @@
             }
         }
 
-        // Sprint columns (populated from JIRA or defaults - minimum 6 per PI)
+        // Sprint columns (populated from JIRA or defaults - 7 per PI)
         let sprintColumns = [
             { name: 'Sprint 1' },
             { name: 'Sprint 2' },
             { name: 'Sprint 3' },
             { name: 'Sprint 4' },
             { name: 'Sprint 5' },
-            { name: 'Sprint 6' }
+            { name: 'Sprint 6' },
+            { name: 'Sprint 7' }
         ];
+
+        // Parse PI value (e.g. "26.3") into the quarter date range
+        function piToDateRange(pi) {
+            if (!pi) return null;
+            const parts = pi.split('.');
+            if (parts.length < 2) return null;
+            const year = 2000 + parseInt(parts[0], 10);
+            const quarter = parseInt(parts[1], 10);
+            if (isNaN(year) || isNaN(quarter) || quarter < 1 || quarter > 4) return null;
+            const startMonth = (quarter - 1) * 3;
+            const start = new Date(year, startMonth, 1);
+            const end = new Date(year, startMonth + 3, 0);
+            return { start, end };
+        }
+
+        // Load sprints from JIRA for the selected team + PI; fall back to 7 defaults
+        async function loadSprintsForTeam(teamName) {
+            const pi = document.getElementById('piFilter').value;
+            const DEFAULT_SPRINTS = [
+                { name: 'Sprint 1' }, { name: 'Sprint 2' }, { name: 'Sprint 3' },
+                { name: 'Sprint 4' }, { name: 'Sprint 5' }, { name: 'Sprint 6' },
+                { name: 'Sprint 7' }
+            ];
+
+            try {
+                const res = await fetch(
+                    `${API_BASE}/api/jira/sprint-for-team?teamName=${encodeURIComponent(teamName)}`,
+                    { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
+                );
+                const data = await res.json();
+
+                if (!data.success || !data.sprints || data.sprints.length === 0) {
+                    sprintColumns = DEFAULT_SPRINTS;
+                    return;
+                }
+
+                // Filter sprints overlapping the selected PI quarter
+                const range = piToDateRange(pi);
+                let filtered = data.sprints;
+                if (range) {
+                    filtered = data.sprints.filter(s => {
+                        if (!s.startDate && !s.endDate) return true;
+                        const sprintStart = s.startDate ? new Date(s.startDate) : null;
+                        const sprintEnd   = s.endDate   ? new Date(s.endDate)   : null;
+                        const startsBeforeEnd = !sprintStart || sprintStart <= range.end;
+                        const endsAfterStart  = !sprintEnd   || sprintEnd   >= range.start;
+                        return startsBeforeEnd && endsAfterStart;
+                    });
+                }
+
+                if (filtered.length === 0) {
+                    sprintColumns = DEFAULT_SPRINTS;
+                    return;
+                }
+
+                sprintColumns = filtered.map(s => ({ name: s.name, id: s.id, state: s.state }));
+            } catch (e) {
+                console.warn('Could not load JIRA sprints, using defaults:', e.message);
+                sprintColumns = DEFAULT_SPRINTS;
+            }
+        }
 
         // Render capacity matrix
         function renderCapacityMatrix() {
