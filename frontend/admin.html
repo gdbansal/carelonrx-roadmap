@@ -442,11 +442,12 @@
                     <div class="flex gap-2 items-center mb-1">
                         <select id="memberProjectSelect" required
                             onchange="onProjectSelectChange()"
-                            class="flex-1 h-10 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            class="flex-1 h-10 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            style="min-width:0;max-width:calc(100% - 44px);overflow:hidden;text-overflow:ellipsis;">
                             <option value="">Loading projects from JIRA...</option>
                         </select>
                         <button type="button" onclick="loadJiraProjects(true)" title="Refresh from JIRA"
-                            class="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-500">
+                            class="flex-shrink-0 p-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-gray-500">
                             <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -1469,7 +1470,7 @@
                 if (!res.ok) {
                     const errData = await res.json().catch(() => ({}));
                     const msg = errData.message || `JIRA unavailable (${res.status})`;
-                    sel.innerHTML = `<option value="">⚠ ${msg} — enter manually below</option><option value="__other__">Other (enter manually)</option>`;
+                    sel.innerHTML = `<option value="">⚠ ${msg}</option><option value="__other__">Other (enter manually)</option>`;
                     document.getElementById('memberProject').style.display = 'block';
                     document.getElementById('memberProject').required = true;
                     lucide.createIcons();
@@ -1481,7 +1482,7 @@
                 jiraProjectsLoaded = true;
             } catch(e) {
                 console.warn('JIRA projects fetch failed', e);
-                sel.innerHTML = '<option value="">⚠ Could not connect to JIRA — enter manually below</option><option value="__other__">Other (enter manually)</option>';
+                sel.innerHTML = '<option value="">⚠ Could not connect to JIRA</option><option value="__other__">Other (enter manually)</option>';
                 document.getElementById('memberProject').style.display = 'block';
                 document.getElementById('memberProject').required = true;
                 lucide.createIcons();
