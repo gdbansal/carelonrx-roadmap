@@ -1829,12 +1829,33 @@ Every initiative update is tracked with:
 
 ## Version Information
 
-**Version**: 2.4  
+**Version**: 2.5  
 **Last Updated**: July 22, 2026  
 **Application URL**: https://carelonrx-roadmap.onrender.com  
 **API URL**: https://carelonrx-roadmap.onrender.com  
 
-**Recent Updates (v2.4 - July 2026)**:
+**Recent Updates (v2.5 - July 2026)**:
+- ✅ **Initiative Details Modal (Dashboard & Roadmap)**:
+  - **Full field parity** - View modal now shows all fields from the add/edit form: SIT/UAT testing timeline, WSJF component breakdown, Description, Business Value, Risks, Dependencies
+  - **Dashboard modal fix** - Added missing Dependencies section and Risk Reduction label in WSJF grid
+- ✅ **Excel Export**:
+  - **JIRA ID hyperlinks** - JIRA ID column cells are clickable links opening the JIRA ticket
+  - **Blue underline style** - Hyperlinks styled as blue underlined text for visual clarity
+  - **Header styling** - CarelonRx purple (#5009B5) fill with white bold text on header row
+- ✅ **Capacity Planning**:
+  - **All sprint states included** - Sprint selector now fetches closed, active, and future sprints so older PI sprints are available
+- ✅ **Admin Panel - Team Members**:
+  - **Team name source corrected** - Teams loaded from JIRA Team Name custom field matching actual values in JIRA tickets (not boards/sprints)
+  - **No sprint dependency** - Team dropdown populates based purely on project selection
+  - **JIRA2 graceful fallback** - When Elevance Health JIRA is not configured, a clear warning appears and the manual entry field opens automatically
+  - **Project dropdown width fixed** - Dropdown no longer overflows the modal; constrained with max-width and text truncated cleanly
+- ✅ **Admin Panel - Role vs Module Mapping**:
+  - **Auth header fix** - Roles now load correctly on page refresh (previously returned 401 causing blank table)
+  - **Reload after save** - Table refreshes from server immediately after clicking Save Mappings
+- ✅ **Admin Panel - Search bars**:
+  - **Icon positioning fixed** - Search icon correctly centered inside the input for User Management, Line of Business, and Team Members tabs
+
+**Previous Updates (v2.4 - July 2026)**:
 - ✅ **Security Hardening**:
   - **XSS Protection** - All user data escaped before innerHTML injection
   - **HPP Middleware** - HTTP Parameter Pollution prevention
