@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js"></script>
     <script src="assets/session-manager.js?v=2.2"></script>
     <script src="assets/api-config.js"></script>
     <script src="assets/product360-sidebar.js" defer></script>
@@ -1341,7 +1341,7 @@
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Roadmap ' + year);
                 const filename = 'Product360_Roadmap_' + year + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
-                XLSX.writeFile(wb, filename);
+                XLSX.writeFile(wb, filename, { bookType: 'xlsx', type: 'binary' });
                 showToast('Excel exported successfully!', 'success');
 
             } catch (error) {
