@@ -621,7 +621,8 @@
                                 <p class="text-xl font-bold text-green-600">${initiative.timeCriticality || 'N/A'}</p>
                             </div>
                             <div class="bg-orange-50 p-3 rounded-lg text-center">
-                                                                <p class="text-xl font-bold text-orange-600">${initiative.riskReduction || 'N/A'}</p>
+                                <p class="text-xs text-gray-600">Risk Red / Opp.</p>
+                                <p class="text-xl font-bold text-orange-600">${initiative.riskReduction || 'N/A'}</p>
                             </div>
                             <div class="bg-red-50 p-3 rounded-lg text-center">
                                 <p class="text-xs text-gray-600">Job Size</p>
@@ -641,6 +642,14 @@
                             <p class="text-gray-800 bg-gray-50 p-3 rounded-lg">${initiative.risks || 'N/A'}</p>
                         </div>
                     </div>
+
+                    <!-- Dependencies -->
+                    ${initiative.dependencies ? `
+                    <div>
+                        <p class="text-sm font-semibold text-gray-600 mb-2">Dependencies</p>
+                        <p class="text-gray-800 bg-gray-50 p-3 rounded-lg">${initiative.dependencies}</p>
+                    </div>
+                    ` : ''}
 
                     <!-- Dependent Systems -->
                     <div>
