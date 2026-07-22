@@ -816,7 +816,9 @@
         async function populateRoleDropdown(selectedValue) {
             const sel = document.getElementById('role');
             try {
-                const res = await fetch(`${API_BASE}/api/roles`);
+                const res = await fetch(`${API_BASE}/api/roles`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
                 const data = await res.json();
                 sel.innerHTML = '<option value="">Select Role</option><option value="admin">Admin</option>';
                 if (data.success) {

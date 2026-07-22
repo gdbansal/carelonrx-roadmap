@@ -722,7 +722,8 @@ app.get('/api/users', authMiddleware, async (req, res) => {
                 email: u.email,
                 role: u.role,
                 profileImage: u.profileImage,
-                createdAt: u.createdAt
+                createdAt: u.createdAt,
+                lastLogin: u.lastLogin
             }))
         });
     } catch (error) {
