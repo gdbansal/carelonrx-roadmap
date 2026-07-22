@@ -1311,6 +1311,7 @@
                         const cellAddr = XLSX.utils.encode_cell({ r: rowIdx + 1, c: jiraIdColIdx });
                         if (ws[cellAddr]) {
                             ws[cellAddr].l = { Target: r.jiraUrl, Tooltip: r.jiraUrl };
+                            ws[cellAddr].s = { font: { color: { rgb: '0563C1' }, underline: true } };
                         }
                     }
                 });
