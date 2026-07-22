@@ -320,7 +320,7 @@
 
             <!-- Login & Signup -->
             <div id="login-signup" class="mb-12 section">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">4. Login & Signup</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">5. Login &amp; Signup</h2>
                 
                 <h3 class="text-xl font-semibold text-gray-800 mb-3">Creating a New Account</h3>
                 <ol class="list-decimal list-inside space-y-2 text-gray-700 ml-4 mb-6">
@@ -331,7 +331,7 @@
                             <li><strong>Username</strong>: Unique username (no spaces)</li>
                             <li><strong>Email</strong>: Must be @elevancehealth.com or @carelon.com</li>
                             <li><strong>Role</strong>: Select your role from the dropdown</li>
-                            <li><strong>Password</strong>: Minimum 6 characters</li>
+                            <li><strong>Password</strong>: Minimum 8 characters (must include uppercase, lowercase, number, and special character)</li>
                             <li><strong>Confirm Password</strong>: Re-enter your password</li>
                         </ul>
                     </li>
@@ -477,11 +477,17 @@
                             <li>Program (required)</li>
                             <li>Year (required): 2025-2030</li>
                             <li>Quarter (required): Q1-Q4</li>
-                            <li>Start Date (required)</li>
-                            <li>Delivery Date (required)</li>
+                            <li>Line of Business (required): Select from admin-configured LOBs</li>
+                            <li>Start Date (optional)</li>
+                            <li>Delivery Date (optional)</li>
+                            <li>Business Commitment Date (optional)</li>
                         </ul>
                     </li>
-                    <li>Set <strong>Priority</strong>: Critical, High, Medium, or Low</li>
+                    <li>Set <strong>Priority</strong> (required): Critical, High, Medium, Low, or <strong>On Hold</strong>
+                        <ul class="list-disc list-inside ml-6 mt-2">
+                            <li>If <strong>On Hold</strong> is selected, a <strong>Hold Reason</strong> field appears (required, max 500 chars)</li>
+                        </ul>
+                    </li>
                     <li>Enter <strong>WSJF Components</strong> (Fibonacci numbers: 1, 2, 3, 5, 8, 13, 21):
                         <ul class="list-disc list-inside ml-6 mt-2">
                             <li>User-Business Value</li>
@@ -1465,7 +1471,7 @@
             <!-- Footer -->
             <hr class="my-8">
             <div class="text-center text-gray-600 text-sm">
-                <p><strong>Version 2.6</strong> | Last Updated: July 16, 2026</p>
+                <p><strong>Version 2.7</strong> | Last Updated: July 22, 2026</p>
                 <p class="mt-2">Application URL: <code class="bg-gray-100 px-2 py-1 rounded">https://carelonrx-roadmap.onrender.com</code></p>
                 <p class="mt-4">� 2026 Product 360. All rights reserved.</p>
             </div>

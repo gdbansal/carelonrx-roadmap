@@ -11,12 +11,14 @@
 8. [Managing Initiatives](#managing-initiatives)
 9. [Roadmap View](#roadmap-view)
 10. [Analytics Dashboard](#analytics-dashboard)
-11. [Story Estimations](#story-estimations)
-12. [Capacity Planning](#capacity-planning)
-13. [Admin Panel](#admin-panel)
-14. [Session Management](#session-management)
-15. [Data Persistence](#data-persistence)
-16. [Troubleshooting](#troubleshooting)
+11. [LOE Estimation](#loe-estimation)
+12. [Story Mapping](#story-mapping)
+13. [Story Estimations](#story-estimations)
+14. [Capacity Planning](#capacity-planning)
+15. [Admin Panel](#admin-panel)
+16. [Session Management](#session-management)
+17. [Data Persistence](#data-persistence)
+18. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -26,24 +28,29 @@
 
 ### Key Features
 - ✅ **Modern Brand Identity** - Official purple theme (#5009B5) throughout
+- ✅ **Requirements Intake** - Structured intake form with WSJF scoring and dependency tracking
 - ✅ **Initiative intake and tracking** - Comprehensive form with validation
 - ✅ **WSJF (Weighted Shortest Job First) prioritization** - Auto-calculated scoring
 - ✅ **Visual roadmap timeline** - Interactive timeline with color-coded priorities
-- ✅ **Story Estimations** - Planning Poker with real-time collaboration (Available Now)
+- ✅ **LOE Estimation** - Per-initiative effort estimation by system (Dev, QA, Support) in story points or dollars
+- ✅ **Story Mapping** - AI-powered INVEST story breakdown from JIRA epics and Confluence pages
+- ✅ **Story Estimations** - Planning Poker with real-time collaboration
 - ✅ **Hold reason display** - Prominent yellow box for On Hold initiatives
 - ✅ **Role-based access control** - Admin, creator, and viewer permissions
+- ✅ **Role vs Module Mapping** - Admin-configurable module visibility per role
 - ✅ **User profile management** - Profile image upload and customization
 - ✅ **User management (Admin)** - Admin panel for user administration
 - ✅ **Budget approval tracking** - Toggle and track budget status
-- ✅ **Dependent systems management** - Multiple systems with PM/SPOC tracking
+- ✅ **Dependent systems management** - Multiple systems with PM/SPOC and JIRA tracking
 - ✅ **Analytics dashboard** - Charts, statistics, and insights
-- ✅ **Streamlined navigation** - Analytics and Admin in profile dropdown
+- ✅ **Streamlined navigation** - Left sidebar + Analytics and Admin in profile dropdown
 - ✅ **30-minute session timeout** - Automatic security logout
 - ✅ **Persistent data storage** - MongoDB with complete audit trails
 - ✅ **PDF and Excel export** - Export roadmap for presentations
 - ✅ **Multi-select system filtering** - Filter roadmap by multiple systems
 - ✅ **Unsaved changes warning** - Prevents accidental data loss
 - ✅ **Audit logging** - Comprehensive tracking for estimation sessions
+- ✅ **JIRA Integration** - Load projects and teams from JIRA (CarelonRx & Elevance Health sources)
 
 ---
 
@@ -55,8 +62,9 @@
 - Valid corporate email address
 
 ### Accessing the Application
-1. Navigate to: `https://carelonrx-roadmap1.onrender.com`
-2. You'll see the login page with the CarelonRx logo
+1. Navigate to: `https://carelonrx-roadmap.onrender.com`
+2. You'll see the Product 360 login page with module showcase
+3. After login, you'll land on the Dashboard with the Product 360 left sidebar
 
 ---
 
@@ -86,7 +94,7 @@ The system supports multiple roles with different permissions:
    - **Username**: Unique username (no spaces)
    - **Email**: Must be @elevancehealth.com or @carelon.com
    - **Role**: Select your role from the dropdown
-   - **Password**: Minimum 6 characters
+   - **Password**: Minimum 8 characters (must include uppercase, lowercase, number, and special character)
    - **Confirm Password**: Re-enter your password
 3. Click **"Create Account"**
 4. You'll be redirected to the login page
@@ -1198,10 +1206,11 @@ Capacity Planning integrates with Admin Panel's Team Members module:
 
 **Access**: Admin role only
 
-The Admin Panel provides three main modules for system administration:
+The Admin Panel provides four main tabs for system administration:
 1. **User Management** - Manage user accounts and roles
 2. **Line of Business Management** - Manage LOB values that appear in initiative dropdowns
 3. **Team Members Management** - Manage team members for capacity planning
+4. **Role vs Module Mapping** - Configure which modules are visible per user role
 
 ### Accessing Admin Panel
 
@@ -1343,6 +1352,8 @@ The Admin Panel provides three main modules for system administration:
 **Switching Between Tabs**:
 - Click **"User Management"** tab to manage users
 - Click **"Line of Business"** tab to manage LOBs
+- Click **"Team Members"** tab to manage team members
+- Click **"Role vs Module Mapping"** tab to configure module access per role
 - Tab content loads automatically
 - Current tab highlighted in blue
 
@@ -1365,18 +1376,25 @@ The Admin Panel provides three main modules for system administration:
 
 **Add New Team Member**:
 1. Click **"Add Team Member"** button
-2. Fill in the form:
+2. Select **JIRA Source** (toggle at the top of the form):
+   - **CarelonRx** - Loads projects and teams from CarelonRx JIRA instance
+   - **Elevance Health** - Loads projects and teams from Elevance Health JIRA instance
+3. Fill in the form:
    - **Name** (required): Full name of team member
      - Example: "John Smith", "Jane Doe"
    - **Role** (required): Select from dropdown
      - Options: Dev Lead, Developer, QA, Scrum Master, Product Owner, Architect, Designer, DevOps
-   - **Team** (required): Team name
-     - Example: "Enhance Warriors", "Innovation Team"
-     - Must match exactly in Capacity Planning
+   - **Project** (required): Select from JIRA-loaded project dropdown
+     - Projects auto-loaded from selected JIRA source
+     - Select "Other (enter manually)" to type a custom project name
+   - **Team** (required): Select from JIRA-loaded teams for the selected project
+     - Teams auto-loaded based on project selection
+     - Select "Other (enter manually)" to type a custom team name
    - **Email** (optional): Team member's email address
-3. Click **"Save"**
-4. Success message appears
-5. New member immediately available in Capacity Planning
+   - **Line of Business** (optional): Associate member with an LOB
+4. Click **"Save"**
+5. Success message appears
+6. New member immediately available in Capacity Planning
 
 **Edit Team Member**:
 1. Click the **edit icon** (pencil) next to a team member
@@ -1442,6 +1460,111 @@ The Admin Panel provides three main modules for system administration:
 - 📝 **Keep team names consistent** across all modules
 - ✅ **Update regularly** to reflect team changes
 - 🔍 **Check capacity plans** before deleting members
+
+### Role vs Module Mapping Tab
+
+**Purpose**: Control which modules are visible in the sidebar for each user role. This allows admins to show only relevant modules to each role without changing code.
+
+**How It Works**:
+- A grid shows all roles (rows) vs all modules (columns)
+- Each cell has a checkbox: ✅ checked = module visible, ❌ unchecked = hidden
+- Changes take effect immediately for all users with that role
+- Admins always see all modules regardless of mapping
+
+**Modules That Can Be Mapped**:
+- Requirements Intake
+- Roadmap
+- LOE Estimation
+- Capacity Planning
+- Story Mapping
+- Story Estimations
+
+**Steps**:
+1. Click **"Role vs Module Mapping"** tab in Admin Panel
+2. Find the role row you want to configure
+3. Check/uncheck modules for that role
+4. Click **"Save Mapping"**
+5. Changes apply immediately to all users with that role
+
+---
+
+## LOE Estimation
+
+**Access**: Role-dependent (configured via Role vs Module Mapping)
+
+The LOE (Level of Effort) Estimation module allows teams to estimate effort per initiative broken down by system, role (Dev/QA/Support), story points, confidence percentage, and optionally convert to dollar cost.
+
+### Accessing LOE Estimation
+
+1. Click **"LOE Estimation"** in the left sidebar
+2. Select **Line of Business** from the dropdown
+3. Select an **Initiative** from the filtered list
+4. The estimation table loads automatically
+
+### LOE Estimation Features
+
+- **System Rows**: Each dependent system of the initiative appears as a row
+- **Role Columns**: Dev SP, QA SP, Support SP per system
+- **Confidence %**: Enter your confidence level (0-100%) per system
+- **SP / Dollar Toggle**: Switch between story point view and dollar cost view
+- **Auto-calculated Totals**: Total SP per role, grand total, weighted totals
+- **Save**: Persists estimation to database per initiative
+- **Export CSV**: Download full LOE table as CSV
+
+### SP vs Dollar Mode
+
+- **SP Mode** (default): Enter raw story point estimates
+- **Dollar Mode**: System multiplies SP by configured rate per role to show cost
+- Toggle using the pill button at the top of the table
+
+### Best Practices
+
+- ✅ Complete dependent systems in the initiative first (they drive the rows)
+- ✅ Use confidence % to reflect uncertainty
+- ✅ Save before switching initiatives
+- ✅ Export CSV for stakeholder sharing
+
+---
+
+## Story Mapping
+
+**Access**: Role-dependent (configured via Role vs Module Mapping)
+
+The Story Mapping module uses AI to generate INVEST-compliant user stories from JIRA epics and Confluence pages.
+
+### Accessing Story Mapping
+
+1. Click **"Story Mapping"** in the left sidebar
+2. Select your **JIRA Source** (CarelonRx or Elevance Health)
+3. Choose input source: **JIRA Epic** or **Confluence Page**
+
+### Using JIRA Epic Source
+
+1. Select **JIRA Epic** as source
+2. Enter or search for the **Epic key** (e.g., `PROJ-123`)
+3. Click **"Generate Stories"**
+4. AI generates INVEST-compliant user stories from the epic description and child issues
+5. Review, edit, and select stories
+6. Click **"Create in JIRA"** to push selected stories as JIRA tickets
+
+### Using Confluence Page Source
+
+1. Select **Confluence Page** as source
+2. Enter the **Confluence page URL** or page ID
+3. Click **"Generate Stories"**
+4. AI extracts requirements from the page and generates user stories
+5. Review, edit, and select stories
+6. Optionally create stories as JIRA tickets
+
+### INVEST Criteria
+
+Generated stories follow the INVEST principles:
+- **I**ndependent - Can be developed independently
+- **N**egotiable - Details can be discussed
+- **V**aluable - Delivers user value
+- **E**stimable - Can be estimated
+- **S**mall - Fits in a sprint
+- **T**estable - Has clear acceptance criteria
 
 ---
 
@@ -1624,7 +1747,7 @@ Every initiative update is tracked with:
 - Military-grade encryption standard
 
 **Best Practices**:
-- ✅ Use strong passwords (minimum 6 characters)
+- ✅ Use strong passwords (minimum 8 characters with uppercase, lowercase, number, and special character)
 - ✅ Change password regularly
 - ✅ Never share your password
 - ✅ Logout when done using the application
@@ -1683,12 +1806,28 @@ Every initiative update is tracked with:
 
 ## Version Information
 
-**Version**: 2.3  
-**Last Updated**: July 14, 2026  
+**Version**: 2.4  
+**Last Updated**: July 22, 2026  
 **Application URL**: https://carelonrx-roadmap.onrender.com  
 **API URL**: https://carelonrx-roadmap.onrender.com  
 
-**Recent Updates (v2.3 - July 2026)**:
+**Recent Updates (v2.4 - July 2026)**:
+- ✅ **Security Hardening**:
+  - **XSS Protection** - All user data escaped before innerHTML injection
+  - **HPP Middleware** - HTTP Parameter Pollution prevention
+  - **Mongo Sanitize** - NoSQL injection prevention on all routes
+  - **Password field** - `select:false` on schema, bcrypt hash never exposed
+  - **Password Complexity** - Minimum 8 chars with uppercase, lowercase, number, special char
+- ✅ **Admin Panel Enhancements**:
+  - **Role vs Module Mapping** - 4th tab to configure module visibility per role
+  - **JIRA Source Toggle** - Add team members from CarelonRx or Elevance Health JIRA
+  - **Project Dropdown** - JIRA-loaded project list with fixed height, consistent UI
+  - **Team Auto-load** - Teams auto-populate based on selected JIRA project
+- ✅ **LOE Estimation**:
+  - **Space fix** - Removed extra whitespace above header
+- ✅ **Roadmap Tooltip** - Shows PM name and JIRA ticket key on hover
+
+**Previous Updates (v2.3 - July 2026)**:
 - ✅ **Initiative Enhancements**:
   - **Line of Business Field** - New required field with autocomplete functionality
   - **Business Commitment Date** - Optional date field prioritized over Delivery Date
@@ -1701,7 +1840,6 @@ Every initiative update is tracked with:
   - **IP Address Tracking** - Correct client IP capture behind proxies
   - **Header Styling** - White background matching Roadmap consistency
   - **PO Status Summary** - Shows estimation counts without revealing values
-  - **User Authentication Backend** - JWT-based token authentication (prepared)
   - **Estimation Reasons** - Dev/QA can add custom reasons for estimates
   - **Real-time Updates** - Participant list updates when users join/leave
 
