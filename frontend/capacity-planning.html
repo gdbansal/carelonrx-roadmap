@@ -1030,15 +1030,15 @@
             // Row 6: Capacity Matrix header (Resource Name, Role, Capacity %, sprints, Avg Capacity)
             styleRow(6);
 
-            // After the capacity matrix rows, find "Avg Points per Sprint" and "Team Availability" rows
-            // allRows layout: 0=title,1=PI,2=LOB,3=proj,4=team,5=blank,6=matrix header,
-            //                 7..7+N-1=member rows, 7+N=blank, 7+N+1=Avg Points header,
-            //                 7+N+2=avg pts data, 7+N+3=blank, 7+N+4=Team Availability,
-            //                 7+N+5=Sprint/WorkingDays header
+            // Exact row index map (0-based):
+            // 0=title, 1=PI, 2=LOB, 3=proj, 4=team, 5=blank, 6=matrix header,
+            // 7..7+N-1=member rows, 7+N=blank,
+            // 7+N+1=Avg Points per Sprint header, 7+N+2=avg pts data row,
+            // 7+N+3=blank, 7+N+4=Team Availability title, 7+N+5=Sprint/WorkingDays column header
             const N = teamMembers.length;
-            const avgPtsHeaderRow = 7 + N + 1;
-            const teamAvailTitleRow = avgPtsHeaderRow + 2;
-            const teamAvailHeaderRow = teamAvailTitleRow + 1;
+            const avgPtsHeaderRow    = 7 + N + 1;  // 'Avg Points per Sprint ...'
+            const teamAvailTitleRow  = 7 + N + 4;  // 'Team Availability'
+            const teamAvailHeaderRow = 7 + N + 5;  // 'Sprint', 'Working Days', ...
 
             styleRow(avgPtsHeaderRow);
             styleRow(teamAvailTitleRow);
