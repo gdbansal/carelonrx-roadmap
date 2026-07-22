@@ -1003,6 +1003,47 @@
 
             const ws = XLSX.utils.aoa_to_sheet(allRows);
 
+            // Purple header style (same as roadmap export)
+            const purpleStyle = {
+                fill: { patternType: 'solid', fgColor: { rgb: '5009B5' } },
+                font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 11 },
+                alignment: { horizontal: 'left', vertical: 'center', wrapText: true }
+            };
+
+            // Helper: style every populated cell in a given row index
+            const styleRow = (rowIdx) => {
+                const totalCols = 3 + sprintColumns.length + 1; // generous upper bound
+                for (let c = 0; c < totalCols; c++) {
+                    const addr = XLSX.utils.encode_cell({ r: rowIdx, c });
+                    if (ws[addr]) ws[addr].s = purpleStyle;
+                }
+            };
+
+            // Row 0: "Capacity Plan" title
+            styleRow(0);
+            // Rows 1-4: metadata label cells (PI, Line of Business, Project, Team) - col 0 only
+            [1, 2, 3, 4].forEach(r => {
+                const addr = XLSX.utils.encode_cell({ r, c: 0 });
+                if (ws[addr]) ws[addr].s = purpleStyle;
+            });
+
+            // Row 6: Capacity Matrix header (Resource Name, Role, Capacity %, sprints, Avg Capacity)
+            styleRow(6);
+
+            // After the capacity matrix rows, find "Avg Points per Sprint" and "Team Availability" rows
+            // allRows layout: 0=title,1=PI,2=LOB,3=proj,4=team,5=blank,6=matrix header,
+            //                 7..7+N-1=member rows, 7+N=blank, 7+N+1=Avg Points header,
+            //                 7+N+2=avg pts data, 7+N+3=blank, 7+N+4=Team Availability,
+            //                 7+N+5=Sprint/WorkingDays header
+            const N = teamMembers.length;
+            const avgPtsHeaderRow = 7 + N + 1;
+            const teamAvailTitleRow = avgPtsHeaderRow + 2;
+            const teamAvailHeaderRow = teamAvailTitleRow + 1;
+
+            styleRow(avgPtsHeaderRow);
+            styleRow(teamAvailTitleRow);
+            styleRow(teamAvailHeaderRow);
+
             // Column widths
             ws['!cols'] = [
                 { wch: 38 },
