@@ -1265,14 +1265,15 @@
                         initiative.dependentSystems.forEach(sys => {
                             const jiraKey = extractJiraKey(sys.jiraUrl);
                             rawRows.push({
-                                pi, initiative, sys, jiraKey, sitWindow, uatWindow,
-                                releaseMonth, deliveryDate
+                                pi, initiative, sys, jiraKey,
+                                jiraUrl: sys.jiraUrl || null,
+                                sitWindow, uatWindow, releaseMonth, deliveryDate
                             });
                         });
                     } else {
                         rawRows.push({
-                            pi, initiative, sys: null, jiraKey: null, sitWindow, uatWindow,
-                            releaseMonth, deliveryDate
+                            pi, initiative, sys: null, jiraKey: null, jiraUrl: null,
+                            sitWindow, uatWindow, releaseMonth, deliveryDate
                         });
                     }
                 });
@@ -1302,6 +1303,17 @@
 
                 // Create worksheet
                 const ws = XLSX.utils.json_to_sheet(excelData);
+
+                // Apply hyperlinks to JIRA ID column (col index 5, rows 1..n)
+                const jiraIdColIdx = 5;
+                rawRows.forEach((r, rowIdx) => {
+                    if (r.jiraUrl) {
+                        const cellAddr = XLSX.utils.encode_cell({ r: rowIdx + 1, c: jiraIdColIdx });
+                        if (ws[cellAddr]) {
+                            ws[cellAddr].l = { Target: r.jiraUrl, Tooltip: r.jiraUrl };
+                        }
+                    }
+                });
 
                 // Style header row: CarelonRx brand purple fill + white bold text
                 const headerKeys = Object.keys(excelData[0]);
