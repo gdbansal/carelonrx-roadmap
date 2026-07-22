@@ -612,7 +612,7 @@
 
             // Update title with team name
             const teamName = document.getElementById('teamFilter').value;
-            document.getElementById('capacityMatrixTitle').textContent = `Capacity Matrix � ${teamName}`;
+            document.getElementById('capacityMatrixTitle').textContent = `Capacity Matrix - ${teamName}`;
 
             // Update PI banner colspan
             const colCount = 3 + sprintColumns.length;
@@ -1054,7 +1054,8 @@
             ];
 
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Capacity Plan');
+            const sheetName = `Capacity Plan - ${team}`.substring(0, 31); // Excel sheet name max 31 chars
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
             const filename = `CapacityPlan_${team}_PI${pi}_${new Date().toISOString().slice(0,10)}.xlsx`;
             XLSX.writeFile(wb, filename);
