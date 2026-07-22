@@ -1933,7 +1933,7 @@ app.get('/api/jira/teams', authMiddleware, async (req, res) => {
         let startAt = 0;
         let total = 1;
         while (startAt < total && startAt < 500) {
-            const url = `${jiraBase}/rest/api/2/search?jql=project=${encodeURIComponent(projectKey)}+AND+sprint+in+openSprints()&maxResults=100&startAt=${startAt}&fields=customfield_10317`;
+            const url = `${jiraBase}/rest/api/2/search?jql=project=${encodeURIComponent(projectKey)}&maxResults=100&startAt=${startAt}&fields=customfield_10317`;
             const { status, body } = await jiraRequest(url);
             if (status !== 200) break;
             total = body.total || 0;
@@ -2342,7 +2342,7 @@ app.get('/api/jira2/teams', authMiddleware, async (req, res) => {
         let startAt = 0;
         let total = 1;
         while (startAt < total && startAt < 500) {
-            const url = `${jiraBase}/rest/api/2/search?jql=project=${encodeURIComponent(projectKey)}+AND+sprint+in+openSprints()&maxResults=100&startAt=${startAt}&fields=customfield_12479`;
+            const url = `${jiraBase}/rest/api/2/search?jql=project=${encodeURIComponent(projectKey)}&maxResults=100&startAt=${startAt}&fields=customfield_12479`;
             const { status, body } = await jiraRequest2(url);
             if (status !== 200) break;
             total = body.total || 0;
