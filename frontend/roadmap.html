@@ -219,7 +219,7 @@
                         <i data-lucide="download" class="w-5 h-5"></i>
                         <span>Export PDF</span>
                     </button>
-                    <button type="button" onclick="exportToExcel()" class="text-green-600 hover:text-green-800 flex items-center space-x-2">
+                    <button type="button" onclick="exportToExcel()" id="exportExcelBtn" class="text-green-600 hover:text-green-800 flex items-center space-x-2">
                         <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
                         <span>Export Excel</span>
                     </button>
@@ -1194,92 +1194,137 @@
             }
         }
 
-        function exportToExcel() {
+        // Convert year + quarter to PI string e.g. 2026 Q1 -> "26.1"
+        function toPiLabel(year, quarter) {
+            if (!year || !quarter) return '';
+            const yy = String(year).slice(-2);
+            const q = String(quarter).replace(/[^0-9]/g, '');
+            return yy + '.' + q;
+        }
+
+        // Format date as DD-MMM-YYYY
+        function fmtDate(val) {
+            if (!val) return '';
+            const d = new Date(val);
+            if (isNaN(d)) return val;
+            return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        // Fetch JIRA status string for export (returns status string or '')
+        async function fetchJiraStatusForExport(jiraKey) {
+            if (!jiraKey) return '';
+            try {
+                const res = await fetch(`${window.PRODUCT360_API_BASE||''}/api/jira/issue/${encodeURIComponent(jiraKey)}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                return (data.success && data.issue && data.issue.status) ? data.issue.status : '';
+            } catch (e) {
+                return '';
+            }
+        }
+
+        async function exportToExcel() {
+            const btn = document.getElementById('exportExcelBtn');
             try {
                 const year = document.getElementById('yearFilter').value;
                 const initiatives = allInitiatives.filter(i => String(i.year) === String(year));
-                
+
                 if (initiatives.length === 0) {
                     showToast('No initiatives found for the selected year.', 'error');
                     return;
                 }
-                
-                // Prepare data for Excel
-                const excelData = [];
-                
+
+                // Disable button while fetching JIRA statuses
+                if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+                showToast('Preparing Excel export, fetching JIRA statuses...', 'info');
+
+                // Build flat rows (one per dependent system, or one row if no systems)
+                const rawRows = [];
                 initiatives.forEach(initiative => {
+                    const pi = toPiLabel(initiative.year, initiative.quarter);
+                    const deliveryDate = initiative.deliveryDate ? new Date(initiative.deliveryDate) : null;
+                    const releaseMonth = deliveryDate && !isNaN(deliveryDate)
+                        ? deliveryDate.toLocaleString('en-US', { month: 'long' })
+                        : '';
+                    const sitWindow = (initiative.sitStartDate || initiative.sitEndDate)
+                        ? (fmtDate(initiative.sitStartDate) || '') + ' - ' + (fmtDate(initiative.sitEndDate) || '')
+                        : '';
+                    const uatWindow = (initiative.uatStartDate || initiative.uatEndDate)
+                        ? (fmtDate(initiative.uatStartDate) || '') + ' - ' + (fmtDate(initiative.uatEndDate) || '')
+                        : '';
+
                     if (initiative.dependentSystems && initiative.dependentSystems.length > 0) {
-                        // Create a row for each dependent system
-                        initiative.dependentSystems.forEach(system => {
-                            excelData.push({
-                                'Initiative Name': initiative.name || '',
-                                'Program': initiative.program || '',
-                                'Year': initiative.year || '',
-                                'Quarter': initiative.quarter || '',
-                                'Priority': initiative.priority || '',
-                                'Business Owner': initiative.owner || '',
-                                'Start Date': initiative.startDate ? new Date(initiative.startDate).toLocaleDateString() : '',
-                                'Delivery Date': initiative.deliveryDate ? new Date(initiative.deliveryDate).toLocaleDateString() : '',
-                                'Risks': initiative.risks || '',
-                                'Dependencies': initiative.dependencies || '',
-                                'Dependent System': system.system || '',
-                                'PM/SPOC': system.pmSpoc || '',
-                                'JIRA URL': system.jiraUrl || ''
+                        initiative.dependentSystems.forEach(sys => {
+                            const jiraKey = extractJiraKey(sys.jiraUrl);
+                            rawRows.push({
+                                pi, initiative, sys, jiraKey, sitWindow, uatWindow,
+                                releaseMonth, deliveryDate
                             });
                         });
                     } else {
-                        // Initiative without dependent systems
-                        excelData.push({
-                            'Initiative Name': initiative.name || '',
-                            'Program': initiative.program || '',
-                            'Year': initiative.year || '',
-                            'Quarter': initiative.quarter || '',
-                            'Priority': initiative.priority || '',
-                            'Business Owner': initiative.owner || '',
-                            'Start Date': initiative.startDate ? new Date(initiative.startDate).toLocaleDateString() : '',
-                            'Delivery Date': initiative.deliveryDate ? new Date(initiative.deliveryDate).toLocaleDateString() : '',
-                            'Risks': initiative.risks || '',
-                            'Dependencies': initiative.dependencies || '',
-                            'Dependent System': '',
-                            'PM/SPOC': '',
-                            'JIRA URL': ''
+                        rawRows.push({
+                            pi, initiative, sys: null, jiraKey: null, sitWindow, uatWindow,
+                            releaseMonth, deliveryDate
                         });
                     }
                 });
-                
+
+                // Fetch JIRA statuses in parallel
+                const jiraStatuses = await Promise.all(
+                    rawRows.map(r => fetchJiraStatusForExport(r.jiraKey))
+                );
+
+                // Build final data array
+                const excelData = rawRows.map((r, idx) => ({
+                    'PI':                   r.pi,
+                    'Initiative Name':      r.initiative.name || '',
+                    'Business Owner':       r.initiative.owner || '',
+                    'Product Manager':      r.sys ? (r.sys.pmSpoc || '') : '',
+                    'System Name':          r.sys ? (r.sys.system || '') : '',
+                    'JIRA ID':              r.jiraKey || (r.sys && r.sys.jiraUrl ? r.sys.jiraUrl : ''),
+                    'JIRA Description':     '',
+                    'JIRA Status':          jiraStatuses[idx] || '',
+                    'Risks':                r.initiative.risks || '',
+                    'Dependencies':         r.initiative.dependencies || '',
+                    'SIT Window':           r.sitWindow,
+                    'UAT Window':           r.uatWindow,
+                    'Release Date':         fmtDate(r.initiative.deliveryDate),
+                    'Release Month':        r.releaseMonth
+                }));
+
                 // Create worksheet
                 const ws = XLSX.utils.json_to_sheet(excelData);
-                
-                // Set column widths
+
+                // Column widths
                 ws['!cols'] = [
-                    { wch: 30 }, // Initiative Name
-                    { wch: 12 }, // Program
-                    { wch: 8 },  // Year
-                    { wch: 10 }, // Quarter
-                    { wch: 12 }, // Priority
-                    { wch: 20 }, // Business Owner
-                    { wch: 15 }, // Start Date
-                    { wch: 15 }, // Delivery Date
+                    { wch: 8  }, // PI
+                    { wch: 35 }, // Initiative Name
+                    { wch: 22 }, // Business Owner
+                    { wch: 22 }, // Product Manager
+                    { wch: 22 }, // System Name
+                    { wch: 18 }, // JIRA ID
+                    { wch: 30 }, // JIRA Description
+                    { wch: 18 }, // JIRA Status
                     { wch: 30 }, // Risks
                     { wch: 30 }, // Dependencies
-                    { wch: 20 }, // Dependent System
-                    { wch: 20 }, // PM/SPOC
-                    { wch: 40 }  // JIRA URL
+                    { wch: 28 }, // SIT Window
+                    { wch: 28 }, // UAT Window
+                    { wch: 18 }, // Release Date
+                    { wch: 15 }  // Release Month
                 ];
-                
-                // Create workbook
+
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Roadmap ' + year);
-                
-                // Generate filename
                 const filename = 'Product360_Roadmap_' + year + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
-                
-                // Download
                 XLSX.writeFile(wb, filename);
-                
+                showToast('Excel exported successfully!', 'success');
+
             } catch (error) {
                 console.error('Error exporting to Excel:', error);
                 showToast('Failed to export to Excel. Please try again.', 'error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
             }
         }
 
