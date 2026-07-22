@@ -1302,6 +1302,24 @@
                 // Create worksheet
                 const ws = XLSX.utils.json_to_sheet(excelData);
 
+                // Style header row: CarelonRx brand purple fill + white bold text
+                const headerKeys = Object.keys(excelData[0]);
+                const headerStyle = {
+                    fill: { patternType: 'solid', fgColor: { rgb: '5009B5' } },
+                    font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 11 },
+                    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+                    border: {
+                        top:    { style: 'thin', color: { rgb: 'FFFFFF' } },
+                        bottom: { style: 'thin', color: { rgb: 'FFFFFF' } },
+                        left:   { style: 'thin', color: { rgb: 'FFFFFF' } },
+                        right:  { style: 'thin', color: { rgb: 'FFFFFF' } }
+                    }
+                };
+                headerKeys.forEach((key, colIdx) => {
+                    const cellAddr = XLSX.utils.encode_cell({ r: 0, c: colIdx });
+                    if (ws[cellAddr]) ws[cellAddr].s = headerStyle;
+                });
+
                 // Column widths
                 ws['!cols'] = [
                     { wch: 8  }, // PI
