@@ -1929,21 +1929,24 @@ app.get('/api/jira/teams', authMiddleware, async (req, res) => {
             return res.status(400).json({ success: false, message: 'projectKey is required', teams: [] });
         }
         const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
-        // Fetch boards for the project directly - board name = team name, no sprint dependency
-        const teams = [];
+        // Fetch distinct Team Name values (customfield_10317) from all issues in the project
+        const teamsMap = {};
         let startAt = 0;
         let total = 1;
-        while (startAt < total) {
+        while (startAt < total && startAt < 2000) {
             const { status, body } = await jiraRequest(
-                `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=50&startAt=${startAt}`
+                `${jiraBase}/rest/api/2/search?jql=project=${encodeURIComponent(projectKey)}&maxResults=100&startAt=${startAt}&fields=customfield_10317`
             );
-            if (status !== 200 || !body.values) break;
-            body.values.forEach(board => { if (board.name) teams.push(board.name); });
+            if (status !== 200 || !body.issues) break;
             total = body.total || 0;
-            startAt += 50;
-            if (body.values.length === 0) break;
+            body.issues.forEach(issue => {
+                const t = issue.fields && issue.fields.customfield_10317;
+                if (t && t.value) teamsMap[t.value] = true;
+            });
+            startAt += 100;
+            if (body.issues.length === 0) break;
         }
-        teams.sort();
+        const teams = Object.keys(teamsMap).sort();
         res.json({ success: true, teams });
     } catch (error) {
         console.error('JIRA teams error:', error);
