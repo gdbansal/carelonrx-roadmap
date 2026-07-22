@@ -3393,7 +3393,7 @@ app.delete('/api/capacity-plans/:id', authMiddleware, async (req, res) => {
 // ========== ROLE MODULE MAPPING ==========
 
 // Public endpoint: returns list of roles from MongoDB (excludes admin; used by signup + user management dropdowns)
-app.get('/api/roles', authMiddleware, async (req, res) => {
+app.get('/api/roles', async (req, res) => {
     try {
         let mappings = await RoleModuleMapping.find({ role: { $ne: 'admin' } }).sort({ role: 1 });
 
