@@ -1210,17 +1210,23 @@
             return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
         }
 
-        // Fetch JIRA status string for export (returns status string or '')
-        async function fetchJiraStatusForExport(jiraKey) {
-            if (!jiraKey) return '';
+        // Fetch JIRA status + summary for export
+        async function fetchJiraDataForExport(jiraKey) {
+            if (!jiraKey) return { status: '', summary: '' };
             try {
                 const res = await fetch(`${window.PRODUCT360_API_BASE||''}/api/jira/issue/${encodeURIComponent(jiraKey)}`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await res.json();
-                return (data.success && data.issue && data.issue.status) ? data.issue.status : '';
+                if (data.success && data.issue) {
+                    return {
+                        status:  data.issue.status  || '',
+                        summary: data.issue.summary || ''
+                    };
+                }
+                return { status: '', summary: '' };
             } catch (e) {
-                return '';
+                return { status: '', summary: '' };
             }
         }
 
@@ -1270,9 +1276,9 @@
                     }
                 });
 
-                // Fetch JIRA statuses in parallel
-                const jiraStatuses = await Promise.all(
-                    rawRows.map(r => fetchJiraStatusForExport(r.jiraKey))
+                // Fetch JIRA data (status + summary) in parallel
+                const jiraData = await Promise.all(
+                    rawRows.map(r => fetchJiraDataForExport(r.jiraKey))
                 );
 
                 // Build final data array
@@ -1283,8 +1289,8 @@
                     'Product Manager':      r.sys ? (r.sys.pmSpoc || '') : '',
                     'System Name':          r.sys ? (r.sys.system || '') : '',
                     'JIRA ID':              r.jiraKey || (r.sys && r.sys.jiraUrl ? r.sys.jiraUrl : ''),
-                    'JIRA Description':     '',
-                    'JIRA Status':          jiraStatuses[idx] || '',
+                    'JIRA Description':     jiraData[idx].summary || '',
+                    'JIRA Status':          jiraData[idx].status  || '',
                     'Risks':                r.initiative.risks || '',
                     'Dependencies':         r.initiative.dependencies || '',
                     'SIT Window':           r.sitWindow,
