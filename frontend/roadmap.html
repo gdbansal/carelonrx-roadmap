@@ -922,79 +922,80 @@
             // Debug logging
 
             document.getElementById('modalTitle').textContent = initiative.name;
+            const fmtD = v => v ? new Date(v).toLocaleDateString() : 'N/A';
             document.getElementById('modalContent').innerHTML = `
-                <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-sm text-gray-500">Year</p>
-                            <p class="font-semibold">${initiative.year}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Quarter</p>
-                            <p class="font-semibold">${initiative.quarter}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Priority</p>
-                            <span class="px-3 py-1 text-xs font-semibold rounded-full ${getPriorityClass(initiative.priority)}">
-                                ${initiative.priority}
-                            </span>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Budget Status</p>
-                            <span class="px-3 py-1 text-xs font-semibold rounded-full ${
-                                initiative.budgetApproved === 'Approved' ? 'bg-green-100 text-green-800' :
-                                initiative.budgetApproved === 'Rejected' ? 'bg-red-100 text-red-800' :
-                                'bg-yellow-100 text-yellow-800'}">
-                                ${initiative.budgetApproved || 'Pending'}
-                            </span>
-                        </div>
+                <div class="space-y-5">
+
+                    <!-- Badges row -->
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full ${getPriorityClass(initiative.priority)}">${initiative.priority}</span>
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full ${
+                            initiative.budgetApproved === 'Approved' ? 'bg-green-100 text-green-800' :
+                            initiative.budgetApproved === 'Rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'}">Budget: ${initiative.budgetApproved || 'Pending'}</span>
+                        <span class="px-3 py-1 text-xs font-bold rounded-full bg-purple-100 text-purple-800">WSJF: ${initiative.wsjf ? parseFloat(initiative.wsjf).toFixed(2) : 'N/A'}</span>
                     </div>
+
                     ${initiative.priority === 'On Hold' && initiative.holdReason ? `
-                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                        <div class="flex items-start space-x-2">
-                            <i data-lucide="alert-circle" class="w-5 h-5 text-yellow-600 mt-0.5"></i>
-                            <div>
-                                <p class="text-sm font-semibold text-yellow-800 mb-1">Hold Reason</p>
-                                <p class="text-sm text-yellow-700">${escapeHtml(initiative.holdReason)}</p>
-                            </div>
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                        <p class="text-xs font-semibold text-yellow-800 mb-1">Hold Reason</p>
+                        <p class="text-sm text-yellow-700">${escapeHtml(initiative.holdReason)}</p>
+                    </div>` : ''}
+
+                    <!-- Basic Info -->
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Basic Information</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><p class="text-xs text-gray-500">Line of Business</p><p class="font-semibold text-sm">${initiative.businessUnit || 'N/A'}</p></div>
+                            <div><p class="text-xs text-gray-500">Program</p><p class="font-semibold text-sm">${initiative.program || 'N/A'}</p></div>
+                            <div><p class="text-xs text-gray-500">Year / Quarter</p><p class="font-semibold text-sm">${initiative.year} / ${initiative.quarter}</p></div>
+                            <div><p class="text-xs text-gray-500">Business Owner</p><p class="font-semibold text-sm">${escapeHtml(initiative.owner || 'N/A')}</p></div>
                         </div>
                     </div>
-                    ` : ''}
-                    <div class="grid grid-cols-2 gap-4">
-                        ${initiative.startDate ? `
-                        <div>
-                            <p class="text-sm text-gray-500">Start Date</p>
-                            <p class="font-semibold">${new Date(initiative.startDate).toLocaleDateString()}</p>
-                        </div>
-                        ` : ''}
-                        ${initiative.businessCommitmentDate ? `
-                        <div>
-                            <p class="text-sm text-gray-500">Business Commitment Date</p>
-                            <p class="font-semibold text-blue-600">${new Date(initiative.businessCommitmentDate).toLocaleDateString()}</p>
-                        </div>
-                        ` : ''}
-                        ${initiative.deliveryDate ? `
-                        <div>
-                            <p class="text-sm text-gray-500">${initiative.businessCommitmentDate ? 'Delivery Date (Fallback)' : 'Delivery Date'}</p>
-                            <p class="font-semibold">${new Date(initiative.deliveryDate).toLocaleDateString()}</p>
-                        </div>
-                        ` : ''}
-                        ${initiative.owner ? `
-                        <div>
-                            <p class="text-sm text-gray-500">Owner</p>
-                            <p class="font-semibold">${escapeHtml(initiative.owner)}</p>
-                        </div>
-                        ` : ''}
-                    </div>
+
                     ${initiative.description ? `
                     <div>
-                        <p class="text-sm text-gray-500 mb-2">Description</p>
-                        <p class="text-gray-700">${escapeHtml(initiative.description)}</p>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Description</p>
+                        <p class="text-sm text-gray-700">${escapeHtml(initiative.description)}</p>
+                    </div>` : ''}
+
+                    <!-- Dates -->
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Timeline</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><p class="text-xs text-gray-500">Start Date</p><p class="font-semibold text-sm">${fmtD(initiative.startDate)}</p></div>
+                            <div><p class="text-xs text-gray-500">Delivery Date</p><p class="font-semibold text-sm">${fmtD(initiative.deliveryDate)}</p></div>
+                            ${initiative.businessCommitmentDate ? `<div><p class="text-xs text-gray-500">Business Commitment Date</p><p class="font-semibold text-sm text-blue-600">${fmtD(initiative.businessCommitmentDate)}</p></div>` : ''}
+                        </div>
                     </div>
-                    ` : ''}
+
+                    <!-- Testing Timeline -->
+                    <div class="bg-gradient-to-r from-green-50 to-purple-50 p-3 rounded-lg border border-gray-200">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Testing Timeline</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><p class="text-xs text-gray-500">SIT Start Date</p><p class="font-semibold text-sm">${fmtD(initiative.sitStartDate)}</p></div>
+                            <div><p class="text-xs text-gray-500">SIT End Date</p><p class="font-semibold text-sm">${fmtD(initiative.sitEndDate)}</p></div>
+                            <div><p class="text-xs text-gray-500">UAT Start Date</p><p class="font-semibold text-sm">${fmtD(initiative.uatStartDate)}</p></div>
+                            <div><p class="text-xs text-gray-500">UAT End Date</p><p class="font-semibold text-sm">${fmtD(initiative.uatEndDate)}</p></div>
+                        </div>
+                    </div>
+
+                    <!-- WSJF -->
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-lg">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">WSJF Calculation</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><p class="text-xs text-gray-500">User-Business Value</p><p class="font-semibold text-sm">${initiative.userBusinessValue || 'N/A'}</p></div>
+                            <div><p class="text-xs text-gray-500">Time Criticality</p><p class="font-semibold text-sm">${initiative.timeCriticality || 'N/A'}</p></div>
+                            <div><p class="text-xs text-gray-500">Risk Red / Opp. Enablement</p><p class="font-semibold text-sm">${initiative.riskReduction || 'N/A'}</p></div>
+                            <div><p class="text-xs text-gray-500">Job Size</p><p class="font-semibold text-sm">${initiative.jobSize || 'N/A'}</p></div>
+                            <div class="col-span-2"><p class="text-xs text-gray-500">Calculated WSJF</p><p class="font-bold text-base text-blue-600">${initiative.wsjf ? parseFloat(initiative.wsjf).toFixed(2) : 'N/A'}</p></div>
+                        </div>
+                    </div>
+
+                    <!-- Dependent Systems with JIRA -->
                     ${initiative.dependentSystems && initiative.dependentSystems.length > 0 ? `
                     <div>
-                        <p class="text-sm text-gray-500 mb-2">Dependent Systems</p>
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Dependent Systems</p>
                         <div class="space-y-2">
                             ${groupDependentSystems(initiative.dependentSystems).map(group => `
                                 <div class="bg-gray-50 p-3 rounded-lg">
@@ -1021,32 +1022,32 @@
                                 </div>
                             `).join('')}
                         </div>
-                    </div>
-                    ` : ''}
+                    </div>` : ''}
+
                     ${initiative.businessValue ? `
                     <div>
-                        <p class="text-sm text-gray-500 mb-2">Business Value</p>
-                        <p class="text-gray-700">${initiative.businessValue}</p>
-                    </div>
-                    ` : ''}
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Business Value / Impact</p>
+                        <p class="text-sm text-gray-700">${escapeHtml(initiative.businessValue)}</p>
+                    </div>` : ''}
+
                     ${initiative.risks ? `
                     <div>
-                        <p class="text-sm text-gray-500 mb-2">Risks</p>
-                        <p class="text-gray-700">${initiative.risks}</p>
-                    </div>
-                    ` : ''}
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Risks</p>
+                        <p class="text-sm text-gray-700">${escapeHtml(initiative.risks)}</p>
+                    </div>` : ''}
+
                     ${initiative.dependencies ? `
                     <div>
-                        <p class="text-sm text-gray-500 mb-2">Dependencies</p>
-                        <p class="text-gray-700">${initiative.dependencies}</p>
-                    </div>
-                    ` : ''}
-                    <div class="pt-4 flex space-x-2">
-                        <button type="button" onclick="window.location.href='intake.html?id=${initiative.id}'" 
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Dependencies</p>
+                        <p class="text-sm text-gray-700">${escapeHtml(initiative.dependencies)}</p>
+                    </div>` : ''}
+
+                    <div class="pt-2 flex space-x-2">
+                        <button type="button" onclick="window.location.href='intake.html?id=${initiative.id}'"
                             class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                             Edit Initiative
                         </button>
-                        <button type="button" onclick="closeModal()" 
+                        <button type="button" onclick="closeModal()"
                             class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
                             Close
                         </button>
