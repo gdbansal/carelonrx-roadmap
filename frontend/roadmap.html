@@ -1004,7 +1004,7 @@
                                         <div class="mt-2 space-y-2">
                                             ${group.entries.map((entry, idx) => {
                                                 const jiraKey = extractJiraKey(entry.jiraUrl);
-                                                const containerId = jiraKey ? `jira-status-${jiraKey}-${idx}` : null;
+                                                const containerId = jiraKey ? `jira-status-${jiraKey}` : null;
                                                 return `
                                                 <div class="flex items-center flex-wrap gap-2 text-xs">
                                                     ${entry.pmSpoc ? `<span class="text-gray-600">PM: ${escapeHtml(entry.pmSpoc)}</span>` : ''}
@@ -1061,10 +1061,10 @@
 
             // Fetch JIRA statuses for all linked issues
             if (initiative.dependentSystems && initiative.dependentSystems.length > 0) {
-                initiative.dependentSystems.forEach((sys, idx) => {
+                initiative.dependentSystems.forEach((sys) => {
                     const jiraKey = extractJiraKey(sys.jiraUrl);
                     if (jiraKey) {
-                        fetchJiraStatus(jiraKey, `jira-status-${jiraKey}-${idx}`);
+                        fetchJiraStatus(jiraKey, `jira-status-${jiraKey}`);
                     }
                 });
             }
