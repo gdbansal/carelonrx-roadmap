@@ -427,17 +427,17 @@
             </div>
             <div id="cpSummaryTiles" class="hidden mb-4">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div class="bg-orange-50 rounded-lg p-3 text-center border border-orange-100">
+                    <div class="rounded-lg p-3 text-center border" style="background-color:#f3e8ff; border-color:#794CFF;">
                         <p class="text-xs text-gray-500 font-semibold">Team Members</p>
-                        <p id="cpTileMembers" class="text-2xl font-bold text-orange-600">0</p>
+                        <p id="cpTileMembers" class="text-2xl font-bold" style="color:#5009B5;">0</p>
                     </div>
-                    <div class="bg-blue-50 rounded-lg p-3 text-center border border-blue-100">
+                    <div class="rounded-lg p-3 text-center border" style="background-color:#E6F7FD; border-color:#44B8F3;">
                         <p class="text-xs text-gray-500 font-semibold">Total Sprints</p>
-                        <p id="cpTileSprints" class="text-2xl font-bold text-blue-600">0</p>
+                        <p id="cpTileSprints" class="text-2xl font-bold" style="color:#44B8F3;">0</p>
                     </div>
-                    <div class="bg-green-50 rounded-lg p-3 text-center border border-green-100">
+                    <div class="rounded-lg p-3 text-center border" style="background-color:#E6F7FD; border-color:#00BBBA;">
                         <p class="text-xs text-gray-500 font-semibold">Avg Capacity / Sprint</p>
-                        <p id="cpTileAvg" class="text-2xl font-bold text-green-600">0</p>
+                        <p id="cpTileAvg" class="text-2xl font-bold" style="color:#00BBBA;">0</p>
                     </div>
                     <div class="bg-purple-50 rounded-lg p-3 text-center border border-purple-100">
                         <p class="text-xs text-gray-500 font-semibold">Total Capacity (days)</p>
@@ -918,7 +918,7 @@
 
                 // Build header
                 const thead = document.getElementById('cpMatrixHead');
-                thead.innerHTML = `<tr style="background-color:#c45c1a;" class="text-white">
+                thead.innerHTML = `<tr style="background-color:#5009B5;" class="text-white">
                     <th class="border border-gray-300 px-3 py-2 text-left">Resource</th>
                     <th class="border border-gray-300 px-3 py-2 text-left">Role</th>
                     <th class="border border-gray-300 px-3 py-2 text-center">Capacity %</th>
@@ -943,15 +943,15 @@
                     grandTotal += caps.reduce((a,b) => a+b, 0);
                     grandCount += caps.length;
                     const bg = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
-                    return `<tr class="${bg} hover:bg-orange-50">
+                    return `<tr class="${bg} hover:bg-purple-50">
                         <td class="border border-gray-200 px-3 py-2 font-semibold">${m.name}</td>
                         <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.role}</td>
-                        <td class="border border-gray-200 px-3 py-2 text-center font-semibold text-blue-700">${m.capacityPercentage}%</td>
+                        <td class="border border-gray-200 px-3 py-2 text-center font-semibold" style="color:#5009B5;">${m.capacityPercentage}%</td>
                         <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.project || ''}</td>
                         <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.team || ''}</td>
                         <td class="border border-gray-200 px-3 py-2 text-gray-600">${m.pi || ''}</td>
                         ${caps.map(c => `<td class="border border-gray-200 px-3 py-2 text-center font-semibold">${c.toFixed(1)}</td>`).join('')}
-                        <td class="border border-gray-200 px-3 py-2 text-center font-bold text-orange-700">${avg}</td>
+                        <td class="border border-gray-200 px-3 py-2 text-center font-bold" style="color:#5009B5;">${avg}</td>
                     </tr>`;
                 }).join('');
 
@@ -960,8 +960,8 @@
                 const totalAvg = grandCount > 0 ? (grandTotal / grandCount).toFixed(1) : 0;
                 tfoot.innerHTML = `<tr class="bg-gray-100 font-bold">
                     <td class="border border-gray-300 px-3 py-2" colspan="6">Team Total</td>
-                    ${sprintNames.map(sn => `<td class="border border-gray-300 px-3 py-2 text-center text-orange-700">${(sprintTotals[sn] || 0).toFixed(1)}</td>`).join('')}
-                    <td class="border border-gray-300 px-3 py-2 text-center text-orange-700">${totalAvg}</td>
+                    ${sprintNames.map(sn => `<td class="border border-gray-300 px-3 py-2 text-center" style="color:#5009B5;">${(sprintTotals[sn] || 0).toFixed(1)}</td>`).join('')}
+                    <td class="border border-gray-300 px-3 py-2 text-center" style="color:#5009B5;">${totalAvg}</td>
                 </tr>`;
 
                 // Summary tiles
