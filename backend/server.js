@@ -3616,27 +3616,25 @@ app.get('/api/loe/:initiativeId/export', authMiddleware, async (req, res) => {
         const loe = await LoeEstimation.findOne({ initiativeId: req.params.initiativeId });
         if (!initiative) return res.status(404).json({ success: false, message: 'Initiative not found' });
 
-        const systems = loe ? loe.systems : [];
-        const blendedRate = loe?.blendedRate || 150;
-        const hoursPerSp = loe?.hoursPerSp || 8;
-
-        let csv = `LOE Estimation â€” ${initiative.name}\n`;
-        csv += `Blended Rate: $${blendedRate}/hr | Hours per SP: ${hoursPerSp}\n\n`;
-        csv += `Dependent System,Dev Effort (SP),QA Effort (SP),Support Effort (SP),Total SP,Dev $(USD),QA $(USD),Support $(USD),Total $(USD),Confidence %\n`;
-
-        let totalDev = 0, totalQA = 0, totalSupport = 0;
-        systems.forEach(s => {
-            const rowSP = (s.devEffort || 0) + (s.qaEffort || 0) + (s.supportEffort || 0);
-            const devD  = (s.devEffort || 0) * hoursPerSp * blendedRate;
-            const qaD   = (s.qaEffort || 0) * hoursPerSp * blendedRate;
-            const supD  = (s.supportEffort || 0) * hoursPerSp * blendedRate;
-            totalDev += (s.devEffort || 0); totalQA += (s.qaEffort || 0); totalSupport += (s.supportEffort || 0);
-            csv += `${s.system},${s.devEffort || 0},${s.qaEffort || 0},${s.supportEffort || 0},${rowSP},${devD},${qaD},${supD},${devD + qaD + supD},${s.confidencePct || 0}%\n`;
+        // Deduplicate systems by name
+        const rawSystems = loe ? loe.systems : [];
+        const seen = new Set();
+        const systems = rawSystems.filter(s => {
+            const key = (s.system || '').toLowerCase();
+            if (seen.has(key)) return false;
+            seen.add(key); return true;
         });
 
-        const grandSP = totalDev + totalQA + totalSupport;
-        const grandD  = grandSP * hoursPerSp * blendedRate;
-        csv += `GRAND TOTAL,${totalDev},${totalQA},${totalSupport},${grandSP},${totalDev * hoursPerSp * blendedRate},${totalQA * hoursPerSp * blendedRate},${totalSupport * hoursPerSp * blendedRate},${grandD},\n`;
+        let csv = `LOE Estimation - ${initiative.name}\n\n`;
+        csv += `Dependent System,$ Effort,Confidence %\n`;
+
+        let grandTotal = 0;
+        systems.forEach(s => {
+            const dollar = s.dollarEffort || 0;
+            grandTotal += dollar;
+            csv += `${s.system},$${dollar},${s.confidencePct || 0}%\n`;
+        });
+        csv += `GRAND TOTAL,$${grandTotal},\n`;
 
         const filename = `LOE_${initiative.name.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`;
         res.setHeader('Content-Type', 'text/csv');
