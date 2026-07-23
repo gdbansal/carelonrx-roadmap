@@ -1799,30 +1799,35 @@ app.get('/api/jira/issue/:issueKey', authMiddleware, async (req, res) => {
     try {
         const { issueKey } = req.params;
 
-        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
-            return res.status(503).json({ success: false, message: 'JIRA integration not configured' });
-        }
-
-        const url = `${process.env.JIRA_BASE_URL}/rest/api/2/issue/${issueKey}?fields=summary,status,assignee,priority,issuetype`;
-
-        const { status, body } = await jiraRequest(url);
-
-        if (status !== 200) {
-            return res.status(status).json({ success: false, message: `JIRA returned ${status}: ${body.errorMessages || body.message || ''}` });
-        }
-
-        res.json({
-            success: true,
-            issue: {
-                key: body.key,
-                summary: body.fields.summary,
-                status: body.fields.status?.name,
-                statusCategory: body.fields.status?.statusCategory?.name,
-                assignee: body.fields.assignee?.displayName || 'Unassigned',
-                priority: body.fields.priority?.name,
-                issueType: body.fields.issuetype?.name
-            }
+        const buildIssue = (body) => ({
+            key: body.key,
+            summary: body.fields.summary,
+            status: body.fields.status?.name,
+            statusCategory: body.fields.status?.statusCategory?.name,
+            assignee: body.fields.assignee?.displayName || 'Unassigned',
+            priority: body.fields.priority?.name,
+            issueType: body.fields.issuetype?.name
         });
+
+        // Try JIRA1 (CarelonRx) first
+        if (process.env.JIRA_BASE_URL && process.env.JIRA_API_TOKEN) {
+            const url1 = `${process.env.JIRA_BASE_URL}/rest/api/2/issue/${issueKey}?fields=summary,status,assignee,priority,issuetype`;
+            const { status: s1, body: b1 } = await jiraRequest(url1);
+            if (s1 === 200) {
+                return res.json({ success: true, issue: buildIssue(b1) });
+            }
+        }
+
+        // Fallback: try JIRA2 (Elevance Health)
+        if (process.env.JIRA2_BASE_URL && process.env.JIRA2_API_TOKEN) {
+            const url2 = `${process.env.JIRA2_BASE_URL}/rest/api/2/issue/${issueKey}?fields=summary,status,assignee,priority,issuetype`;
+            const { status: s2, body: b2 } = await jiraRequest2(url2);
+            if (s2 === 200) {
+                return res.json({ success: true, issue: buildIssue(b2) });
+            }
+        }
+
+        return res.json({ success: false, message: 'Issue not found in any configured JIRA instance' });
     } catch (error) {
         console.error('JIRA fetch error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch JIRA issue' });
