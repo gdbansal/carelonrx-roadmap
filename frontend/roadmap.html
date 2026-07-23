@@ -216,11 +216,11 @@
                         <option value="2026" selected>2026</option>
                         <option value="2027">2027</option>
                     </select>
-                    <button type="button" onclick="exportRoadmap()" class="text-blue-600 hover:text-blue-800 flex items-center space-x-2">
+                    <button type="button" onclick="exportRoadmap()" class="text-carelon-purple hover:text-carelon-purple-dark flex items-center space-x-2" style="color:#5009B5;">
                         <i data-lucide="download" class="w-5 h-5"></i>
                         <span>Export PDF</span>
                     </button>
-                    <button type="button" onclick="exportToExcel()" id="exportExcelBtn" class="text-green-600 hover:text-green-800 flex items-center space-x-2">
+                    <button type="button" onclick="exportToExcel()" id="exportExcelBtn" class="flex items-center space-x-2" style="color:#5009B5;">
                         <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
                         <span>Export Excel</span>
                     </button>
@@ -1100,110 +1100,91 @@
         }
 
         async function exportRoadmap() {
+            const exportButtons = document.querySelectorAll('button[onclick*="export"]');
+            const roadmapGrid  = document.getElementById('roadmapGrid');
+            // Elements whose overflow clipping must be lifted for full capture
+            const overflowEls  = document.querySelectorAll('.overflow-x-auto, .overflow-auto, .overflow-hidden');
+            const savedOverflow = [];
+
             try {
-                // Hide export buttons during capture
-                const exportButtons = document.querySelectorAll('button[onclick*="export"]');
+                showToast('Preparing PDF export…', 'info');
+
+                // 1. Hide export buttons
                 exportButtons.forEach(btn => btn.style.visibility = 'hidden');
-                
-                // Store original styles
-                const roadmapGrid = document.getElementById('roadmapGrid');
-                const originalGridWidth = roadmapGrid.style.minWidth;
-                const originalBodyWidth = document.body.style.width;
-                
-                // Force wider layout to ensure all months are visible
-                roadmapGrid.style.minWidth = '1600px';
-                document.body.style.width = '1800px';
-                
-                // Wait for layout to update
-                await new Promise(resolve => setTimeout(resolve, 300));
-                
-                // Capture the entire roadmap container
-                const container = document.querySelector('.container.mx-auto.px-6.py-8');
-                
-                const canvas = await html2canvas(container, {
+
+                // 2. Save & remove overflow clipping so html2canvas can see full grid width
+                overflowEls.forEach(el => {
+                    savedOverflow.push({ el, val: el.style.overflow });
+                    el.style.overflow = 'visible';
+                });
+
+                // 3. Expand grid to its natural full width
+                const savedMinWidth = roadmapGrid.style.minWidth;
+                roadmapGrid.style.minWidth = roadmapGrid.scrollWidth + 'px';
+
+                // 4. Wait for layout reflow
+                await new Promise(resolve => setTimeout(resolve, 400));
+
+                // 5. Capture #main-content (roadmap area only — no sidebar clutter)
+                const mainContent = document.getElementById('main-content');
+                const captureWidth  = mainContent.scrollWidth;
+                const captureHeight = mainContent.scrollHeight;
+
+                const canvas = await html2canvas(mainContent, {
                     scale: 2,
                     useCORS: true,
+                    allowTaint: true,
                     logging: false,
                     backgroundColor: '#f9fafb',
-                    windowWidth: 1800,
-                    windowHeight: container.scrollHeight,
-                    allowTaint: true,
-                    foreignObjectRendering: false,
-                    imageTimeout: 0,
-                    scrollY: -window.scrollY,
-                    scrollX: -window.scrollX,
-                    height: container.scrollHeight,
-                    width: 1800,
+                    width:  captureWidth,
+                    height: captureHeight,
+                    windowWidth:  captureWidth,
+                    windowHeight: captureHeight,
+                    scrollX: 0,
+                    scrollY: 0,
                     x: 0,
-                    y: 0
+                    y: 0,
+                    foreignObjectRendering: false,
+                    imageTimeout: 0
                 });
-                
-                // Restore original styles
-                roadmapGrid.style.minWidth = originalGridWidth;
-                document.body.style.width = originalBodyWidth;
+
+                // 6. Restore all styles
+                roadmapGrid.style.minWidth = savedMinWidth;
+                overflowEls.forEach(({ el, val }) => el.style.overflow = val || '');
                 exportButtons.forEach(btn => btn.style.visibility = 'visible');
-                
-                const imgData = canvas.toDataURL('image/png');
-                
+
+                // 7. Build PDF — auto-size page to content aspect ratio (A3 landscape base)
                 const { jsPDF } = window.jspdf;
-                
-                // A3 landscape dimensions
-                const pageWidth = 420; // mm
-                const pageHeight = 297; // mm
-                
-                // Calculate scaling to fit content while maintaining aspect ratio
-                const imgWidth = canvas.width;
-                const imgHeight = canvas.height;
-                const imgRatio = imgWidth / imgHeight;
-                const pageRatio = pageWidth / pageHeight;
-                
-                let pdfWidth, pdfHeight;
-                
-                // Fit to width or height depending on aspect ratio
-                if (imgRatio > pageRatio) {
-                    // Image is wider - fit to width
-                    pdfWidth = pageWidth;
-                    pdfHeight = pageWidth / imgRatio;
-                } else {
-                    // Image is taller - fit to height
-                    pdfHeight = pageHeight;
-                    pdfWidth = pageHeight * imgRatio;
-                }
-                
+                const mmPerPx   = 0.264583;          // 1px = 0.2646 mm at 96 dpi
+                const scale     = canvas.width / captureWidth; // = options.scale (2)
+                const contentW  = canvas.width  / scale;
+                const contentH  = canvas.height / scale;
+                const pdfW      = contentW * mmPerPx;
+                const pdfH      = contentH * mmPerPx;
+
                 const pdf = new jsPDF({
-                    orientation: 'landscape',
+                    orientation: pdfW >= pdfH ? 'landscape' : 'portrait',
                     unit: 'mm',
-                    format: 'a3'
+                    format: [pdfW, pdfH]   // exact content size — no blank space
                 });
-                
-                // Handle multi-page PDF if content is too tall
-                let heightLeft = pdfHeight;
-                let position = 0;
-                
-                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-                heightLeft -= pageHeight;
-                
-                while (heightLeft > 0) {
-                    position = heightLeft - pdfHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-                    heightLeft -= pageHeight;
-                }
-                
+
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pdfW, pdfH);
+
                 const year = document.getElementById('yearFilter').value;
                 pdf.save('Product360_Roadmap_' + year + '.pdf');
-                
+
                 lucide.createIcons();
-                
+                showToast('PDF exported successfully!', 'success');
+
             } catch (error) {
                 console.error('Error exporting roadmap:', error);
                 showToast('Failed to export roadmap. Please try again.', 'error');
-                
-                // Restore original styles and button visibility in case of error
-                const roadmapGrid = document.getElementById('roadmapGrid');
+
+                // Restore on error
                 roadmapGrid.style.minWidth = '';
-                document.body.style.width = '';
-                const exportButtons = document.querySelectorAll('button[onclick*="export"]');
+                overflowEls.forEach(({ el, val }) => el.style.overflow = val || '');
+                exportButtons.forEach(btn => btn.style.visibility = 'visible');
+                const exportButtons2 = document.querySelectorAll('button[onclick*="export"]');
                 exportButtons.forEach(btn => btn.style.visibility = 'visible');
                 lucide.createIcons();
             }
