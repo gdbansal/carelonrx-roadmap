@@ -579,18 +579,32 @@
                     return;
                 }
 
-                // Filter sprints overlapping the selected PI quarter
-                const range = piToDateRange(pi);
-                let filtered = data.sprints;
-                if (range) {
-                    filtered = data.sprints.filter(s => {
-                        if (!s.startDate && !s.endDate) return true;
-                        const sprintStart = s.startDate ? new Date(s.startDate) : null;
-                        const sprintEnd   = s.endDate   ? new Date(s.endDate)   : null;
-                        const startsBeforeEnd = !sprintStart || sprintStart <= range.end;
-                        const endsAfterStart  = !sprintEnd   || sprintEnd   >= range.start;
-                        return startsBeforeEnd && endsAfterStart;
-                    });
+                // Filter sprints by PI: prefer name-prefix match (e.g. "26.2." for PI 26.2),
+                // fall back to strict date-range for sprints without that naming convention.
+                const piPrefix = pi + '.';
+                const nameMatches = data.sprints.filter(s => s.name && s.name.startsWith(piPrefix));
+
+                let filtered;
+                if (nameMatches.length > 0) {
+                    // Reliable: sprint names explicitly carry the PI prefix
+                    filtered = nameMatches;
+                } else {
+                    // Fallback: date-range filter (strictly within PI quarter, UTC-normalised)
+                    const range = piToDateRange(pi);
+                    if (range) {
+                        // Normalise range boundaries to UTC midnight to avoid tz issues
+                        const rangeStart = Date.UTC(range.start.getFullYear(), range.start.getMonth(), range.start.getDate());
+                        const rangeEnd   = Date.UTC(range.end.getFullYear(),   range.end.getMonth(),   range.end.getDate());
+                        filtered = data.sprints.filter(s => {
+                            if (!s.startDate && !s.endDate) return true;
+                            const ss = s.startDate ? Date.parse(s.startDate) : null;
+                            const se = s.endDate   ? Date.parse(s.endDate)   : null;
+                            // Sprint must start within the PI quarter (strict, not just overlap)
+                            return ss != null && ss >= rangeStart && ss <= rangeEnd;
+                        });
+                    } else {
+                        filtered = data.sprints;
+                    }
                 }
 
                 if (filtered.length === 0) {
