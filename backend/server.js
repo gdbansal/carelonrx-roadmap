@@ -3540,14 +3540,12 @@ app.get('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
         let loe = await LoeEstimation.findOne({ initiativeId: req.params.initiativeId });
 
         if (!loe) {
-            // First time â€” build skeleton from initiative's dependent systems
+            // First time — build skeleton from initiative's dependent systems
             return res.json({
                 success: true,
                 initiativeId: req.params.initiativeId,
                 initiativeName: initiative.name,
-                systems: latestSystems.map(s => ({ system: s, devEffort: 0, qaEffort: 0, supportEffort: 0, confidencePct: 0 })),
-                blendedRate: 150,
-                hoursPerSp: 8,
+                systems: latestSystems.map(s => ({ system: s, dollarEffort: 0, confidencePct: 0 })),
                 isNew: true
             });
         }
@@ -3557,14 +3555,14 @@ app.get('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
         loe.systems.forEach(s => { savedMap[s.system] = s; });
 
         const mergedSystems = latestSystems.map(s => savedMap[s]
-            ? { system: s, devEffort: savedMap[s].devEffort, qaEffort: savedMap[s].qaEffort, supportEffort: savedMap[s].supportEffort, confidencePct: savedMap[s].confidencePct }
-            : { system: s, devEffort: 0, qaEffort: 0, supportEffort: 0, confidencePct: 0, isNew: true }
+            ? { system: s, dollarEffort: savedMap[s].dollarEffort || 0, confidencePct: savedMap[s].confidencePct || 0 }
+            : { system: s, dollarEffort: 0, confidencePct: 0, isNew: true }
         );
 
-        // Flag systems that were removed from initiative but have LOE data
+        // Flag systems removed from initiative but with saved LOE data
         loe.systems.forEach(s => {
-            if (!latestSystems.includes(s.system) && (s.devEffort || s.qaEffort || s.supportEffort)) {
-                mergedSystems.push({ system: s.system, devEffort: s.devEffort, qaEffort: s.qaEffort, supportEffort: s.supportEffort, confidencePct: s.confidencePct, removed: true });
+            if (!latestSystems.includes(s.system) && s.dollarEffort) {
+                mergedSystems.push({ system: s.system, dollarEffort: s.dollarEffort || 0, confidencePct: s.confidencePct || 0, removed: true });
             }
         });
 
@@ -3573,8 +3571,6 @@ app.get('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
             initiativeId: req.params.initiativeId,
             initiativeName: initiative.name,
             systems: mergedSystems,
-            blendedRate: loe.blendedRate,
-            hoursPerSp: loe.hoursPerSp,
             lastUpdatedBy: loe.lastUpdatedBy,
             lastUpdatedAt: loe.lastUpdatedAt
         });
@@ -3636,7 +3632,9 @@ app.get('/api/loe/:initiativeId/export', authMiddleware, async (req, res) => {
         });
         csv += `GRAND TOTAL,$${grandTotal},\n`;
 
-        const filename = `LOE_${initiative.name.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`;
+        const lob = (initiative.businessUnit || 'LOB').replace(/[^a-zA-Z0-9]/g, '_');
+        const initName = initiative.name.replace(/[^a-zA-Z0-9]/g, '_');
+        const filename = `LOE_${lob}_${initName}.csv`;
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.send(csv);
