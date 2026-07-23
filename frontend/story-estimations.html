@@ -238,14 +238,29 @@
                 const userData = safeJsonParse(estimatorUser, null);
                 if (userData && userData.name && userData.role) {
                     state.user = userData;
-                    
-                    // Update header profile display
                     updateHeaderProfile();
-                    
-                    // Auto-logged in
                     return true;
                 }
             }
+
+            // Auto-populate from Product360 logged-in user and skip login screen
+            const product360User = safeJsonParse(localStorage.getItem('user'), null);
+            if (product360User && (product360User.fullName || product360User.username)) {
+                const name = product360User.fullName || product360User.username;
+                const normalizedRole = (product360User.role || '').toLowerCase().replace(/\s+/g, '_');
+                let role = 'Dev';
+                if (normalizedRole === 'admin') role = 'Admin';
+                else if (normalizedRole === 'product_owner' || normalizedRole === 'product_manager') role = 'PO';
+                else if (normalizedRole === 'scrum_master' || normalizedRole === 'rte') role = 'SM';
+                else if (normalizedRole === 'qa' || normalizedRole === 'tester') role = 'QA';
+
+                state.user = { name, role };
+                state.autoLoggedIn = true;
+                localStorage.setItem('storyEstimatorUser', JSON.stringify(state.user));
+                updateHeaderProfile();
+                return true;
+            }
+
             return false;
         }
 
@@ -264,6 +279,13 @@
                     adminLink.classList.add('block');
                 }
             }
+        }
+
+        function switchUser() {
+            localStorage.removeItem('storyEstimatorUser');
+            state.user = null;
+            state.autoLoggedIn = false;
+            render();
         }
 
         function toggleProfileDropdown() {
@@ -974,10 +996,21 @@
             // Pre-fill session ID if joining via URL
             const sessionIdValue = state.joiningViaUrl && state.sessionId ? state.sessionId : '';
             const showInfoMessage = state.joiningViaUrl && state.sessionId;
+
+            const autoLoginBanner = state.autoLoggedIn ? `
+                <div class="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg flex items-center justify-between">
+                    <p class="text-sm text-purple-800">
+                        <i data-lucide="user-check" class="w-4 h-4 inline mr-1"></i>
+                        Logged in as <strong>${state.user.name}</strong> &mdash; Role: <strong>${state.user.role}</strong>
+                    </p>
+                    <button onclick="switchUser()" class="text-xs text-purple-700 underline hover:text-purple-900 ml-3 whitespace-nowrap">Not you? Change</button>
+                </div>
+            ` : '';
             
             return `
                 <div class="max-w-xl mx-auto">
                     <div class="bg-white rounded-lg shadow-lg p-5">
+                        ${autoLoginBanner}
                         <div class="flex items-center space-x-3 mb-5">
                             <i data-lucide="users" class="w-9 h-9 text-gray-700 flex-shrink-0"></i>
                             <div>
