@@ -2099,14 +2099,16 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
         for (const state of ['closed', 'active', 'future']) {
             let sprintStart = 0;
             let sprintTotal = 1;
-            while (sprintStart < sprintTotal) {
+            let pageCount = 0;
+            while (sprintStart < sprintTotal && pageCount < 20) {
                 const { status: ss, body: sprintsBody } = await jiraRequest(
-                    `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${state}&maxResults=50&startAt=${sprintStart}`
+                    `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${state}&maxResults=100&startAt=${sprintStart}`
                 );
                 if (ss !== 200 || !sprintsBody.values) break;
                 allSprints = allSprints.concat(sprintsBody.values);
-                sprintTotal = sprintsBody.total || 0;
-                sprintStart += 50;
+                sprintTotal = sprintsBody.total ?? sprintsBody.values.length + sprintStart;
+                sprintStart += sprintsBody.values.length || 100;
+                pageCount++;
                 if (sprintsBody.values.length === 0) break;
             }
         }
