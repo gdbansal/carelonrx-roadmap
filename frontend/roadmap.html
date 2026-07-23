@@ -104,13 +104,13 @@
             background-color: #3b82f6;
         }
         .initiative-tooltip {
-            position: absolute;
+            position: fixed;
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             padding: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            z-index: 99999;
             min-width: 300px;
             max-width: 400px;
             display: none;
@@ -624,6 +624,9 @@
         }
 
         function renderRoadmap() {
+            // Clean up any tooltips previously appended to body
+            document.querySelectorAll('.initiative-tooltip').forEach(el => el.remove());
+
             const selectedYear = document.getElementById('yearFilter').value;
             
             let initiatives = allInitiatives.filter(i => String(i.year) === String(selectedYear));
@@ -719,8 +722,18 @@
                     // Create tooltip with impacted systems
                     const tooltip = document.createElement('div');
                     tooltip.className = 'initiative-tooltip';
-                    tooltip.style.left = `${startPosition}%`;
-                    tooltip.style.top = '60px';
+                    // Position via mousemove (fixed positioning escapes overflow clipping)
+                    bar.addEventListener('mousemove', (ev) => {
+                        const vw = window.innerWidth;
+                        const th = tooltip.offsetHeight || 200;
+                        let left = ev.clientX + 16;
+                        let top  = ev.clientY - th / 2;
+                        if (left + 420 > vw) left = ev.clientX - 420;
+                        if (top < 8) top = 8;
+                        if (top + th + 8 > window.innerHeight) top = window.innerHeight - th - 8;
+                        tooltip.style.left = left + 'px';
+                        tooltip.style.top  = top  + 'px';
+                    });
                     
                     let tooltipHTML = `<div class="tooltip-title">${escapeHtml(initiative.name)}</div>`;
                     
@@ -751,7 +764,7 @@
                     tooltip.innerHTML = tooltipHTML;
                     
                     timelineRow.appendChild(bar);
-                    timelineRow.appendChild(tooltip);
+                    document.body.appendChild(tooltip);
                     
                     // Re-render icons for the tooltip
                     setTimeout(() => lucide.createIcons(), 0);
