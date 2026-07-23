@@ -255,6 +255,22 @@ a.carelon-link:hover {
     ring-color: var(--carelon-purple);
 }
 
+/* Utility: focus ring carelon purple */
+.focus\:ring-carelon-purple:focus {
+    --tw-ring-color: var(--carelon-purple);
+    box-shadow: 0 0 0 3px rgba(80, 9, 181, 0.2);
+}
+
+/* Utility: hover border carelon purple */
+.hover\:border-carelon-purple:hover {
+    border-color: var(--carelon-purple);
+}
+
+/* Utility: border carelon purple */
+.border-carelon-purple {
+    border-color: var(--carelon-purple);
+}
+
 /* Loading Spinner */
 .carelon-spinner {
     border-color: var(--carelon-purple-light);

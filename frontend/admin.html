@@ -95,7 +95,7 @@
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
-                    <button type="button" onclick="showAddUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                    <button type="button" onclick="showAddUserModal()" class="btn-carelon-primary px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="user-plus" class="w-4 h-4"></i>
                         <span>Add User</span>
                     </button>
@@ -132,7 +132,7 @@
                         <h2 class="text-2xl font-bold text-gray-800">Line of Business Management</h2>
                         <p class="text-sm text-gray-600 mt-1">Manage Lines of Business that appear in initiative dropdowns</p>
                     </div>
-                    <button type="button" onclick="showAddLobModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                    <button type="button" onclick="showAddLobModal()" class="btn-carelon-primary px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="plus" class="w-4 h-4"></i>
                         <span>Add Line of Business</span>
                     </button>
@@ -185,7 +185,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Add System</label>
                             <div class="flex space-x-2">
                                 <input type="text" id="lobsNewSystem" placeholder="Enter system name..." class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-                                <button type="button" onclick="addSystemToLob()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm flex items-center space-x-1">
+                                <button type="button" onclick="addSystemToLob()" class="btn-carelon-primary px-4 py-2 rounded-lg text-sm flex items-center space-x-1">
                                     <i data-lucide="plus" class="w-4 h-4"></i>
                                     <span>Add</span>
                                 </button>
@@ -224,7 +224,7 @@
                         <h2 class="text-2xl font-bold text-gray-800">Team Members Management</h2>
                         <p class="text-sm text-gray-600 mt-1">Manage team members for capacity planning</p>
                     </div>
-                    <button type="button" onclick="showAddTeamMemberModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                    <button type="button" onclick="showAddTeamMemberModal()" class="btn-carelon-primary px-4 py-2 rounded-lg transition flex items-center space-x-2">
                         <i data-lucide="user-plus" class="w-4 h-4"></i>
                         <span>Add Team Member</span>
                     </button>
@@ -321,7 +321,7 @@
                 </div>
 
                 <div class="flex space-x-3 pt-4">
-                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <button type="submit" class="flex-1 btn-carelon-primary px-4 py-2 rounded-lg transition">
                         Save User
                     </button>
                     <button type="button" onclick="closeUserModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
@@ -372,7 +372,7 @@
                 </div>
 
                 <div class="flex space-x-3 pt-4">
-                    <button type="button" onclick="saveLob()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <button type="button" onclick="saveLob()" class="flex-1 btn-carelon-primary px-4 py-2 rounded-lg transition">
                         Save
                     </button>
                     <button type="button" onclick="closeLobModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
@@ -398,7 +398,7 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">JIRA Source</label>
                     <div class="flex rounded-lg border border-gray-300 overflow-hidden">
                         <button type="button" id="jiraSource1Btn" onclick="setJiraSource('jira1')"
-                            class="flex-1 px-4 py-2 text-sm font-medium bg-blue-600 text-white transition">
+                            class="flex-1 px-4 py-2 text-sm font-medium btn-carelon-primary transition">
                             CarelonRx
                         </button>
                         <button type="button" id="jiraSource2Btn" onclick="setJiraSource('jira2')"
@@ -506,7 +506,7 @@
                 </div>
 
                 <div class="flex space-x-3 pt-4">
-                    <button type="button" onclick="saveTeamMember()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <button type="button" onclick="saveTeamMember()" class="flex-1 btn-carelon-primary px-4 py-2 rounded-lg transition">
                         Save
                     </button>
                     <button type="button" onclick="closeTeamMemberModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
@@ -526,11 +526,11 @@
                         <p class="text-sm text-gray-600 mt-1">Control which modules each role can access.</p>
                     </div>
                     <div class="flex gap-3">
-                        <button type="button" onclick="showAddRoleModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                        <button type="button" onclick="showAddRoleModal()" class="btn-carelon-primary px-4 py-2 rounded-lg transition flex items-center space-x-2">
                             <i data-lucide="plus" class="w-4 h-4"></i>
                             <span>Add Role</span>
                         </button>
-                        <button type="button" onclick="saveRoleMappings()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
+                        <button type="button" onclick="saveRoleMappings()" class="btn-carelon-primary px-4 py-2 rounded-lg transition flex items-center space-x-2">
                             <i data-lucide="save" class="w-4 h-4"></i>
                             <span>Save Mappings</span>
                         </button>
@@ -570,7 +570,7 @@
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
                     <div class="flex gap-3 pt-2">
-                        <button type="button" onclick="confirmAddRole()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold">Add Role</button>
+                        <button type="button" onclick="confirmAddRole()" class="flex-1 btn-carelon-primary px-4 py-2 rounded-lg transition font-semibold">Add Role</button>
                         <button type="button" onclick="closeAddRoleModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
                     </div>
                 </div>
@@ -1442,10 +1442,10 @@
             const btn1 = document.getElementById('jiraSource1Btn');
             const btn2 = document.getElementById('jiraSource2Btn');
             if (source === 'jira1') {
-                btn1.className = 'flex-1 px-4 py-2 text-sm font-medium bg-blue-600 text-white transition';
+                btn1.className = 'flex-1 px-4 py-2 text-sm font-medium btn-carelon-primary transition';
                 btn2.className = 'flex-1 px-4 py-2 text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition';
             } else {
-                btn2.className = 'flex-1 px-4 py-2 text-sm font-medium bg-blue-600 text-white transition';
+                btn2.className = 'flex-1 px-4 py-2 text-sm font-medium btn-carelon-primary transition';
                 btn1.className = 'flex-1 px-4 py-2 text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition';
             }
             jiraProjectsLoaded = false;
@@ -1669,7 +1669,7 @@
             loadLobsIntoMemberModal();
             jiraProjectList = [];
             jiraTeamList = [];
-            document.getElementById('jiraSource1Btn').className = 'flex-1 px-4 py-2 text-sm font-medium bg-blue-600 text-white transition';
+            document.getElementById('jiraSource1Btn').className = 'flex-1 px-4 py-2 text-sm font-medium btn-carelon-primary transition';
             document.getElementById('jiraSource2Btn').className = 'flex-1 px-4 py-2 text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 transition';
             loadJiraProjects();
             lucide.createIcons();

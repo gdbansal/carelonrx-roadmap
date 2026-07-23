@@ -75,7 +75,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Program Increment (PI) <span class="text-red-500">*</span></label>
-                    <select id="piFilter" onchange="updatePIBanner()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select id="piFilter" onchange="updatePIBanner()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-carelon-purple focus:border-transparent">
                     </select>
                     <script>
                     (function(){
@@ -102,19 +102,19 @@
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Line of Business <span class="text-red-500">*</span></label>
-                    <select id="lobFilter" onchange="highlightRequired('lobFilter', false); onLobChange()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select id="lobFilter" onchange="highlightRequired('lobFilter', false); onLobChange()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-carelon-purple focus:border-transparent">
                         <option value="">Select Line of Business</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Project <span class="text-red-500">*</span></label>
-                    <select id="projectFilter" onchange="highlightRequired('projectFilter', false); onProjectChange()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select id="projectFilter" onchange="highlightRequired('projectFilter', false); onProjectChange()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-carelon-purple focus:border-transparent">
                         <option value="">Select Project</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Team <span class="text-red-500">*</span></label>
-                    <select id="teamFilter" onchange="highlightRequired('teamFilter', false)" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select id="teamFilter" onchange="highlightRequired('teamFilter', false)" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-carelon-purple focus:border-transparent">
                         <option value="">Select Team</option>
                     </select>
                 </div>
@@ -131,15 +131,15 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-gray-800" id="capacityMatrixTitle">Capacity Matrix</h2>
                 <div class="flex gap-3">
-                    <button type="button" id="saveBtn" onclick="saveCapacityPlan()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                    <button type="button" id="saveBtn" onclick="saveCapacityPlan()" class="btn-carelon-primary px-6 py-2 rounded-lg transition">
                         <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
                         Save Capacity Plan
                     </button>
-                    <button type="button" id="editBtn" onclick="enableEditMode()" class="hidden bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <button type="button" id="editBtn" onclick="enableEditMode()" class="hidden btn-carelon-primary px-6 py-2 rounded-lg transition">
                         <i data-lucide="pencil" class="w-4 h-4 inline mr-2"></i>
                         Edit
                     </button>
-                    <button type="button" id="exportBtn" onclick="exportToExcel()" class="hidden bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition" style="background-color:#059669;">
+                    <button type="button" id="exportBtn" onclick="exportToExcel()" class="hidden btn-carelon-primary px-6 py-2 rounded-lg transition">
                         <i data-lucide="file-spreadsheet" class="w-4 h-4 inline mr-2"></i>
                         Export to Excel
                     </button>
@@ -152,8 +152,8 @@
                         <tr>
                             <td colspan="10" id="piBannerRow"
                                 class="text-center font-bold text-white py-2 text-base tracking-wide"
-                                style="background-color:#c45c1a;">
-                                PI �
+                                style="background-color:#5009B5;">
+                                PI
                             </td>
                         </tr>
                         <tr class="bg-gray-100" id="sprintHeaderRow">
@@ -174,7 +174,7 @@
                 </table>
             </div>
 
-            <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+            <div class="mt-4 p-4 rounded-lg" style="background-color:#E6F7FD; border-left:4px solid #44B8F3;">
                 <p class="text-sm text-gray-700"><strong>Note:</strong> Enter capacity in working days for each team member per sprint. The system will calculate averages and totals automatically.</p>
             </div>
 
@@ -187,11 +187,11 @@
 
             <!-- Team Availability Section -->
             <div class="mt-6">
-                <h3 class="text-base font-bold mb-2" style="color:#c45c1a;">Team Availability</h3>
+                <h3 class="text-base font-bold mb-2" style="color:#5009B5;">Team Availability</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full border-collapse" id="availabilityTable">
                         <thead>
-                            <tr style="background-color:#c45c1a;" class="text-white">
+                            <tr style="background-color:#5009B5;" class="text-white">
                                 <th class="border border-gray-300 px-4 py-2 text-center">Sprints</th>
                                 <th class="border border-gray-300 px-4 py-2 text-center">Working days<br><span class="text-xs font-normal">(Team Avg)</span></th>
                                 <th class="border border-gray-300 px-4 py-2 text-center">Admin Work %</th>
@@ -214,7 +214,7 @@
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">No Capacity Plan Loaded</h3>
             <p class="text-gray-600 mb-4">Select PI, LOB, Project, and Team to load team members and plan capacity.</p>
-            <p class="text-sm text-gray-500">Team members must be added in Admin Panel ? Team Members first.</p>
+            <p class="text-sm text-gray-500">Team members must be added in Admin Panel &gt; Team Members first.</p>
         </div>
     </div>
 
@@ -709,7 +709,7 @@
         function renderAvgPointsTable() {
             const tbody = document.getElementById('avgPointsBody');
             const sprintCells = sprintColumns.map(s =>
-                `<th class="border border-gray-300 px-4 py-2 text-center font-bold" style="background-color:#c45c1a;" >${s.name}</th>`
+                `<th class="border border-gray-300 px-4 py-2 text-center font-bold" style="background-color:#5009B5;" >${s.name}</th>`
             ).join('');
             const valueCells = sprintColumns.map((_, i) => {
                 const idx = i + 1;
@@ -727,7 +727,7 @@
             }).join('');
             tbody.innerHTML = `
                 <tr>
-                    <th class="border border-gray-300 px-4 py-2 text-center font-bold" style="background-color:#c45c1a; color:white;">Sprint</th>
+                    <th class="border border-gray-300 px-4 py-2 text-center font-bold" style="background-color:#5009B5; color:white;">Sprint</th>
                     ${sprintCells}
                 </tr>
                 <tr class="bg-gray-50">
@@ -766,8 +766,8 @@
                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="workingDays">${wd}</td>
                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="adminPct">${ap}%</td>
                     <td class="border border-gray-300 px-4 py-2 text-center font-semibold avail-view" data-sprint="${idx}" data-field="contingencyPct">${cp}%</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">�</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">�</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-purple-50" id="avail-days-${idx}">�</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-purple-50" id="avail-pts-${idx}">�</td>
                 </tr>`;
                 }
                 return `
@@ -791,13 +791,13 @@
                             data-sprint="${idx}" data-field="contingencyPct"
                             oninput="recalcAvailability(${idx})">
                     </td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-days-${idx}">�</td>
-                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-orange-50" id="avail-pts-${idx}">�</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-purple-50" id="avail-days-${idx}">�</td>
+                    <td class="border border-gray-300 px-4 py-2 text-center font-bold bg-purple-50" id="avail-pts-${idx}">�</td>
                 </tr>`;
             }).join('');
 
             tfoot.innerHTML = `
-                <tr class="bg-green-50 font-bold">
+                <tr class="font-bold" style="background-color:#E6F7FD;">
                     <td class="border border-gray-300 px-4 py-2 text-center" colspan="5">Total</td>
                     <td class="border border-gray-300 px-4 py-2 text-center" id="avail-total">�</td>
                 </tr>`;
