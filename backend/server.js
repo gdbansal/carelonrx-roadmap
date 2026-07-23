@@ -2094,9 +2094,11 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             return res.json({ success: false, message: `No board found for team: ${teamName}`, sprints: [], preSelectedSprintId: null });
         }
 
-        // Step 2: Fetch only active + future sprints
+        // Step 2: Fetch sprints — include closed if caller requests it (capacity-planning needs closed sprints for past PIs)
+        const includeClosed = req.query.includeClosed === 'true';
+        const sprintStates = includeClosed ? ['closed', 'active', 'future'] : ['active', 'future'];
         let allSprints = [];
-        for (const state of ['active', 'future']) {
+        for (const state of sprintStates) {
             let sprintStart = 0;
             let sprintTotal = 1;
             let pageCount = 0;
