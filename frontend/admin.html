@@ -1694,6 +1694,8 @@
                     document.getElementById('memberIsActive').checked = data.member.isActive;
                     document.getElementById('memberStatusContainer').classList.remove('hidden');
                     document.getElementById('teamMemberModal').classList.remove('hidden');
+                    await loadLobsIntoMemberModal();
+                    document.getElementById('memberLob').value = data.member.lineOfBusiness || '';
                     await loadJiraProjects(true);
                     setProjectValue(data.member.project || '');
                     const projSel = document.getElementById('memberProjectSelect');
@@ -1701,7 +1703,6 @@
                         await loadJiraTeams();
                     }
                     setTeamValue(data.member.team);
-                    document.getElementById('memberLob').value = data.member.lineOfBusiness || '';
                     lucide.createIcons();
                 }
             } catch (error) {
@@ -1745,7 +1746,8 @@
 
         async function loadLobsIntoMemberModal() {
             const sel = document.getElementById('memberLob');
-            if (sel.options.length > 1) return;
+            const currentVal = sel.value;
+            sel.innerHTML = '<option value="">Select Line of Business (optional)</option>';
             try {
                 const res = await fetch(`${API_BASE}/api/line-of-business/active`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -1758,6 +1760,7 @@
                         sel.appendChild(opt);
                     });
                 }
+                if (currentVal) sel.value = currentVal;
             } catch(e) { console.error('Failed to load LOBs into member modal', e); }
         }
 
