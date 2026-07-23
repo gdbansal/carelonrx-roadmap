@@ -2094,9 +2094,9 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             return res.json({ success: false, message: `No board found for team: ${teamName}`, sprints: [], preSelectedSprintId: null });
         }
 
-        // Step 2: Fetch all sprints (closed + active + future) for full PI coverage
+        // Step 2: Fetch only active + future sprints
         let allSprints = [];
-        for (const state of ['closed', 'active', 'future']) {
+        for (const state of ['active', 'future']) {
             let sprintStart = 0;
             let sprintTotal = 1;
             let pageCount = 0;
@@ -3955,6 +3955,27 @@ app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) =
 
                 if (result.status === 201) {
                     created.push({ itemId: item.id, key: result.body.key, url: `${jiraBase}/browse/${result.body.key}` });
+                } else if (result.status !== 201 && sprintId && result.body?.errors?.customfield_10020) {
+                    // Sprint field not on screen — retry without it
+                    delete issueFields.customfield_10020;
+                    const payload2 = JSON.stringify({ fields: issueFields });
+                    const result2 = await new Promise((resolve, reject) => {
+                        const opts2 = {
+                            hostname: parsedUrl.hostname,
+                            path: parsedUrl.pathname,
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload2) }
+                        };
+                        const r2 = https.request(opts2, (r) => { let d = ''; r.on('data', c => d += c); r.on('end', () => { try { resolve({ status: r.statusCode, body: JSON.parse(d) }); } catch(e) { resolve({ status: r.statusCode, body: d }); } }); });
+                        r2.on('error', reject);
+                        r2.write(payload2);
+                        r2.end();
+                    });
+                    if (result2.status === 201) {
+                        created.push({ itemId: item.id, key: result2.body.key, url: `${jiraBase}/browse/${result2.body.key}`, note: 'Sprint not assigned (field not on screen)' });
+                    } else {
+                        failed.push({ itemId: item.id, summary: item.summary, error: JSON.stringify(result2.body) });
+                    }
                 } else {
                     failed.push({ itemId: item.id, summary: item.summary, error: JSON.stringify(result.body) });
                 }

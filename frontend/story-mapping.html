@@ -563,15 +563,17 @@
             const res = await fetch(`${API_BASE}/jira/sprint-for-team?teamName=${encodeURIComponent(teamName)}`, { headers: authHeaders() });
             const data = await res.json();
             if (data.success && data.sprints && data.sprints.length > 0) {
-                const activeFuture = data.sprints.filter(s => s.state === 'active' || s.state === 'future');
-                const list = activeFuture.length > 0 ? activeFuture : data.sprints;
+                const list = data.sprints.filter(s => s.state === 'active' || s.state === 'future');
+                const futureCount = list.filter(s => s.state === 'future').length;
                 sprintEl.innerHTML = '<option value="">Select a sprint...</option>' +
                     list.map(s => {
                         const badge = s.state === 'active' ? ' [Active]' : s.state === 'future' ? ' [Future]' : '';
                         return `<option value="${s.name}">${s.name}${badge}</option>`;
                     }).join('');
                 sprintEl.disabled = false;
-                if (hintEl) hintEl.textContent = `${list.length} sprints available`;
+                if (hintEl) hintEl.textContent = futureCount === 0
+                    ? `${list.length} sprint(s) available — no future sprints found in Jira for this team`
+                    : `${list.length} sprint(s) available`;
             } else {
                 sprintEl.innerHTML = '<option value="">No sprints found</option>';
                 if (hintEl) hintEl.textContent = data.message || 'No sprints found for this team';

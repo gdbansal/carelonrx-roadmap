@@ -1879,19 +1879,23 @@
                 const response = await fetch(`${API_BASE_URL}/jira/sprint-for-team?teamName=${encodeURIComponent(teamName)}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                 const data = await response.json();
                 if (data.success && data.sprints && data.sprints.length > 0) {
-                    const stateOrder = { active: 0, future: 1, closed: 2 };
-                    const sorted = [...data.sprints].sort((a, b) => {
+                    const list = data.sprints.filter(s => s.state === 'active' || s.state === 'future');
+                    const stateOrder = { active: 0, future: 1 };
+                    const sorted = [...list].sort((a, b) => {
                         const sd = (stateOrder[a.state] ?? 3) - (stateOrder[b.state] ?? 3);
                         if (sd !== 0) return sd;
                         return new Date(b.startDate || 0) - new Date(a.startDate || 0);
                     });
+                    const futureCount = sorted.filter(s => s.state === 'future').length;
                     const options = sorted.map(s => {
                         const badge = s.state === 'active' ? ' [Active]' : s.state === 'future' ? ' [Future]' : ' [Closed]';
                         const selected = s.id === data.preSelectedSprintId ? 'selected' : '';
                         return `<option value="${escapeHtml(s.name)}" ${selected}>${escapeHtml(s.name)}${badge}</option>`;
                     }).join('');
                     container.innerHTML = `<select id="sprintValue" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">${options}</select>`;
-                    if (hint) hint.textContent = `${sorted.length} sprints loaded  - pre-selected: ${data.preSelectedSprintName || 'none'}`;
+                    if (hint) hint.textContent = futureCount === 0
+                        ? `${sorted.length} sprint(s) loaded — no future sprints found in Jira for this team`
+                        : `${sorted.length} sprint(s) loaded — pre-selected: ${data.preSelectedSprintName || 'none'}`;
                 } else {
                     container.innerHTML = `<input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)"
                         class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
