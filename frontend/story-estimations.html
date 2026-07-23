@@ -232,21 +232,24 @@
         // USER MANAGEMENT
         // ============================================
         function loadUser() {
+            const product360User = safeJsonParse(localStorage.getItem('user'), null);
+            const p360Name = product360User ? (product360User.fullName || product360User.username || '') : '';
+
             // Check for Story Estimations specific user (not Product360 user)
             const estimatorUser = localStorage.getItem('storyEstimatorUser');
             if (estimatorUser) {
                 const userData = safeJsonParse(estimatorUser, null);
                 if (userData && userData.name && userData.role) {
                     state.user = userData;
+                    // Show banner if this user was auto-mapped from Product360
+                    if (p360Name && userData.name === p360Name) state.autoLoggedIn = true;
                     updateHeaderProfile();
                     return true;
                 }
             }
 
             // Auto-populate from Product360 logged-in user and skip login screen
-            const product360User = safeJsonParse(localStorage.getItem('user'), null);
-            if (product360User && (product360User.fullName || product360User.username)) {
-                const name = product360User.fullName || product360User.username;
+            if (product360User && p360Name) {
                 const normalizedRole = (product360User.role || '').toLowerCase().replace(/\s+/g, '_');
                 let role = 'Dev';
                 if (normalizedRole === 'admin') role = 'Admin';
@@ -254,7 +257,7 @@
                 else if (normalizedRole === 'scrum_master' || normalizedRole === 'rte') role = 'SM';
                 else if (normalizedRole === 'qa' || normalizedRole === 'tester') role = 'QA';
 
-                state.user = { name, role };
+                state.user = { name: p360Name, role };
                 state.autoLoggedIn = true;
                 localStorage.setItem('storyEstimatorUser', JSON.stringify(state.user));
                 updateHeaderProfile();
