@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * Product 360 Side Panel Component
  * Reusable sidebar for all pages
  */
@@ -54,7 +54,7 @@
             <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-white border-opacity-20">
                 <div class="text-white text-opacity-60 text-xs">
                     <p class="font-semibold mb-1">Version 2.7</p>
-                    <p>© 2026 Product 360</p>
+                    <p>Â© 2026 Product 360</p>
                 </div>
             </div>
         </div>
@@ -229,7 +229,7 @@
         });
     }
 
-    // Enforce role-module visibility (async — reveals/hides after fetch)
+    // Enforce role-module visibility (async â€” reveals/hides after fetch)
     applyRoleModuleVisibility();
 })();
 
@@ -374,7 +374,7 @@ async function applyRoleModuleVisibility() {
         const data = await res.json();
         if (data.success) mappings = data.mappings;
     } catch (e) {
-        // fail open — show everything if API is down
+        // fail open â€” show everything if API is down
         document.querySelectorAll('.side-panel-link[data-module]').forEach(l => l.style.visibility = 'visible');
         return;
     }
@@ -387,12 +387,12 @@ async function applyRoleModuleVisibility() {
         m.role.toLowerCase().replace(/\s+/g, '_') === user.role
     );
     if (!roleMap) {
-        // Role not configured — show everything
+        // Role not configured â€” show everything
         document.querySelectorAll('.side-panel-link[data-module]').forEach(l => l.style.visibility = 'visible');
         return;
     }
 
-    // Admin always has full access — skip enforcement
+    // Admin always has full access â€” skip enforcement
     if (user.role === 'admin' || user.role === 'Admin') {
         document.querySelectorAll('.side-panel-link[data-module]').forEach(l => l.style.visibility = 'visible');
         return;
@@ -406,11 +406,11 @@ async function applyRoleModuleVisibility() {
         const attr = link.getAttribute('data-module');
         const dbKey = MODULE_KEY_MAP[attr];
         if (!dbKey) {
-            link.style.visibility = 'visible'; // user-guide etc — always show
+            link.style.visibility = 'visible'; // user-guide etc â€” always show
             return;
         }
         const allowed = roleMap.modules ? roleMap.modules[dbKey] : undefined;
-        // Only hide if explicitly set to false — undefined/missing means show
+        // Only hide if explicitly set to false â€” undefined/missing means show
         if (allowed === false) {
             link.style.display = 'none';
             link.style.visibility = 'hidden';
