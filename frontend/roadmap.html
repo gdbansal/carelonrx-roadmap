@@ -206,7 +206,7 @@
     </nav>
 
     <div id="main-content" class="container mx-auto px-6 py-8">
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div id="pdf-hide-controls" class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-2xl font-bold text-gray-800">Product Roadmap</h2>
                 <div class="flex items-center space-x-4">
@@ -285,7 +285,7 @@
                 </div>
             </div>
 
-            <div class="flex items-center space-x-4 mb-6">
+            <div id="pdf-hide-legend" class="flex items-center space-x-4 mb-6">
                 <div class="flex items-center space-x-2">
                     <div class="w-4 h-4 rounded priority-critical"></div>
                     <span class="text-sm text-gray-600">Critical</span>
@@ -1124,6 +1124,13 @@
             try {
                 showToast('Preparing PDF…', 'info');
                 exportButtons.forEach(btn => btn.style.visibility = 'hidden');
+
+                // Hide UI controls (year filter, filters, legend) from PDF output
+                const pdfHideEls = document.querySelectorAll('#pdf-hide-controls, #pdf-hide-legend');
+                pdfHideEls.forEach(el => {
+                    savedStyles.push({ el, prop: 'display', val: el.style.display || '' });
+                    el.style.display = 'none';
+                });
 
                 // Expand overflow containers so html2canvas captures full width
                 const overflowEls = document.querySelectorAll('.overflow-x-auto, .overflow-auto, .overflow-hidden');
