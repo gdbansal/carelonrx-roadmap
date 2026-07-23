@@ -173,7 +173,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" onclick="approveAll()"
-                        class="px-3 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-1">
+                        class="px-3 py-1.5 text-xs btn-carelon-primary rounded-lg transition flex items-center gap-1">
                         <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Approve All
                     </button>
                     <button type="button" onclick="goBack()"
@@ -470,10 +470,10 @@
                         <button type="button" onclick="toggleEdit('${item.id}')" id="editBtn-${item.id}"
                             class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50 transition">Edit</button>
                         <button type="button" onclick="saveEdit('${item.id}')" id="saveBtn-${item.id}"
-                            class="hidden px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition">Save</button>
+                            class="hidden px-3 py-1 text-xs btn-carelon-primary rounded transition">Save</button>
                         ${item.type !== 'Epic' ? `
                         <button type="button" onclick="toggleApprove('${item.id}')"
-                            class="px-3 py-1 text-xs ${item.approved ? 'bg-gray-200 text-gray-600 hover:bg-gray-300' : 'bg-green-600 text-white hover:bg-green-700'} rounded transition">
+                            class="px-3 py-1 text-xs ${item.approved ? 'bg-gray-200 text-gray-600 hover:bg-gray-300' : 'btn-carelon-primary '} rounded transition">
                             ${item.approved ? 'Unapprove' : 'Approve'}
                         </button>` : ''}
                     </div>
