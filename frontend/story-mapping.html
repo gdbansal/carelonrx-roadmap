@@ -612,7 +612,9 @@
                     projectKey,
                     jiraBaseUrl: instance,
                     teamName: teamName || undefined,
-                    sprintName: sprintName || undefined
+                    sprintName: sprintName || undefined,
+                    featureName: state.featureData?.featureName || state.featureData?.summary || undefined,
+                    featureKey: state.featureData?.issueKey || undefined
                 })
             });
             const data = await res.json();

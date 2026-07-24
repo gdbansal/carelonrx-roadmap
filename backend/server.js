@@ -3554,14 +3554,19 @@ app.get('/api/loe/:initiativeId', authMiddleware, async (req, res) => {
         const savedMap = {};
         loe.systems.forEach(s => { savedMap[s.system] = s; });
 
-        const mergedSystems = latestSystems.map(s => savedMap[s]
-            ? { system: s, dollarEffort: savedMap[s].dollarEffort || 0, confidencePct: savedMap[s].confidencePct || 0 }
-            : { system: s, dollarEffort: 0, confidencePct: 0, isNew: true }
-        );
+        const mergedSystems = latestSystems.map(s => {
+            const saved = savedMap[s];
+            if (saved) {
+                // dollarEffort takes priority; fallback to old SP sum converted (or just 0 if never set)
+                const dollar = saved.dollarEffort != null ? saved.dollarEffort : 0;
+                return { system: s, dollarEffort: dollar, confidencePct: saved.confidencePct || 0 };
+            }
+            return { system: s, dollarEffort: 0, confidencePct: 0, isNew: true };
+        });
 
         // Flag systems removed from initiative but with saved LOE data
         loe.systems.forEach(s => {
-            if (!latestSystems.includes(s.system) && s.dollarEffort) {
+            if (!latestSystems.includes(s.system) && (s.dollarEffort || s.devEffort || s.qaEffort || s.supportEffort)) {
                 mergedSystems.push({ system: s.system, dollarEffort: s.dollarEffort || 0, confidencePct: s.confidencePct || 0, removed: true });
             }
         });
@@ -3876,7 +3881,7 @@ app.post('/api/story-mapping/analyze', authMiddleware, async (req, res) => {
 // POST /api/story-mapping/create-tickets â€” create approved tickets in JIRA
 app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) => {
     try {
-        const { items, projectKey, jiraBaseUrl, teamName, sprintName } = req.body;
+        const { items, projectKey, jiraBaseUrl, teamName, sprintName, featureName, featureKey } = req.body;
         if (!items || !projectKey) return res.status(400).json({ success: false, message: 'items and projectKey are required' });
 
         const { base, token } = getJiraCredentials(jiraBaseUrl || '');
@@ -3918,14 +3923,17 @@ app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) =
         for (const item of items) {
             if (!item.approved || item.type === 'Epic') continue;
             try {
+                const descLines = [item.summary];
+                if (featureName) descLines.push(`\nFeature: ${featureName}${featureKey ? ` (${featureKey})` : ''}`);
                 const issueFields = {
                     project: { key: projectKey },
                     summary: item.summary,
-                    description: item.summary,
+                    description: descLines.join('\n'),
                     issuetype: { name: item.type }
                 };
                 if (teamName) issueFields.customfield_10317 = { value: teamName };
                 if (sprintId) issueFields.customfield_10020 = sprintId;
+                if (featureKey) issueFields.customfield_10102 = featureKey;
                 const issueBody = { fields: issueFields };
                 const https = require('https');
                 const payload = JSON.stringify(issueBody);
