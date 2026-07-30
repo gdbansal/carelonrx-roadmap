@@ -3881,13 +3881,26 @@ function analyzeWithRules(featureData, confluenceData) {
         return taskScore > storyScore ? 'Task' : 'Story';
     }
 
-    function makeSummary(text, maxLen = 80) {
-        const clean = text.replace(/^\s*[-â€¢*\d.]+\s*/, '').trim();
-        return clean.length > maxLen ? clean.substring(0, maxLen).trim() + '...' : clean;
+    function cleanMarkup(text) {
+        return text
+            .replace(/\{[^}]*\}/g, '')        // remove {color}, {+}, {panel} etc.
+            .replace(/\[([^|\]]+)\|?[^\]]*\]/g, '$1')  // [link text|url] -> link text
+            .replace(/\*([^*]+)\*/g, '$1')    // *bold* -> bold
+            .replace(/\+([^+]+)\+/g, '$1')    // +underline+ -> underline
+            .replace(/^[+*\s]+/, '')           // leading + or * chars
+            .replace(/[*+]+/g, ' ')            // remaining * and + chars
+            .replace(/\.{2,}/g, '')            // remove ellipsis ...
+            .replace(/\s{2,}/g, ' ')           // collapse spaces
+            .trim();
+    }
+
+    function makeSummary(text, maxLen = 120) {
+        const clean = cleanMarkup(text.replace(/^\s*[-•*\d.]+\s*/, '').trim());
+        return clean.length > maxLen ? clean.substring(0, maxLen).trim() : clean;
     }
 
     function makeAcceptanceCriteria(text, type) {
-        const clean = text.replace(/^\s*[-â€¢*\d.]+\s*/, '').trim();
+        const clean = cleanMarkup(text.replace(/^\s*[-•*\d.]+\s*/, '').trim());
         if (type === 'Story') return `Given the feature is implemented,\nWhen ${clean.toLowerCase()},\nThen the system should behave as expected.`;
         return `Complete the following: ${clean}`;
     }
