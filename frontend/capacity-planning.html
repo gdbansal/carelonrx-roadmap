@@ -147,7 +147,7 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse" id="capacityTable">
+                <table class="w-full border-collapse" id="capacityTable" aria-label="Team capacity plan">
                     <thead>
                         <tr>
                             <td colspan="10" id="piBannerRow"
@@ -157,13 +157,13 @@
                             </td>
                         </tr>
                         <tr class="bg-gray-100" id="sprintHeaderRow">
-                            <th class="border border-gray-300 px-4 py-2 text-left">Resource Name</th>
-                            <th class="border border-gray-300 px-4 py-2 text-left">Role</th>
-                            <th class="border border-gray-300 px-4 py-2 text-center">Capacity %</th>
-                            <th class="border border-gray-300 px-4 py-2 text-center">Sprint 1</th>
-                            <th class="border border-gray-300 px-4 py-2 text-center">Sprint 2</th>
-                            <th class="border border-gray-300 px-4 py-2 text-center">Sprint 3</th>
-                            <th class="border border-gray-300 px-4 py-2 text-center">Sprint 4</th>
+                            <th scope="col" class="border border-gray-300 px-4 py-2 text-left">Resource Name</th>
+                            <th scope="col" class="border border-gray-300 px-4 py-2 text-left">Role</th>
+                            <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Capacity %</th>
+                            <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Sprint 1</th>
+                            <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Sprint 2</th>
+                            <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Sprint 3</th>
+                            <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Sprint 4</th>
                         </tr>
                     </thead>
                     <tbody id="capacityTableBody">
@@ -180,7 +180,7 @@
 
             <!-- Avg Points Section -->
             <div class="mt-6 overflow-x-auto">
-                <table class="w-full border-collapse" id="avgPointsTable">
+                <table class="w-full border-collapse" id="avgPointsTable" aria-label="Average points per sprint">
                     <tbody id="avgPointsBody"></tbody>
                 </table>
             </div>
@@ -189,15 +189,15 @@
             <div class="mt-6">
                 <h3 class="text-base font-bold mb-2" style="color:#5009B5;">Team Availability</h3>
                 <div class="overflow-x-auto">
-                    <table class="w-full border-collapse" id="availabilityTable">
+                    <table class="w-full border-collapse" id="availabilityTable" aria-label="Team availability per sprint">
                         <thead>
                             <tr style="background-color:#5009B5;" class="text-white">
-                                <th class="border border-gray-300 px-4 py-2 text-center">Sprints</th>
-                                <th class="border border-gray-300 px-4 py-2 text-center">Working days<br><span class="text-xs font-normal">(Team Avg)</span></th>
-                                <th class="border border-gray-300 px-4 py-2 text-center">Admin Work %</th>
-                                <th class="border border-gray-300 px-4 py-2 text-center">Contingency %</th>
-                                <th class="border border-gray-300 px-4 py-2 text-center">Availability<br><span class="text-xs font-normal">(days/sprint)</span></th>
-                                <th class="border border-gray-300 px-4 py-2 text-center">Suggested<br><span class="text-xs font-normal">Points per sprint</span></th>
+                                <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Sprints</th>
+                                <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Working days<br><span class="text-xs font-normal">(Team Avg)</span></th>
+                                <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Admin Work %</th>
+                                <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Contingency %</th>
+                                <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Availability<br><span class="text-xs font-normal">(days/sprint)</span></th>
+                                <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Suggested<br><span class="text-xs font-normal">Points per sprint</span></th>
                             </tr>
                         </thead>
                         <tbody id="availabilityBody"></tbody>
@@ -635,10 +635,10 @@
             // Rebuild sprint header row
             const headerRow = document.getElementById('sprintHeaderRow');
             headerRow.innerHTML = `
-                <th class="border border-gray-300 px-4 py-2 text-left">Resource Name</th>
-                <th class="border border-gray-300 px-4 py-2 text-left">Role</th>
-                <th class="border border-gray-300 px-4 py-2 text-center">Capacity %</th>
-                ${sprintColumns.map(s => `<th class="border border-gray-300 px-4 py-2 text-center">${s.name}</th>`).join('')}
+                <th scope="col" class="border border-gray-300 px-4 py-2 text-left">Resource Name</th>
+                <th scope="col" class="border border-gray-300 px-4 py-2 text-left">Role</th>
+                <th scope="col" class="border border-gray-300 px-4 py-2 text-center">Capacity %</th>
+                ${sprintColumns.map(s => `<th scope="col" class="border border-gray-300 px-4 py-2 text-center">${s.name}</th>`).join('')}
             `;
 
             // Rebuild footer

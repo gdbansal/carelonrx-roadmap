@@ -187,13 +187,13 @@
                 System Usage Statistics
             </h3>
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full" aria-label="System usage statistics">
                     <thead>
                         <tr class="border-b border-gray-200">
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">System Name</th>
-                            <th class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Initiatives</th>
-                            <th class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Percentage</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Usage</th>
+                            <th scope="col" class="text-left py-3 px-4 text-sm font-semibold text-gray-700">System Name</th>
+                            <th scope="col" class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Initiatives</th>
+                            <th scope="col" class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Percentage</th>
+                            <th scope="col" class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Usage</th>
                         </tr>
                     </thead>
                     <tbody id="systemStatsTable">
@@ -210,14 +210,14 @@
                 User Activity
             </h3>
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full" aria-label="User activity">
                     <thead>
                         <tr class="border-b border-gray-200">
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">User</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Email</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Role</th>
-                            <th class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Initiatives Created</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Last Active</th>
+                            <th scope="col" class="text-left py-3 px-4 text-sm font-semibold text-gray-700">User</th>
+                            <th scope="col" class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Email</th>
+                            <th scope="col" class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Role</th>
+                            <th scope="col" class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Initiatives Created</th>
+                            <th scope="col" class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Last Active</th>
                         </tr>
                     </thead>
                     <tbody id="userActivityTable">
@@ -364,15 +364,15 @@
                     </div>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full">
+                    <table class="w-full" aria-label="Audit logs">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Timestamp</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Event Type</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">User</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Session</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Details</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">IP Address</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Timestamp</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Event Type</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">User</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Session</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Details</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">IP Address</th>
                             </tr>
                         </thead>
                         <tbody id="se-logsTableBody" class="bg-white divide-y divide-gray-200"></tbody>

@@ -14,7 +14,7 @@
 </head>
 <body class="bg-gray-50">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-carelon-purple focus:text-white focus:rounded-lg focus:font-semibold">Skip to main content</a>
-    <nav class="bg-white shadow-lg">
+    <nav aria-label="Main navigation" class="bg-white shadow-lg">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
@@ -26,13 +26,13 @@
                 <div class="flex items-center space-x-4">
                     <!-- Profile Dropdown -->
                     <div class="relative">
-                        <button type="button" onclick="toggleProfileDropdown()" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
+                        <button type="button" id="profileMenuBtn" onclick="toggleProfileDropdown()" aria-haspopup="true" aria-expanded="false" aria-controls="profileDropdown" class="flex items-center space-x-3 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-2 transition">
                             <div id="userProfileImage" class="w-8 h-8 rounded-full bg-carelon-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                                 <span id="userInitials">U</span>
                                 <img id="userImage" src="" alt="Profile" class="hidden w-full h-full object-cover">
                             </div>
                             <span id="userName" class="font-semibold text-gray-700"></span>
-                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                            <i data-lucide="chevron-down" aria-hidden="true" class="w-4 h-4 text-gray-500"></i>
                         </button>
                         
                         <!-- Dropdown Menu -->
@@ -65,25 +65,25 @@
         <!-- Tab Navigation -->
         <div class="bg-white rounded-lg shadow-lg mb-6">
             <div class="border-b border-gray-200">
-                <nav class="flex space-x-8 px-6" aria-label="Tabs">
-                    <button type="button" onclick="switchTab('users')" id="usersTab" class="tab-button active border-b-2 border-blue-600 py-4 px-1 text-sm font-semibold text-blue-600 flex items-center space-x-2">
-                        <i data-lucide="users" class="w-4 h-4"></i>
+                <nav aria-label="Admin panel sections" class="flex space-x-8 px-6">
+                    <button type="button" role="tab" aria-selected="true" aria-controls="usersContent" onclick="switchTab('users')" id="usersTab" class="tab-button active border-b-2 border-blue-600 py-4 px-1 text-sm font-semibold text-blue-600 flex items-center space-x-2">
+                        <i data-lucide="users" aria-hidden="true" class="w-4 h-4"></i>
                         <span>User Management</span>
                     </button>
-                    <button type="button" onclick="switchTab('lob')" id="lobTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
-                        <i data-lucide="briefcase" class="w-4 h-4"></i>
+                    <button type="button" role="tab" aria-selected="false" aria-controls="lobContent" onclick="switchTab('lob')" id="lobTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                        <i data-lucide="briefcase" aria-hidden="true" class="w-4 h-4"></i>
                         <span>Line of Business</span>
                     </button>
-                    <button type="button" onclick="switchTab('lobsystems')" id="lobsystemsTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
-                        <i data-lucide="link" class="w-4 h-4"></i>
+                    <button type="button" role="tab" aria-selected="false" aria-controls="lobsystemsContent" onclick="switchTab('lobsystems')" id="lobsystemsTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                        <i data-lucide="link" aria-hidden="true" class="w-4 h-4"></i>
                         <span>LOB vs Systems</span>
                     </button>
-                    <button type="button" onclick="switchTab('team')" id="teamTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
-                        <i data-lucide="users" class="w-4 h-4"></i>
+                    <button type="button" role="tab" aria-selected="false" aria-controls="teamContent" onclick="switchTab('team')" id="teamTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                        <i data-lucide="users" aria-hidden="true" class="w-4 h-4"></i>
                         <span>Team Members</span>
                     </button>
-                    <button type="button" onclick="switchTab('rolemodule')" id="rolemoduleTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
-                        <i data-lucide="grid" class="w-4 h-4"></i>
+                    <button type="button" role="tab" aria-selected="false" aria-controls="rolemoduleContent" onclick="switchTab('rolemodule')" id="rolemoduleTab" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-semibold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                        <i data-lucide="grid" aria-hidden="true" class="w-4 h-4"></i>
                         <span>Role vs Module</span>
                     </button>
                 </nav>
@@ -591,6 +591,37 @@
 
     <script>
         const API_BASE = window.PRODUCT360_API_BASE || '';
+
+        // WCAG 2.1.2 — Focus trap for modals
+        const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+        const _trapHandlers = new Map();
+        function openModal(modalId, triggerEl) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal._triggerEl = triggerEl || document.activeElement;
+            modal.classList.remove('hidden');
+            const first = modal.querySelectorAll(FOCUSABLE)[0];
+            if (first) first.focus();
+            function handler(e) {
+                if (e.key !== 'Tab') return;
+                const focusable = Array.from(modal.querySelectorAll(FOCUSABLE));
+                if (!focusable.length) { e.preventDefault(); return; }
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
+                else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
+            }
+            modal.addEventListener('keydown', handler);
+            _trapHandlers.set(modalId, handler);
+        }
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.add('hidden');
+            const handler = _trapHandlers.get(modalId);
+            if (handler) { modal.removeEventListener('keydown', handler); _trapHandlers.delete(modalId); }
+            if (modal._triggerEl) { modal._triggerEl.focus(); modal._triggerEl = null; }
+        }
+
         let editingUserId = null;
         let editingLobId = null;
         let editingMemberId = null;
@@ -624,17 +655,21 @@
 
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
-            dropdown.classList.toggle('hidden');
+            const btn = document.getElementById('profileMenuBtn');
+            const isHidden = dropdown.classList.toggle('hidden');
+            btn.setAttribute('aria-expanded', isHidden ? 'false' : 'true');
             lucide.createIcons();
         }
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('profileDropdown');
-            const button = event.target.closest('button[onclick="toggleProfileDropdown()"]');
+            const btn = document.getElementById('profileMenuBtn');
+            const button = event.target.closest('#profileMenuBtn');
             
             if (!button && !dropdown.contains(event.target)) {
                 dropdown.classList.add('hidden');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
             }
         });
 
@@ -839,7 +874,7 @@
             editingUserId = null;
             document.getElementById('modalTitle').textContent = 'Add New User';
             document.getElementById('userForm').reset();
-            document.getElementById('userModal').classList.remove('hidden');
+            openModal('userModal');
             populateRoleDropdown();
             lucide.createIcons();
         }
@@ -901,7 +936,7 @@
         }
 
         function closeUserModal() {
-            document.getElementById('userModal').classList.add('hidden');
+            closeModal('userModal');
             document.getElementById('userForm').reset();
             document.getElementById('password').required = true;
             document.getElementById('password').placeholder = 'Enter password';
@@ -994,10 +1029,11 @@
         // TAB SWITCHING
         // ============================================
         function switchTab(tab) {
-            // Update tab buttons
+            // Update tab buttons — visual state + aria-selected
             document.querySelectorAll('.tab-button').forEach(btn => {
                 btn.classList.remove('active', 'border-blue-600', 'text-blue-600');
                 btn.classList.add('border-transparent', 'text-gray-500');
+                btn.setAttribute('aria-selected', 'false');
             });
             
             // Update content
@@ -1008,25 +1044,30 @@
             if (tab === 'users') {
                 document.getElementById('usersTab').classList.add('active', 'border-blue-600', 'text-blue-600');
                 document.getElementById('usersTab').classList.remove('border-transparent', 'text-gray-500');
+                document.getElementById('usersTab').setAttribute('aria-selected', 'true');
                 document.getElementById('usersContent').classList.remove('hidden');
             } else if (tab === 'lob') {
                 document.getElementById('lobTab').classList.add('active', 'border-blue-600', 'text-blue-600');
                 document.getElementById('lobTab').classList.remove('border-transparent', 'text-gray-500');
+                document.getElementById('lobTab').setAttribute('aria-selected', 'true');
                 document.getElementById('lobContent').classList.remove('hidden');
                 loadLobs();
             } else if (tab === 'lobsystems') {
                 document.getElementById('lobsystemsTab').classList.add('active', 'border-blue-600', 'text-blue-600');
                 document.getElementById('lobsystemsTab').classList.remove('border-transparent', 'text-gray-500');
+                document.getElementById('lobsystemsTab').setAttribute('aria-selected', 'true');
                 document.getElementById('lobsystemsContent').classList.remove('hidden');
                 loadLobSystems();
             } else if (tab === 'team') {
                 document.getElementById('teamTab').classList.add('active', 'border-blue-600', 'text-blue-600');
                 document.getElementById('teamTab').classList.remove('border-transparent', 'text-gray-500');
+                document.getElementById('teamTab').setAttribute('aria-selected', 'true');
                 document.getElementById('teamContent').classList.remove('hidden');
                 loadTeamMembers();
             } else if (tab === 'rolemodule') {
                 document.getElementById('rolemoduleTab').classList.add('active', 'border-blue-600', 'text-blue-600');
                 document.getElementById('rolemoduleTab').classList.remove('border-transparent', 'text-gray-500');
+                document.getElementById('rolemoduleTab').setAttribute('aria-selected', 'true');
                 document.getElementById('rolemoduleContent').classList.remove('hidden');
                 if (roleMappings.length === 0) loadRoleMappings();
             }
@@ -1100,7 +1141,7 @@
             document.getElementById('lobModalTitle').textContent = 'Add Line of Business';
             document.getElementById('lobForm').reset();
             document.getElementById('lobStatusContainer').classList.add('hidden');
-            document.getElementById('lobModal').classList.remove('hidden');
+            openModal('lobModal');
             lucide.createIcons();
         }
 
@@ -1158,7 +1199,7 @@
         }
 
         function closeLobModal() {
-            document.getElementById('lobModal').classList.add('hidden');
+            closeModal('lobModal');
             document.getElementById('lobForm').reset();
             editingLobId = null;
         }
@@ -1663,7 +1704,7 @@
             document.getElementById('memberStatusContainer').classList.add('hidden');
             document.getElementById('memberProject').style.display = 'none';
             document.getElementById('memberProject').required = false;
-            document.getElementById('teamMemberModal').classList.remove('hidden');
+            openModal('teamMemberModal');
             activeJiraSource = 'jira1';
             jiraProjectsLoaded = false;
             loadLobsIntoMemberModal();
@@ -1739,7 +1780,7 @@
         }
 
         function closeTeamMemberModal() {
-            document.getElementById('teamMemberModal').classList.add('hidden');
+            closeModal('teamMemberModal');
             document.getElementById('teamMemberForm').reset();
             editingMemberId = null;
         }
