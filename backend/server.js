@@ -4019,14 +4019,14 @@ app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) =
         for (const item of items) {
             if (!item.approved || item.type === 'Epic') continue;
             try {
-                const descLines = [item.summary];
-                if (featureName) descLines.push(`\nFeature: ${featureName}${featureKey ? ` (${featureKey})` : ''}`);
+                const acText = item.acceptanceCriteria || item.expectation || '';
                 const issueFields = {
                     project: { key: projectKey },
                     summary: item.summary,
-                    description: descLines.join('\n'),
+                    description: item.summary,
                     issuetype: { name: item.type }
                 };
+                if (acText) issueFields.customfield_10310 = acText;
                 if (teamName) issueFields.customfield_10317 = { value: teamName };
                 if (sprintId) issueFields.customfield_10020 = sprintId;
                 if (featureKey) issueFields.customfield_10102 = featureKey;
