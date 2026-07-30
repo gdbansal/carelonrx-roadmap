@@ -2103,7 +2103,9 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
         const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
 
         const includeClosed = req.query.includeClosed === 'true';
+        const bustCache   = req.query.bust === 'true';
         const cacheKey = `jira1:sprint-for-team:${teamName.toLowerCase()}:${includeClosed}`;
+        if (bustCache) jiraCache.delete(cacheKey);
         const cached = jiraCacheGet(cacheKey);
         if (cached) return res.json(cached);
 
@@ -2128,23 +2130,22 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             return res.json({ success: false, message: `No board found for team: ${teamName}`, sprints: [], preSelectedSprintId: null });
         }
 
-        // Step 2: Fetch sprints — include closed if caller requests it (capacity-planning needs closed sprints for past PIs)
-        const sprintStates = includeClosed ? ['closed', 'active', 'future'] : ['active', 'future'];
-        const PAGE_SIZE = 50;
+        // Step 2: Fetch sprints — JIRA supports comma-separated states in one call,
+        // which avoids per-state ordering/pagination edge cases.
+        const stateParam = includeClosed ? 'closed,active,future' : 'active,future';
+        const PAGE_SIZE = 100;
         let allSprints = [];
-        for (const state of sprintStates) {
-            let sprintStart = 0;
-            let pageCount = 0;
-            while (pageCount < 40) {
-                const { status: ss, body: sprintsBody } = await jiraRequest(
-                    `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${state}&maxResults=${PAGE_SIZE}&startAt=${sprintStart}`
-                );
-                if (ss !== 200 || !sprintsBody.values || sprintsBody.values.length === 0) break;
-                allSprints = allSprints.concat(sprintsBody.values);
-                if (sprintsBody.values.length < PAGE_SIZE) break;
-                sprintStart += sprintsBody.values.length;
-                pageCount++;
-            }
+        let sprintStart = 0;
+        let pageCount = 0;
+        while (pageCount < 40) {
+            const { status: ss, body: sprintsBody } = await jiraRequest(
+                `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${stateParam}&maxResults=${PAGE_SIZE}&startAt=${sprintStart}`
+            );
+            if (ss !== 200 || !sprintsBody.values || sprintsBody.values.length === 0) break;
+            allSprints = allSprints.concat(sprintsBody.values);
+            if (sprintsBody.values.length < PAGE_SIZE) break;
+            sprintStart += sprintsBody.values.length;
+            pageCount++;
         }
 
         // Step 3: Sort by startDate ascending

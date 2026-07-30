@@ -569,7 +569,7 @@
 
             try {
                 const res = await fetch(
-                    `${API_BASE}/api/jira/sprint-for-team?teamName=${encodeURIComponent(teamName)}&includeClosed=true`,
+                    `${API_BASE}/api/jira/sprint-for-team?teamName=${encodeURIComponent(teamName)}&includeClosed=true&bust=true`,
                     { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
                 );
                 const data = await res.json();
