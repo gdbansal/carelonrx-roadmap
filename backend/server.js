@@ -162,6 +162,25 @@ function isValidObjectId(id) {
 // V3: In-memory token blacklist (invalidated tokens until their natural expiry)
 const tokenBlacklist = new Set();
 
+// JIRA in-memory cache — keyed by cache key, stores { data, expiry }
+const jiraCache = new Map();
+function jiraCacheGet(key) {
+    const entry = jiraCache.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiry) { jiraCache.delete(key); return null; }
+    return entry.data;
+}
+function jiraCacheSet(key, data, ttlMs) {
+    jiraCache.set(key, { data, expiry: Date.now() + ttlMs });
+}
+const TTL = {
+    PROJECTS:     60 * 60 * 1000,  // 1 hour  — projects rarely change
+    BOARDS:       60 * 60 * 1000,  // 1 hour  — board list is stable
+    TEAMS:        30 * 60 * 1000,  // 30 min  — team membership changes occasionally
+    SPRINTS:      15 * 60 * 1000,  // 15 min  — sprint state can change
+    ACTIVE_TEAMS: 30 * 60 * 1000   // 30 min  — expensive paginated call
+};
+
 // V3: Wrap verifyToken to reject blacklisted tokens
 const _originalVerifyToken = verifyToken;
 verifyToken = async function(token) {
@@ -1845,6 +1864,10 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
             return res.status(400).json({ success: false, message: 'projectKey query param is required' });
         }
 
+        const cacheKey = `jira1:sprints:${projectKey}`;
+        const cached = jiraCacheGet(cacheKey);
+        if (cached) return res.json(cached);
+
         const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
 
         // Step 1: find boards for this project
@@ -1874,7 +1897,9 @@ app.get('/api/jira/sprints', authMiddleware, async (req, res) => {
             }
         }
 
-        res.json({ success: true, sprints });
+        const payload = { success: true, sprints };
+        jiraCacheSet(cacheKey, payload, TTL.SPRINTS);
+        res.json(payload);
     } catch (error) {
         console.error('JIRA sprints error:', error);
         res.status(500).json({ success: false, message: `Failed to fetch sprints: ${error.message}` });
@@ -1890,6 +1915,10 @@ app.get('/api/jira/boards', authMiddleware, async (req, res) => {
         if (!projectKey) {
             return res.status(400).json({ success: false, message: 'projectKey is required', boards: [] });
         }
+        const cacheKey = `jira1:boards:${projectKey}`;
+        const cached = jiraCacheGet(cacheKey);
+        if (cached) return res.json(cached);
+
         const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
         const url = `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=50`;
         const { status, body } = await jiraRequest(url);
@@ -1898,7 +1927,9 @@ app.get('/api/jira/boards', authMiddleware, async (req, res) => {
         }
         const boards = body.values.map(b => ({ id: b.id, name: b.name, type: b.type }))
                                   .sort((a, b) => a.name.localeCompare(b.name));
-        res.json({ success: true, boards });
+        const payload = { success: true, boards };
+        jiraCacheSet(cacheKey, payload, TTL.BOARDS);
+        res.json(payload);
     } catch (error) {
         console.error('JIRA boards error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch JIRA boards', boards: [] });
@@ -1934,6 +1965,10 @@ app.get('/api/jira/teams', authMiddleware, async (req, res) => {
         if (!projectKey) {
             return res.status(400).json({ success: false, message: 'projectKey is required', teams: [] });
         }
+        const cacheKey = `jira1:teams:${projectKey}`;
+        const cached = jiraCacheGet(cacheKey);
+        if (cached) return res.json(cached);
+
         const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
         // Fetch distinct Team Name values (customfield_10317) from all issues in the project
         const teamsMap = {};
@@ -1953,7 +1988,9 @@ app.get('/api/jira/teams', authMiddleware, async (req, res) => {
             if (body.issues.length === 0) break;
         }
         const teams = Object.keys(teamsMap).sort();
-        res.json({ success: true, teams });
+        const payload = { success: true, teams };
+        jiraCacheSet(cacheKey, payload, TTL.TEAMS);
+        res.json(payload);
     } catch (error) {
         console.error('JIRA teams error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch JIRA teams', teams: [] });
@@ -1966,6 +2003,10 @@ app.get('/api/jira/projects', authMiddleware, async (req, res) => {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
             return res.status(503).json({ success: false, message: 'JIRA integration not configured', projects: [] });
         }
+        const cacheKey = 'jira1:projects:all';
+        const cached = jiraCacheGet(cacheKey);
+        if (cached) return res.json(cached);
+
         const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
         const { status, body } = await jiraRequest(`${jiraBase}/rest/api/2/project?maxResults=500`);
         if (status !== 200 || !Array.isArray(body)) {
@@ -1977,7 +2018,9 @@ app.get('/api/jira/projects', authMiddleware, async (req, res) => {
             .filter(p => { if (seen.has(p.key)) return false; seen.add(p.key); return true; })
             .map(p => ({ key: p.key, name: p.name, label: `${p.name} (${p.key})` }))
             .sort((a, b) => a.name.localeCompare(b.name));
-        res.json({ success: true, projects });
+        const payload = { success: true, projects };
+        jiraCacheSet(cacheKey, payload, TTL.PROJECTS);
+        res.json(payload);
     } catch (error) {
         console.error('JIRA projects error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch projects', projects: [] });
@@ -1989,7 +2032,11 @@ app.get('/api/jira/active-teams', authMiddleware, async (req, res) => {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
             return res.status(503).json({ success: false, message: 'JIRA integration not configured', data: [] });
         }
-        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
+        const cacheKey = 'jira1:active-teams';
+        const cached = jiraCacheGet(cacheKey);
+        if (cached) return res.json(cached);
+
+        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '/');
 
         // Step 1: Get all non-archived projects
         const { status: ps, body: projectsBody } = await jiraRequest(`${jiraBase}/rest/api/2/project?maxResults=500`);
@@ -2054,7 +2101,9 @@ app.get('/api/jira/active-teams', authMiddleware, async (req, res) => {
             }))
             .sort((a, b) => a.projectName.localeCompare(b.projectName));
 
-        res.json({ success: true, totalProjects: result.length, totalTeams: result.reduce((s, p) => s + p.activeTeams.length, 0), data: result });
+        const payload = { success: true, totalProjects: result.length, totalTeams: result.reduce((s, p) => s + p.activeTeams.length, 0), data: result };
+        jiraCacheSet(cacheKey, payload, TTL.ACTIVE_TEAMS);
+        res.json(payload);
     } catch (error) {
         console.error('JIRA active-teams error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch active teams', data: [] });
@@ -2072,6 +2121,11 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             return res.status(503).json({ success: false, message: 'JIRA integration not configured', sprints: [], preSelectedSprintId: null });
         }
         const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
+
+        const includeClosed = req.query.includeClosed === 'true';
+        const cacheKey = `jira1:sprint-for-team:${teamName.toLowerCase()}:${includeClosed}`;
+        const cached = jiraCacheGet(cacheKey);
+        if (cached) return res.json(cached);
 
         // Step 1: Find board matching teamName (case-insensitive)
         let matchedBoard = null;
@@ -2095,7 +2149,6 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
         }
 
         // Step 2: Fetch sprints — include closed if caller requests it (capacity-planning needs closed sprints for past PIs)
-        const includeClosed = req.query.includeClosed === 'true';
         const sprintStates = includeClosed ? ['closed', 'active', 'future'] : ['active', 'future'];
         const PAGE_SIZE = 50;
         let allSprints = [];
@@ -2137,14 +2190,16 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             endDate: s.endDate || null
         }));
 
-        res.json({
+        const payload = {
             success: true,
             boardId: matchedBoard.id,
             boardName: matchedBoard.name,
             sprints,
             preSelectedSprintId: preSelected ? preSelected.id : null,
             preSelectedSprintName: preSelected ? preSelected.name : null
-        });
+        };
+        jiraCacheSet(cacheKey, payload, TTL.SPRINTS);
+        res.json(payload);
     } catch (error) {
         console.error('JIRA sprint-for-team error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch sprints', sprints: [], preSelectedSprintId: null });
@@ -2325,6 +2380,10 @@ app.get('/api/jira2/projects', authMiddleware, async (req, res) => {
         if (!process.env.JIRA2_BASE_URL || !process.env.JIRA2_API_TOKEN) {
             return res.json({ success: false, message: 'JIRA2 integration not configured', projects: [] });
         }
+        const cacheKey = 'jira2:projects:all';
+        const cached = jiraCacheGet(cacheKey);
+        if (cached) return res.json(cached);
+
         const jiraBase = process.env.JIRA2_BASE_URL.replace(/\/$/, '');
         const url = `${jiraBase}/rest/api/2/project?maxResults=200`;
         const { status, body } = await jiraRequest2(url);
@@ -2333,7 +2392,9 @@ app.get('/api/jira2/projects', authMiddleware, async (req, res) => {
         }
         const projects = body.map(p => ({ key: p.key, name: p.name }))
                              .sort((a, b) => a.name.localeCompare(b.name));
-        res.json({ success: true, projects });
+        const payload = { success: true, projects };
+        jiraCacheSet(cacheKey, payload, TTL.PROJECTS);
+        res.json(payload);
     } catch (error) {
         console.error('JIRA2 projects error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch JIRA2 projects', projects: [] });
@@ -2349,6 +2410,10 @@ app.get('/api/jira2/teams', authMiddleware, async (req, res) => {
         if (!projectKey) {
             return res.status(400).json({ success: false, message: 'projectKey is required', teams: [] });
         }
+        const cacheKey = `jira2:teams:${projectKey}`;
+        const cached = jiraCacheGet(cacheKey);
+        if (cached) return res.json(cached);
+
         const jiraBase = process.env.JIRA2_BASE_URL.replace(/\/$/, '');
         // Fetch boards for the project directly - board name = team name, no sprint dependency
         const teams = [];
@@ -2365,7 +2430,9 @@ app.get('/api/jira2/teams', authMiddleware, async (req, res) => {
             if (body.values.length === 0) break;
         }
         teams.sort();
-        res.json({ success: true, teams });
+        const payload = { success: true, teams };
+        jiraCacheSet(cacheKey, payload, TTL.TEAMS);
+        res.json(payload);
     } catch (error) {
         console.error('JIRA2 teams error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch JIRA2 teams', teams: [] });
@@ -2381,6 +2448,10 @@ app.get('/api/jira2/boards', authMiddleware, async (req, res) => {
         if (!projectKey) {
             return res.status(400).json({ success: false, message: 'projectKey is required', boards: [] });
         }
+        const cacheKey = `jira2:boards:${projectKey}`;
+        const cached = jiraCacheGet(cacheKey);
+        if (cached) return res.json(cached);
+
         const jiraBase = process.env.JIRA2_BASE_URL.replace(/\/$/, '');
         const url = `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=50`;
         const { status, body } = await jiraRequest2(url);
@@ -2389,7 +2460,9 @@ app.get('/api/jira2/boards', authMiddleware, async (req, res) => {
         }
         const boards = body.values.map(b => ({ id: b.id, name: b.name, type: b.type }))
                                   .sort((a, b) => a.name.localeCompare(b.name));
-        res.json({ success: true, boards });
+        const payload = { success: true, boards };
+        jiraCacheSet(cacheKey, payload, TTL.BOARDS);
+        res.json(payload);
     } catch (error) {
         console.error('JIRA2 boards error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch JIRA2 boards', boards: [] });
@@ -2405,6 +2478,10 @@ app.get('/api/jira2/sprints', authMiddleware, async (req, res) => {
         if (!projectKey) {
             return res.status(400).json({ success: false, message: 'projectKey query param is required' });
         }
+        const cacheKey = `jira2:sprints:${projectKey}`;
+        const cached = jiraCacheGet(cacheKey);
+        if (cached) return res.json(cached);
+
         const jiraBase = process.env.JIRA2_BASE_URL.replace(/\/$/, '');
         const boardsUrl = `${jiraBase}/rest/agile/1.0/board?projectKeyOrId=${encodeURIComponent(projectKey)}&maxResults=10`;
         const { status: bs, body: boardsBody } = await jiraRequest2(boardsUrl);
@@ -2424,7 +2501,9 @@ app.get('/api/jira2/sprints', authMiddleware, async (req, res) => {
                 break;
             }
         }
-        res.json({ success: true, sprints });
+        const payload = { success: true, sprints };
+        jiraCacheSet(cacheKey, payload, TTL.SPRINTS);
+        res.json(payload);
     } catch (error) {
         console.error('JIRA2 sprints error:', error);
         res.status(500).json({ success: false, message: `Failed to fetch JIRA2 sprints: ${error.message}` });
