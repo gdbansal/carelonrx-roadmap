@@ -626,7 +626,11 @@
                     'Dev analysis is more',
                     'Development is more',
                     'Dev scenarios to be covered are more',
-                    'Unit testing will be more'
+                    'Unit testing will be more',
+                    'Cross-team dependencies involved',
+                    'Infrastructure or environment setup needed',
+                    'Design or architecture changes required',
+                    'Requirements are unclear or incomplete'
                 ];
             } else if (role === 'QA') {
                 const customReasons = state.currentSession.qaEstimationReasons;
@@ -635,10 +639,14 @@
                 }
                 // Return default QA reasons if none configured
                 return [
-                    'QA Analysis will take more time',
-                    'Test cases/ scenarios are more',
-                    'Testing would take more time',
-                    'Documentation will take more time'
+                    'QA analysis will take more time',
+                    'Test cases/scenarios are more',
+                    'Testing will take more time',
+                    'Documentation will take more time',
+                    'Regression impact is broader than expected',
+                    'Multiple integration points to validate',
+                    'Test data setup is complex',
+                    'Acceptance criteria are unclear'
                 ];
             }
             return [];
