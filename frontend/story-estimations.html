@@ -1599,9 +1599,7 @@
                             </div>
                             ${isSessionCreator() ? `
                                 <div class="flex gap-2">
-                                    <button type="button" onclick="startEditStory('${story.id}')" class="text-blue-600 hover:text-blue-800">
-                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
-                                    </button>
+                                    ${story.source !== 'jira' ? `<button type="button" onclick="startEditStory('${story.id}')" class="text-blue-600 hover:text-blue-800"><i data-lucide="edit-2" class="w-4 h-4"></i></button>` : ''}
                                     <button type="button" onclick="removeStory('${story.id}')" class="text-red-600 hover:text-red-800">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     </button>
@@ -2142,13 +2140,30 @@
             });
             if (selected.length === 0) { showToast('Select at least one issue to import', 'error'); return; }
             try {
+                const existingNumbers = new Set(state.stories.map(s => s.number));
+                let added = 0, skipped = 0;
                 for (const issue of selected) {
-                    await addStory(issue.key, issue.summary, false, false);
+                    const ticketId = issue.key;
+                    if (existingNumbers.has(ticketId)) { skipped++; continue; }
+                    existingNumbers.add(ticketId);
+                    state.stories.push({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        number: ticketId,
+                        numberUrl: issue.url || null,
+                        summary: issue.summary,
+                        restrictions: { devOnly: false, qaOnly: false },
+                        source: 'jira'
+                    });
+                    added++;
                 }
+                if (added === 0) { showToast('All selected issues already exist in the session.', 'warn'); return; }
+                state.currentSession.stories = state.stories;
+                await updateSession(state.sessionId, state.currentSession);
                 window.closeJiraImportModal();
                 render();
+                showToast(`${added} issue${added !== 1 ? 's' : ''} imported${skipped ? `, ${skipped} duplicate${skipped !== 1 ? 's' : ''} skipped` : ''}.`, 'success');
             } catch (e) {
-                showToast('Failed to import some issues: ' + e.message, 'error');
+                showToast('Failed to import issues: ' + e.message, 'error');
             }
         };
 
