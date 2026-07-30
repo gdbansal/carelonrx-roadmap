@@ -3708,6 +3708,31 @@ app.get('/api/loe/:initiativeId/export', authMiddleware, async (req, res) => {
 
 // ========== STORY MAPPING MODULE ==========
 
+// Helper: decode HTML entities to readable plain text
+function decodeHtmlEntities(str) {
+    return str
+        .replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&rsquo;/gi, "'")
+        .replace(/&lsquo;/gi, "'")
+        .replace(/&ldquo;/gi, '"')
+        .replace(/&rdquo;/gi, '"')
+        .replace(/&ndash;/gi, '-')
+        .replace(/&mdash;/gi, '--')
+        .replace(/&bull;/gi, '*')
+        .replace(/&middot;/gi, '*')
+        .replace(/&hellip;/gi, '...')
+        .replace(/&trade;/gi, 'TM')
+        .replace(/&reg;/gi, '(R)')
+        .replace(/&copy;/gi, '(C)')
+        .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+        .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
 // Helper: detect JIRA instance from URL
 function getJiraCredentials(url) {
     if (url.includes('elevancehealth.com')) {
@@ -3776,7 +3801,7 @@ app.post('/api/story-mapping/fetch-jira', authMiddleware, async (req, res) => {
                 if (raw && typeof raw === 'string') { acceptanceCriteria = raw; break; }
                 const rendered = body.renderedFields?.[fieldId];
                 if (rendered) {
-                    acceptanceCriteria = rendered.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+                    acceptanceCriteria = decodeHtmlEntities(rendered.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
                     break;
                 }
                 if (raw && typeof raw === 'object') { acceptanceCriteria = JSON.stringify(raw); break; }
@@ -3825,7 +3850,7 @@ app.post('/api/story-mapping/fetch-confluence', authMiddleware, async (req, res)
         if (status !== 200) return res.status(status).json({ success: false, message: `Confluence returned ${status}` });
 
         const htmlContent = body.body?.view?.value || body.body?.storage?.value || '';
-        const plainText = htmlContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        const plainText = decodeHtmlEntities(htmlContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 
         res.json({
             success: true,
@@ -3915,11 +3940,11 @@ function analyzeWithRules(featureData, confluenceData) {
 // POST /api/story-mapping/analyze
 app.post('/api/story-mapping/analyze', authMiddleware, async (req, res) => {
     try {
-        const { featureData, confluenceData } = req.body;
+        const { featureData, confluenceData, attachmentContent } = req.body;
         if (!featureData) return res.status(400).json({ success: false, message: 'featureData is required' });
 
         const mode = process.env.STORY_MAPPING_MODE || 'rule-based';
-        const items = analyzeWithRules(featureData, confluenceData);
+        const items = analyzeWithRules(featureData, confluenceData, attachmentContent);
 
         res.json({
             success: true,
