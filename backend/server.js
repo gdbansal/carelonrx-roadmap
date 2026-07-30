@@ -3257,47 +3257,46 @@ app.post('/api/capacity-plans', authMiddleware, async (req, res) => {
             });
         }
         
-        // Process each team member's capacity
-        const results = [];
-        
-        for (const capacity of capacities) {
+        // Build bulk upsert operations — one DB round trip for all team members
+        const now = new Date();
+        const bulkOps = capacities.map(capacity => {
             const { teamMemberId, teamMemberName, role, capacityPercentage, sprints } = capacity;
-            
-            // Check if plan already exists
-            let plan = await CapacityPlan.findOne({
-                lineOfBusiness,
-                project,
-                team,
-                pi,
-                teamMemberId
-            });
-            
-            if (plan) {
-                // Update existing plan
-                plan.sprints = sprints;
-                plan.capacityPercentage = capacityPercentage !== undefined ? capacityPercentage : 100;
-                plan.updatedBy = req.user.username;
-                plan.updatedAt = new Date();
-            } else {
-                // Create new plan
-                plan = new CapacityPlan({
-                    lineOfBusiness,
-                    project,
-                    team,
-                    pi,
-                    teamMemberId,
-                    teamMemberName,
-                    role,
-                    capacityPercentage: capacityPercentage !== undefined ? capacityPercentage : 100,
-                    sprints,
-                    createdBy: req.user.username
-                });
-            }
-            
-            await plan.save();
-            results.push(plan);
-        }
-        
+            return {
+                updateOne: {
+                    filter: { lineOfBusiness, project, team, pi, teamMemberId },
+                    update: {
+                        $set: {
+                            teamMemberName,
+                            role,
+                            capacityPercentage: capacityPercentage !== undefined ? capacityPercentage : 100,
+                            sprints,
+                            updatedBy: req.user.username,
+                            updatedAt: now
+                        },
+                        $setOnInsert: {
+                            lineOfBusiness,
+                            project,
+                            team,
+                            pi,
+                            teamMemberId,
+                            createdBy: req.user.username,
+                            createdAt: now
+                        }
+                    },
+                    upsert: true
+                }
+            };
+        });
+
+        await CapacityPlan.bulkWrite(bulkOps, { ordered: false });
+
+        // Fetch saved docs to return in response (matches original behaviour)
+        const teamMemberIds = capacities.map(c => c.teamMemberId);
+        const results = await CapacityPlan.find({
+            lineOfBusiness, project, team, pi,
+            teamMemberId: { $in: teamMemberIds }
+        });
+
         res.json({
             success: true,
             message: 'Capacity plans saved successfully',
