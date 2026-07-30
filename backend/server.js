@@ -2097,21 +2097,20 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
         // Step 2: Fetch sprints — include closed if caller requests it (capacity-planning needs closed sprints for past PIs)
         const includeClosed = req.query.includeClosed === 'true';
         const sprintStates = includeClosed ? ['closed', 'active', 'future'] : ['active', 'future'];
+        const PAGE_SIZE = 50;
         let allSprints = [];
         for (const state of sprintStates) {
             let sprintStart = 0;
-            let sprintTotal = 1;
             let pageCount = 0;
-            while (sprintStart < sprintTotal && pageCount < 20) {
+            while (pageCount < 40) {
                 const { status: ss, body: sprintsBody } = await jiraRequest(
-                    `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${state}&maxResults=100&startAt=${sprintStart}`
+                    `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${state}&maxResults=${PAGE_SIZE}&startAt=${sprintStart}`
                 );
-                if (ss !== 200 || !sprintsBody.values) break;
+                if (ss !== 200 || !sprintsBody.values || sprintsBody.values.length === 0) break;
                 allSprints = allSprints.concat(sprintsBody.values);
-                sprintTotal = sprintsBody.total ?? sprintsBody.values.length + sprintStart;
-                sprintStart += sprintsBody.values.length || 100;
+                if (sprintsBody.values.length < PAGE_SIZE) break;
+                sprintStart += sprintsBody.values.length;
                 pageCount++;
-                if (sprintsBody.values.length === 0) break;
             }
         }
 
