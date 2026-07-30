@@ -162,7 +162,8 @@
             devOnlyToggle: false,
             qaOnlyToggle: false,
             joiningViaUrl: false,
-            selectedFibonacci: {}  // { [storyId]: value } — PO's chosen SP per story
+            selectedFibonacci: {},  // { [storyId]: value } — PO's chosen SP per story
+            addMode: 'jira'  // 'jira' | 'manual'
         };
 
         function nearestFibonacci(avg) {
@@ -1469,10 +1470,10 @@
                         </h3>
                         <div class="flex gap-2 mb-3">
                             ${hasPoPrivileges() ? `
-                            <button type="button" onclick="openJiraImportModal()" class="flex-1 px-3 py-2 text-sm border-2 border-carelon-purple text-carelon-purple rounded-lg hover:bg-purple-50 transition font-medium">
+                            <button type="button" onclick="openJiraImportModal()" class="flex-1 px-3 py-2 text-sm border-2 rounded-lg transition font-medium ${state.addMode === 'jira' ? 'border-carelon-purple bg-carelon-purple text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}">
                                 Import from JIRA
                             </button>` : ''}
-                            <button type="button" onclick="toggleManualAddForm()" class="flex-1 px-3 py-2 text-sm border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+                            <button type="button" onclick="toggleManualAddForm()" class="flex-1 px-3 py-2 text-sm border-2 rounded-lg transition font-medium ${state.addMode === 'manual' ? 'border-carelon-purple bg-carelon-purple text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}">
                                 Manual Add
                             </button>
                         </div>
@@ -2110,14 +2111,18 @@
 
         // Toggle manual add form
         window.toggleManualAddForm = function() {
+            state.addMode = 'manual';
+            render();
             const form = document.getElementById('manualAddForm');
-            if (form) form.classList.toggle('hidden');
+            if (form) form.classList.remove('hidden');
         };
 
         // JIRA Import Modal
         let jiraIssuesCache = [];
 
         window.openJiraImportModal = async function() {
+            state.addMode = 'jira';
+            render();
             const modal = document.getElementById('jiraImportModal');
             if (!modal) return;
             modal.classList.remove('hidden');
