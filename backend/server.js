@@ -1936,26 +1936,6 @@ app.get('/api/jira/boards', authMiddleware, async (req, res) => {
     }
 });
 
-app.get('/api/jira/projects', authMiddleware, async (req, res) => {
-    try {
-        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
-            return res.status(503).json({ success: false, message: 'JIRA integration not configured', projects: [] });
-        }
-        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
-        const url = `${jiraBase}/rest/api/2/project?maxResults=200`;
-        const { status, body } = await jiraRequest(url);
-        if (status !== 200 || !Array.isArray(body)) {
-            return res.json({ success: true, projects: [] });
-        }
-        const projects = body.map(p => ({ key: p.key, name: p.name }))
-                             .sort((a, b) => a.name.localeCompare(b.name));
-        res.json({ success: true, projects });
-    } catch (error) {
-        console.error('JIRA projects error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch JIRA projects', projects: [] });
-    }
-});
-
 app.get('/api/jira/teams', authMiddleware, async (req, res) => {
     try {
         if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
