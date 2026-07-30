@@ -161,8 +161,29 @@
             editingStoryId: null,
             devOnlyToggle: false,
             qaOnlyToggle: false,
-            joiningViaUrl: false // Track if user is joining via shared URL
+            joiningViaUrl: false,
+            selectedFibonacci: {}  // { [storyId]: value } — PO's chosen SP per story
         };
+
+        function nearestFibonacci(avg) {
+            const fibs = [0, 0.5, 1, 2, 3, 5, 8, 13];
+            return fibs.reduce((best, f) => Math.abs(f - avg) < Math.abs(best - avg) ? f : best, fibs[0]);
+        }
+
+        function getStoryAverage(storyId) {
+            if (!state.currentSession) return null;
+            const estimations = state.currentSession.estimations[storyId] || {};
+            const vals = Object.values(estimations)
+                .map(e => typeof e === 'object' ? e.points : e)
+                .filter(p => p !== null && p !== undefined && !isNaN(p));
+            if (vals.length === 0) return null;
+            return Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
+        }
+
+        function setFibonacciOverride(storyId, val) {
+            state.selectedFibonacci[storyId] = val;
+            render();
+        }
 
         // ============================================
         // UTILITIES
@@ -703,7 +724,7 @@
             render();
         }
 
-        async function markComplete(storyId) {
+        async function markComplete(storyId, storyPoints) {
             if (!hasPoPrivileges()) return;
             
             if (!state.currentSession.completedStories) {
@@ -712,10 +733,26 @@
             
             state.currentSession.completedStories[storyId] = {
                 completedBy: state.user.name,
-                completedAt: new Date().toISOString()
+                completedAt: new Date().toISOString(),
+                storyPoints: storyPoints !== null && storyPoints !== undefined ? storyPoints : undefined
             };
 
             await updateSession(state.sessionId, state.currentSession);
+
+            // Update Jira story points if we have a value and a ticket number
+            if (storyPoints !== null && storyPoints !== undefined) {
+                const story = state.stories.find(s => s.id === storyId);
+                if (story && story.number && /^[A-Z]+-\d+$/.test(story.number)) {
+                    try {
+                        await fetch(`${API_BASE_URL}/sessions/update-story-points`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                            body: JSON.stringify({ issueKey: story.number, storyPoints })
+                        });
+                    } catch(e) { console.warn('Could not update Jira story points:', e.message); }
+                }
+            }
+
             render();
         }
 
@@ -828,16 +865,25 @@
 
         function copyShareLink() {
             const shareUrl = `${window.location.origin}${window.location.pathname}?session=${state.sessionId}`;
-            
+
+            function fallbackCopy(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                try { document.execCommand('copy'); showToast('Link copied to clipboard!', 'success'); }
+                catch(e) { showToast('Could not copy link automatically. URL: ' + text, 'warn'); }
+                document.body.removeChild(ta);
+            }
+
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    showToast('✅ Share URL copied to clipboard!\n\nShare this link with your team members to join the session.', 'error');
-                }).catch(() => {
-                    prompt('Copy this URL to share:', shareUrl);
-                });
+                navigator.clipboard.writeText(shareUrl)
+                    .then(() => showToast('Link copied to clipboard!', 'success'))
+                    .catch(() => fallbackCopy(shareUrl));
             } else {
-                // Fallback for browsers that don't support clipboard API
-                prompt('Copy this URL to share:', shareUrl);
+                fallbackCopy(shareUrl);
             }
         }
 
@@ -1710,7 +1756,34 @@
 
                     <!-- PO/Admin Actions -->
                     ${hasPoPrivileges() ? `
-                        <div class="border-t pt-3 mt-3 flex gap-2">
+                        <div class="border-t pt-3 mt-3">
+                            ${revealed ? (() => {
+                                const avg = getStoryAverage(story.id);
+                                const nearest = avg !== null ? nearestFibonacci(avg) : null;
+                                if (state.selectedFibonacci[story.id] === undefined && nearest !== null) {
+                                    state.selectedFibonacci[story.id] = nearest;
+                                }
+                                const chosen = state.selectedFibonacci[story.id] ?? nearest;
+                                return avg !== null ? `
+                                    <div class="mb-3 p-2 bg-purple-50 border border-purple-200 rounded-lg flex items-center gap-4 flex-wrap">
+                                        <span class="text-sm text-purple-800">Average: <strong>${avg}</strong></span>
+                                        <span class="text-sm text-purple-800">Nearest Fibonacci: <strong>${nearest}</strong></span>
+                                    </div>
+                                    ${!complete ? `
+                                    <div class="mb-3">
+                                        <div class="text-xs font-medium text-gray-600 mb-1">Story Points (override if needed):</div>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            ${[0, 0.5, 1, 2, 3, 5, 8, 13].map(f => `
+                                                <button type="button" onclick="setFibonacciOverride('${story.id}', ${f})"
+                                                    class="w-9 h-8 rounded text-sm font-semibold transition ${chosen === f ? 'bg-purple-700 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}">
+                                                    ${f}
+                                                </button>
+                                            `).join('')}
+                                        </div>
+                                    </div>` : ''}
+                                ` : '';
+                            })() : ''}
+                            <div class="flex gap-2">
                             ${!revealed ? `
                                 <button type="button" onclick="revealStory('${story.id}')" class="btn-carelon-primary px-3 py-1.5 text-white rounded-lg text-sm transition flex items-center space-x-1.5">
                                     <i data-lucide="eye" class="w-3.5 h-3.5"></i>
@@ -1723,7 +1796,7 @@
                                 </span>
                             `}
                             ${!complete ? `
-                                <button type="button" onclick="markComplete('${story.id}')" class="px-3 py-1.5 btn-carelon-primary rounded-lg text-sm transition flex items-center space-x-1.5">
+                                <button type="button" onclick="markComplete('${story.id}', ${state.selectedFibonacci[story.id] ?? 'null'})" class="px-3 py-1.5 btn-carelon-primary rounded-lg text-sm transition flex items-center space-x-1.5">
                                     <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                     <span>Mark Complete</span>
                                 </button>
@@ -1733,6 +1806,7 @@
                                     <span>Reopen</span>
                                 </button>
                             `}
+                            </div>
                         </div>
                     ` : ''}
                 </div>
@@ -2167,6 +2241,7 @@
             }
         };
 
+        window.setFibonacciOverride = setFibonacciOverride;
         window.removeStory = removeStory;
         window.startEditStory = startEditStory;
         window.cancelEditStory = cancelEditStory;

@@ -4093,6 +4093,46 @@ app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) =
     }
 });
 
+// POST /api/sessions/update-story-points — update Jira story points field after estimation
+app.post('/api/sessions/update-story-points', authMiddleware, async (req, res) => {
+    try {
+        const { issueKey, storyPoints } = req.body;
+        if (!issueKey || storyPoints === undefined || storyPoints === null) {
+            return res.status(400).json({ success: false, message: 'issueKey and storyPoints are required' });
+        }
+        const { base, token } = getJiraCredentials(issueKey);
+        if (!base || !token) return res.status(503).json({ success: false, message: 'JIRA not configured' });
+        const jiraBase = base.replace(/\/$/, '');
+        const https = require('https');
+        const payload = JSON.stringify({ fields: { customfield_10016: Number(storyPoints) } });
+        const parsedUrl = new URL(`${jiraBase}/rest/api/2/issue/${encodeURIComponent(issueKey)}`);
+        await new Promise((resolve, reject) => {
+            const options = {
+                hostname: parsedUrl.hostname,
+                path: parsedUrl.pathname,
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(payload)
+                }
+            };
+            const req2 = https.request(options, (r) => {
+                let d = '';
+                r.on('data', c => d += c);
+                r.on('end', () => resolve({ status: r.statusCode, body: d }));
+            });
+            req2.on('error', reject);
+            req2.write(payload);
+            req2.end();
+        });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('update-story-points error:', error);
+        res.status(500).json({ success: false, message: 'Failed to update story points' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Product 360 API running on port ${PORT}`);
 });
