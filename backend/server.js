@@ -2138,8 +2138,8 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             return res.json({ success: false, message: `No board found for team: ${teamName}`, sprints: [], preSelectedSprintId: null });
         }
 
-        // Step 2: Fetch sprints — JIRA supports comma-separated states in one call,
-        // which avoids per-state ordering/pagination edge cases.
+        // Step 2: Fetch sprints — try combined state param first (JIRA Agile API supports it);
+        // if it returns 0 results or errors, fall back to separate per-state queries.
         const stateParam = includeClosed ? 'closed,active,future' : 'active,future';
         const PAGE_SIZE = 100;
         let allSprints = [];
@@ -2149,12 +2149,33 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             const { status: ss, body: sprintsBody } = await jiraRequest(
                 `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${stateParam}&maxResults=${PAGE_SIZE}&startAt=${sprintStart}`
             );
+            console.log(`[sprint-for-team] board=${matchedBoard.id} state=${stateParam} startAt=${sprintStart} status=${ss} count=${sprintsBody && sprintsBody.values ? sprintsBody.values.length : 'N/A'} total=${sprintsBody && sprintsBody.total != null ? sprintsBody.total : 'N/A'}`);
             if (ss !== 200 || !sprintsBody.values || sprintsBody.values.length === 0) break;
             allSprints = allSprints.concat(sprintsBody.values);
             if (sprintsBody.values.length < PAGE_SIZE) break;
             sprintStart += sprintsBody.values.length;
             pageCount++;
         }
+
+        // If combined state param yielded nothing, JIRA instance may not support it — fall back per-state
+        if (allSprints.length === 0 && includeClosed) {
+            console.log(`[sprint-for-team] Combined state query returned 0 sprints — falling back to per-state queries`);
+            for (const state of ['closed', 'active', 'future']) {
+                let start = 0;
+                for (let p = 0; p < 40; p++) {
+                    const { status: ss, body: sb } = await jiraRequest(
+                        `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${state}&maxResults=${PAGE_SIZE}&startAt=${start}`
+                    );
+                    console.log(`[sprint-for-team fallback] state=${state} startAt=${start} status=${ss} count=${sb && sb.values ? sb.values.length : 'N/A'}`);
+                    if (ss !== 200 || !sb.values || sb.values.length === 0) break;
+                    allSprints = allSprints.concat(sb.values);
+                    if (sb.values.length < PAGE_SIZE) break;
+                    start += sb.values.length;
+                }
+            }
+        }
+
+        console.log(`[sprint-for-team] Total sprints fetched for board ${matchedBoard.id}: ${allSprints.length}`, allSprints.map(s => `${s.name}(${s.state})`).join(', '));
 
         // Step 3: Sort by startDate ascending
         allSprints.sort((a, b) => {
@@ -2185,7 +2206,8 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             boardName: matchedBoard.name,
             sprints,
             preSelectedSprintId: preSelected ? preSelected.id : null,
-            preSelectedSprintName: preSelected ? preSelected.name : null
+            preSelectedSprintName: preSelected ? preSelected.name : null,
+            _debug: { totalFetched: allSprints.length, sprintNames: allSprints.map(s => `${s.name}(${s.state})`) }
         };
         jiraCacheSet(cacheKey, payload, TTL.SPRINTS);
         res.json(payload);
