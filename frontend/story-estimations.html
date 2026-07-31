@@ -2304,7 +2304,8 @@
                         state.sessionId = '';
                         state.stories = [];
                         localStorage.removeItem('storyPointEstimatorSessionId');
-                        showToast(`Session has been ended by ${session.closedBy || 'the session creator'}. You will need to join a new session.`, 'warn');
+                        const closedBySystem = (session.closedBy || '').includes('System');
+                        showToast(closedBySystem ? 'Session has automatically expired after 2 hours. Please create or join a new session.' : `Session has been ended by ${session.closedBy || 'the session creator'}. You will need to join a new session.`, 'warn');
                         render();
                         return;
                     }

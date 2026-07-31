@@ -1385,6 +1385,14 @@ app.get('/api/sessions/:sessionId', async (req, res) => {
                 message: 'Session not found'
             });
         }
+
+        // Auto-close session if minimumActiveUntil has passed and still active
+        if (session.status === 'active' && session.minimumActiveUntil && new Date() > new Date(session.minimumActiveUntil)) {
+            session.status = 'closed';
+            session.closedBy = 'System (2hr auto-expiry)';
+            session.closedAt = new Date();
+            await session.save();
+        }
         
         // Convert to object and handle Map fields
         const sessionObj = session.toObject();
