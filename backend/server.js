@@ -3074,6 +3074,44 @@ app.delete('/api/lob-systems/:lob/system', authMiddleware, async (req, res) => {
     }
 });
 
+// Bulk import LOB-Systems mappings from Excel upload (Admin only)
+app.post('/api/lob-systems/import', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin access required' });
+        const { rows } = req.body; // [{ lob: string, systems: string[] }]
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No data rows provided' });
+        }
+        const now = new Date();
+        const ops = rows
+            .filter(r => r.lob && r.lob.trim())
+            .map(r => ({
+                updateOne: {
+                    filter: { lob: r.lob.trim() },
+                    update: {
+                        $set: {
+                            systems: (r.systems || []).map(s => s.trim()).filter(Boolean),
+                            updatedBy: req.user.username,
+                            updatedAt: now
+                        },
+                        $setOnInsert: { createdBy: req.user.username, createdAt: now }
+                    },
+                    upsert: true
+                }
+            }));
+        const result = await LobSystems.bulkWrite(ops);
+        res.json({
+            success: true,
+            message: `Import complete: ${result.upsertedCount} created, ${result.modifiedCount} updated`,
+            upserted: result.upsertedCount,
+            modified: result.modifiedCount
+        });
+    } catch (error) {
+        console.error('LOB systems import error:', error);
+        res.status(500).json({ success: false, message: 'Failed to import LOB systems' });
+    }
+});
+
 // Delete entire LOB mapping (Admin only)
 app.delete('/api/lob-systems/:lob', authMiddleware, async (req, res) => {
     try {

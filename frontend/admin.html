@@ -7,6 +7,8 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script>if(typeof XLSXStyle !== 'undefined' && typeof XLSX === 'undefined') window.XLSX = XLSXStyle;</script>
     <script src="assets/session-manager.js?v=2.2"></script>
     <script src="assets/api-config.js"></script>
     <script src="assets/product360-sidebar.js" defer></script>
@@ -168,6 +170,17 @@
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">LOB vs Dependent Systems</h2>
                         <p class="text-sm text-gray-600 mt-1">Map dependent systems to Lines of Business. These systems appear in intake form based on selected LOB.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="downloadLobSystemsSample()" class="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span>Download Sample</span>
+                        </button>
+                        <button type="button" onclick="document.getElementById('lobSystemsFileInput').click()" class="btn-carelon-primary flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm">
+                            <i data-lucide="upload" class="w-4 h-4"></i>
+                            <span>Import Excel</span>
+                        </button>
+                        <input type="file" id="lobSystemsFileInput" accept=".xlsx,.xls" class="hidden" onchange="importLobSystemsExcel(event)">
                     </div>
                 </div>
 
@@ -1258,6 +1271,119 @@
         // LOB VS SYSTEMS MANAGEMENT
         // ============================================
         let allLobSystems = [];
+
+        function downloadLobSystemsSample() {
+            // -- Build rows --
+            const headerRow = ['Line of Business', 'System 1', 'System 2', 'System 3', 'System 4', 'System 5'];
+            const sampleRows = [
+                ['CarelonRx', 'Intel Engine', 'Claims Portal', 'Member Hub', '', ''],
+                ['Elevance Health', 'Provider Gateway', 'Auth Service', '', '', ''],
+                ['Digital', 'Analytics Platform', 'Data Lake', 'Reporting Suite', 'AI Engine', '']
+            ];
+
+            const allRows = [
+                ['LOB vs Dependent Systems - Import Template'],
+                ['Instructions: Fill in the Line of Business name in column A. Add dependent system names in columns B onwards (one per cell). Each row = one LOB mapping. Existing mappings will be replaced on import.'],
+                [],
+                headerRow,
+                ...sampleRows
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(allRows);
+
+            const purpleStyle = {
+                fill: { patternType: 'solid', fgColor: { rgb: '5009B5' } },
+                font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 11 },
+                alignment: { horizontal: 'left', vertical: 'center', wrapText: true }
+            };
+            const infoStyle = {
+                fill: { patternType: 'solid', fgColor: { rgb: 'E6F7FD' } },
+                font: { sz: 10, color: { rgb: '1D4ED8' } },
+                alignment: { wrapText: true }
+            };
+
+            // Style title row (row 0)
+            for (let c = 0; c < 6; c++) {
+                const addr = XLSX.utils.encode_cell({ r: 0, c });
+                if (ws[addr]) ws[addr].s = purpleStyle;
+            }
+            // Style instruction row (row 1)
+            for (let c = 0; c < 6; c++) {
+                const addr = XLSX.utils.encode_cell({ r: 1, c });
+                if (ws[addr]) ws[addr].s = infoStyle;
+            }
+            // Style column header row (row 3)
+            for (let c = 0; c < 6; c++) {
+                const addr = XLSX.utils.encode_cell({ r: 3, c });
+                if (ws[addr]) ws[addr].s = purpleStyle;
+            }
+
+            ws['!cols'] = [{ wch: 28 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }];
+            ws['!rows'] = [{ hpt: 22 }, { hpt: 40 }];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'LOB Systems Template');
+            XLSX.writeFile(wb, `LOBSystems_Import_Template_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        async function importLobSystemsExcel(event) {
+            const file = event.target.files[0];
+            event.target.value = '';
+            if (!file) return;
+
+            try {
+                const buffer = await file.arrayBuffer();
+                const wb = XLSX.read(buffer, { type: 'array' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+                // Find the data header row (contains "Line of Business" in col A)
+                let dataStartRow = -1;
+                for (let i = 0; i < raw.length; i++) {
+                    const cell = String(raw[i][0] || '').trim().toLowerCase();
+                    if (cell === 'line of business') { dataStartRow = i + 1; break; }
+                }
+                if (dataStartRow === -1) {
+                    showError('Invalid file format. Column A must have a "Line of Business" header row.');
+                    return;
+                }
+
+                const rows = [];
+                for (let i = dataStartRow; i < raw.length; i++) {
+                    const rowArr = raw[i];
+                    const lob = String(rowArr[0] || '').trim();
+                    if (!lob) continue;
+                    const systems = rowArr.slice(1).map(s => String(s || '').trim()).filter(Boolean);
+                    rows.push({ lob, systems });
+                }
+
+                if (rows.length === 0) {
+                    showError('No valid data rows found in the file.');
+                    return;
+                }
+
+                // Preview confirmation
+                const preview = rows.slice(0, 5).map(r => `• ${r.lob}: ${r.systems.join(', ') || '(no systems)'}`).join('\n');
+                const more = rows.length > 5 ? `\n...and ${rows.length - 5} more rows` : '';
+                if (!confirm(`Import ${rows.length} LOB mapping(s)?\n\n${preview}${more}\n\nExisting mappings for these LOBs will be replaced.`)) return;
+
+                const res = await fetch(`${API_BASE}/api/lob-systems/import`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: JSON.stringify({ rows })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showSuccess(data.message);
+                    await loadLobSystems();
+                } else {
+                    showError(data.message || 'Import failed');
+                }
+            } catch (e) {
+                console.error('Import error:', e);
+                showError('Failed to read Excel file. Please use the downloaded template.');
+            }
+        }
 
         async function loadLobSystems() {
             try {
