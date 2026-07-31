@@ -3082,29 +3082,62 @@ app.post('/api/lob-systems/import', authMiddleware, async (req, res) => {
         if (!Array.isArray(rows) || rows.length === 0) {
             return res.status(400).json({ success: false, message: 'No data rows provided' });
         }
+
+        // Validate: only allow LOBs that exist in the LineOfBusiness master
+        const masterLobs = await LineOfBusiness.find({}, { name: 1, _id: 0 });
+        const masterLobNames = new Set(masterLobs.map(l => l.name.trim()));
+
+        const validRows = [];
+        const invalidLobs = [];
+        for (const r of rows) {
+            const lob = (r.lob || '').trim();
+            if (!lob) continue;
+            if (masterLobNames.has(lob)) {
+                validRows.push(r);
+            } else {
+                invalidLobs.push(lob);
+            }
+        }
+
+        if (invalidLobs.length > 0 && validRows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: `None of the LOBs in the file exist in the LOB master. Invalid: ${invalidLobs.join(', ')}`,
+                invalidLobs
+            });
+        }
+
+        if (validRows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No valid data rows provided' });
+        }
+
         const now = new Date();
-        const ops = rows
-            .filter(r => r.lob && r.lob.trim())
-            .map(r => ({
-                updateOne: {
-                    filter: { lob: r.lob.trim() },
-                    update: {
-                        $set: {
-                            systems: (r.systems || []).map(s => s.trim()).filter(Boolean),
-                            updatedBy: req.user.username,
-                            updatedAt: now
-                        },
-                        $setOnInsert: { createdBy: req.user.username, createdAt: now }
+        const ops = validRows.map(r => ({
+            updateOne: {
+                filter: { lob: r.lob.trim() },
+                update: {
+                    $set: {
+                        systems: (r.systems || []).map(s => s.trim()).filter(Boolean),
+                        updatedBy: req.user.username,
+                        updatedAt: now
                     },
-                    upsert: true
-                }
-            }));
+                    $setOnInsert: { createdBy: req.user.username, createdAt: now }
+                },
+                upsert: true
+            }
+        }));
         const result = await LobSystems.bulkWrite(ops);
+
+        const msg = invalidLobs.length > 0
+            ? `Import complete: ${result.upsertedCount} created, ${result.modifiedCount} updated. Skipped ${invalidLobs.length} unknown LOB(s): ${invalidLobs.join(', ')}`
+            : `Import complete: ${result.upsertedCount} created, ${result.modifiedCount} updated`;
+
         res.json({
             success: true,
-            message: `Import complete: ${result.upsertedCount} created, ${result.modifiedCount} updated`,
+            message: msg,
             upserted: result.upsertedCount,
-            modified: result.modifiedCount
+            modified: result.modifiedCount,
+            skipped: invalidLobs
         });
     } catch (error) {
         console.error('LOB systems import error:', error);

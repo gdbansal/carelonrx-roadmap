@@ -1375,6 +1375,9 @@
                 const data = await res.json();
                 if (data.success) {
                     showSuccess(data.message);
+                    if (data.skipped && data.skipped.length > 0) {
+                        setTimeout(() => showError(`Skipped ${data.skipped.length} row(s) — LOB not in master: ${data.skipped.join(', ')}`), 3200);
+                    }
                     await loadLobSystems();
                 } else {
                     showError(data.message || 'Import failed');
