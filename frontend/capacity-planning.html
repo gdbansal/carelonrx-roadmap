@@ -574,7 +574,11 @@
                 );
                 const data = await res.json();
 
+                console.log('[capacity] JIRA sprint-for-team response:', data._debug);
+                console.log('[capacity] PI value from dropdown:', JSON.stringify(pi));
+
                 if (!data.success || !data.sprints || data.sprints.length === 0) {
+                    console.warn('[capacity] No sprints returned from JIRA');
                     sprintColumns = DEFAULT_SPRINTS;
                     return;
                 }
@@ -582,7 +586,9 @@
                 // Filter sprints by PI: prefer name-prefix match (e.g. "26.2." for PI 26.2),
                 // fall back to strict date-range for sprints without that naming convention.
                 const piPrefix = pi + '.';
+                console.log('[capacity] piPrefix filter:', JSON.stringify(piPrefix));
                 const nameMatches = data.sprints.filter(s => s.name && s.name.startsWith(piPrefix));
+                console.log('[capacity] nameMatches:', nameMatches.map(s => s.name));
 
                 let filtered;
                 if (nameMatches.length > 0) {

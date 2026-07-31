@@ -410,43 +410,64 @@
         let selectedSystems = [];
         let selectedLobs = [];
         let allLobs = [];
-        const allSystems = [
-            'Bioplus Intel Engine',
-            'Bioplus V',
-            'Intel Engine',
-            'CPDL',
-            'CPFR',
-            'CFX',
-            'Digital Integrated',
-            'Digital Standalone Mobile',
-            'Digital Standalone Portal',
-            'IDL',
-            'PPI',
-            'PST',
-            'SOA',
-            'CCT',
-            'Enterprise Rx',
-            'Payment Hub',
-            'Self Service Portal'
-        ];
+        let lobSystemsMap = {}; // lob -> [systems]
 
-        // Initialize system filter
-        function initSystemFilter() {
+        // Render system checkboxes for the given systems list, checking all by default
+        function renderSystemFilter(systems) {
             const filterList = document.getElementById('systemFilterList');
             filterList.innerHTML = '';
-            
-            allSystems.forEach(system => {
+            if (!systems.length) {
+                filterList.innerHTML = '<p class="text-xs text-gray-400 p-2">No systems mapped for selected LOB(s)</p>';
+                selectedSystems = [];
+                updateSystemFilterLabel();
+                return;
+            }
+            systems.forEach(system => {
                 const label = document.createElement('label');
                 label.className = 'flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer';
                 label.innerHTML = `
                     <input type="checkbox" value="${system}" onchange="updateSystemFilter()" 
-                        class="system-checkbox w-4 h-4 text-blue-600 rounded">
+                        class="system-checkbox w-4 h-4 text-blue-600 rounded" checked>
                     <span class="text-sm text-gray-700">${system}</span>
                 `;
                 filterList.appendChild(label);
             });
-            
+            document.getElementById('selectAllSystems').checked = true;
+            selectedSystems = [...systems];
+            updateSystemFilterLabel();
             lucide.createIcons();
+        }
+
+        // Fetch systems for the currently selected LOBs and rebuild system filter
+        async function refreshSystemsForSelectedLobs() {
+            if (selectedLobs.length === 0) {
+                // No LOB selected — show all systems from all mapped LOBs
+                const all = Object.values(lobSystemsMap).flat();
+                const unique = [...new Set(all)].sort();
+                renderSystemFilter(unique);
+                renderRoadmap();
+                return;
+            }
+            // Fetch any LOBs not yet cached
+            const toFetch = selectedLobs.filter(l => !(l in lobSystemsMap));
+            await Promise.all(toFetch.map(async lob => {
+                try {
+                    const res = await fetch((window.PRODUCT360_API_BASE||'') + '/api/lob-systems/' + encodeURIComponent(lob), {
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                    });
+                    const data = await res.json();
+                    lobSystemsMap[lob] = (data.success && data.systems) ? data.systems : [];
+                } catch(e) { lobSystemsMap[lob] = []; }
+            }));
+            const combined = selectedLobs.flatMap(l => lobSystemsMap[l] || []);
+            const unique = [...new Set(combined)].sort();
+            renderSystemFilter(unique);
+            renderRoadmap();
+        }
+
+        // Initialize system filter (called once on load with no LOB pre-selected)
+        function initSystemFilter() {
+            renderSystemFilter([]);
         }
 
         // Toggle system filter dropdown
@@ -478,26 +499,28 @@
             updateSystemFilter();
         }
 
-        // Update system filter
-        function updateSystemFilter() {
-            const checkboxes = document.querySelectorAll('.system-checkbox:checked');
-            selectedSystems = Array.from(checkboxes).map(cb => cb.value);
-            
-            // Update "Select All" checkbox
-            const allCheckboxes = document.querySelectorAll('.system-checkbox');
-            const selectAll = document.getElementById('selectAllSystems');
-            selectAll.checked = selectedSystems.length === allCheckboxes.length;
-            
-            // Update label
+        function updateSystemFilterLabel() {
             const label = document.getElementById('systemFilterLabel');
             if (selectedSystems.length === 0) {
                 label.textContent = 'Filter by System (All)';
             } else if (selectedSystems.length === 1) {
-                label.textContent = `Filter: ${selectedSystems[0]}`;
+                label.textContent = `System: ${selectedSystems[0]}`;
             } else {
-                label.textContent = `Filter: ${selectedSystems.length} systems selected`;
+                label.textContent = `System: ${selectedSystems.length} selected`;
             }
-            
+        }
+
+        // Update system filter
+        function updateSystemFilter() {
+            const checkboxes = document.querySelectorAll('.system-checkbox:checked');
+            selectedSystems = Array.from(checkboxes).map(cb => cb.value);
+
+            // Update "Select All" checkbox
+            const allCheckboxes = document.querySelectorAll('.system-checkbox');
+            const selectAll = document.getElementById('selectAllSystems');
+            selectAll.checked = selectedSystems.length === allCheckboxes.length && allCheckboxes.length > 0;
+
+            updateSystemFilterLabel();
             renderRoadmap();
         }
 
@@ -511,11 +534,18 @@
             updateSystemFilter();
         }
 
-        // Initialize LOB filter
-        function initLobFilter() {
+        // Initialize LOB filter — loads from master /api/line-of-business/active (returns name strings)
+        async function initLobFilter() {
+            try {
+                const res = await fetch((window.PRODUCT360_API_BASE||'') + '/api/line-of-business/active', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                allLobs = (data.success && data.lobs) ? data.lobs : [];
+            } catch(e) { allLobs = []; }
+
             const filterList = document.getElementById('lobFilterList');
             filterList.innerHTML = '';
-            
             allLobs.forEach(lob => {
                 const label = document.createElement('label');
                 label.className = 'flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer';
@@ -526,7 +556,6 @@
                 `;
                 filterList.appendChild(label);
             });
-            
             lucide.createIcons();
         }
 
@@ -559,27 +588,28 @@
             updateLobFilter();
         }
 
-        // Update LOB filter
+        // Update LOB filter — also refreshes system checkboxes
         function updateLobFilter() {
             const checkboxes = document.querySelectorAll('.lob-checkbox:checked');
             selectedLobs = Array.from(checkboxes).map(cb => cb.value);
-            
+
             // Update "Select All" checkbox
             const allCheckboxes = document.querySelectorAll('.lob-checkbox');
             const selectAll = document.getElementById('selectAllLobs');
             selectAll.checked = selectedLobs.length === allCheckboxes.length;
-            
+
             // Update label
             const label = document.getElementById('lobFilterLabel');
             if (selectedLobs.length === 0) {
                 label.textContent = 'Filter by Line of Business (All)';
             } else if (selectedLobs.length === 1) {
-                label.textContent = `Filter: ${selectedLobs[0]}`;
+                label.textContent = `LOB: ${selectedLobs[0]}`;
             } else {
-                label.textContent = `Filter: ${selectedLobs.length} LOBs selected`;
+                label.textContent = `LOB: ${selectedLobs.length} selected`;
             }
-            
-            renderRoadmap();
+
+            // Refresh system checkboxes based on new LOB selection
+            refreshSystemsForSelectedLobs();
         }
 
         // Clear LOB filter
@@ -600,21 +630,11 @@
                     }
                 });
                 const data = await response.json();
-                
+
                 if (data.success) {
                     allInitiatives = data.initiatives;
-                    
-                    // Extract unique LOBs from initiatives
-                    const lobSet = new Set();
-                    allInitiatives.forEach(initiative => {
-                        if (initiative.businessUnit) {
-                            lobSet.add(initiative.businessUnit);
-                        }
-                    });
-                    allLobs = Array.from(lobSet).sort();
-                    
                     initSystemFilter();
-                    initLobFilter();
+                    await initLobFilter();
                     renderRoadmap();
                 }
             } catch (error) {
