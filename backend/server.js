@@ -1806,9 +1806,10 @@ function jiraRequest(url) {
             }
         };
         const req = https.request(options, (resp) => {
-            let data = '';
-            resp.on('data', chunk => data += chunk);
+            const chunks = [];
+            resp.on('data', chunk => chunks.push(chunk));
             resp.on('end', () => {
+                const data = Buffer.concat(chunks).toString('utf8');
                 try {
                     resolve({ status: resp.statusCode, body: JSON.parse(data) });
                 } catch (e) {
@@ -2138,8 +2139,8 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             return res.json({ success: false, message: `No board found for team: ${teamName}`, sprints: [], preSelectedSprintId: null });
         }
 
-        // Step 2: Fetch sprints — JIRA supports comma-separated states in one call,
-        // which avoids per-state ordering/pagination edge cases.
+        // Step 2: Fetch sprints — try combined state param first (JIRA Agile API supports it);
+        // if it returns 0 results or errors, fall back to separate per-state queries.
         const stateParam = includeClosed ? 'closed,active,future' : 'active,future';
         const PAGE_SIZE = 100;
         let allSprints = [];
@@ -2149,12 +2150,33 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             const { status: ss, body: sprintsBody } = await jiraRequest(
                 `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${stateParam}&maxResults=${PAGE_SIZE}&startAt=${sprintStart}`
             );
+            console.log(`[sprint-for-team] board=${matchedBoard.id} state=${stateParam} startAt=${sprintStart} status=${ss} count=${sprintsBody && sprintsBody.values ? sprintsBody.values.length : 'N/A'} total=${sprintsBody && sprintsBody.total != null ? sprintsBody.total : 'N/A'}`);
             if (ss !== 200 || !sprintsBody.values || sprintsBody.values.length === 0) break;
             allSprints = allSprints.concat(sprintsBody.values);
             if (sprintsBody.values.length < PAGE_SIZE) break;
             sprintStart += sprintsBody.values.length;
             pageCount++;
         }
+
+        // If combined state param yielded nothing, JIRA instance may not support it — fall back per-state
+        if (allSprints.length === 0 && includeClosed) {
+            console.log(`[sprint-for-team] Combined state query returned 0 sprints — falling back to per-state queries`);
+            for (const state of ['closed', 'active', 'future']) {
+                let start = 0;
+                for (let p = 0; p < 40; p++) {
+                    const { status: ss, body: sb } = await jiraRequest(
+                        `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${state}&maxResults=${PAGE_SIZE}&startAt=${start}`
+                    );
+                    console.log(`[sprint-for-team fallback] state=${state} startAt=${start} status=${ss} count=${sb && sb.values ? sb.values.length : 'N/A'}`);
+                    if (ss !== 200 || !sb.values || sb.values.length === 0) break;
+                    allSprints = allSprints.concat(sb.values);
+                    if (sb.values.length < PAGE_SIZE) break;
+                    start += sb.values.length;
+                }
+            }
+        }
+
+        console.log(`[sprint-for-team] Total sprints fetched for board ${matchedBoard.id}: ${allSprints.length}`, allSprints.map(s => `${s.name}(${s.state})`).join(', '));
 
         // Step 3: Sort by startDate ascending
         allSprints.sort((a, b) => {
@@ -2185,7 +2207,8 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             boardName: matchedBoard.name,
             sprints,
             preSelectedSprintId: preSelected ? preSelected.id : null,
-            preSelectedSprintName: preSelected ? preSelected.name : null
+            preSelectedSprintName: preSelected ? preSelected.name : null,
+            _debug: { totalFetched: allSprints.length, sprintNames: allSprints.map(s => `${s.name}(${s.state})`) }
         };
         jiraCacheSet(cacheKey, payload, TTL.SPRINTS);
         res.json(payload);
@@ -2541,9 +2564,10 @@ function confluenceRequest(url) {
             }
         };
         const req = https.request(options, (resp) => {
-            let data = '';
-            resp.on('data', chunk => data += chunk);
+            const chunks = [];
+            resp.on('data', chunk => chunks.push(chunk));
             resp.on('end', () => {
+                const data = Buffer.concat(chunks).toString('utf8');
                 try {
                     resolve({ status: resp.statusCode, body: JSON.parse(data) });
                 } catch (e) {
@@ -2672,9 +2696,10 @@ function confluenceRequest2(url) {
             }
         };
         const req = https.request(options, (resp) => {
-            let data = '';
-            resp.on('data', chunk => data += chunk);
+            const chunks = [];
+            resp.on('data', chunk => chunks.push(chunk));
             resp.on('end', () => {
+                const data = Buffer.concat(chunks).toString('utf8');
                 try {
                     resolve({ status: resp.statusCode, body: JSON.parse(data) });
                 } catch (e) {
@@ -3052,6 +3077,77 @@ app.delete('/api/lob-systems/:lob/system', authMiddleware, async (req, res) => {
     }
 });
 
+// Bulk import LOB-Systems mappings from Excel upload (Admin only)
+app.post('/api/lob-systems/import', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin access required' });
+        const { rows } = req.body; // [{ lob: string, systems: string[] }]
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No data rows provided' });
+        }
+
+        // Validate: only allow LOBs that exist in the LineOfBusiness master
+        const masterLobs = await LineOfBusiness.find({}, { name: 1, _id: 0 });
+        const masterLobNames = new Set(masterLobs.map(l => l.name.trim()));
+
+        const validRows = [];
+        const invalidLobs = [];
+        for (const r of rows) {
+            const lob = (r.lob || '').trim();
+            if (!lob) continue;
+            if (masterLobNames.has(lob)) {
+                validRows.push(r);
+            } else {
+                invalidLobs.push(lob);
+            }
+        }
+
+        if (invalidLobs.length > 0 && validRows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: `None of the LOBs in the file exist in the LOB master. Invalid: ${invalidLobs.join(', ')}`,
+                invalidLobs
+            });
+        }
+
+        if (validRows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No valid data rows provided' });
+        }
+
+        const now = new Date();
+        const ops = validRows.map(r => ({
+            updateOne: {
+                filter: { lob: r.lob.trim() },
+                update: {
+                    $set: {
+                        systems: (r.systems || []).map(s => s.trim()).filter(Boolean),
+                        updatedBy: req.user.username,
+                        updatedAt: now
+                    },
+                    $setOnInsert: { createdBy: req.user.username, createdAt: now }
+                },
+                upsert: true
+            }
+        }));
+        const result = await LobSystems.bulkWrite(ops);
+
+        const msg = invalidLobs.length > 0
+            ? `Import complete: ${result.upsertedCount} created, ${result.modifiedCount} updated. Skipped ${invalidLobs.length} unknown LOB(s): ${invalidLobs.join(', ')}`
+            : `Import complete: ${result.upsertedCount} created, ${result.modifiedCount} updated`;
+
+        res.json({
+            success: true,
+            message: msg,
+            upserted: result.upsertedCount,
+            modified: result.modifiedCount,
+            skipped: invalidLobs
+        });
+    } catch (error) {
+        console.error('LOB systems import error:', error);
+        res.status(500).json({ success: false, message: 'Failed to import LOB systems' });
+    }
+});
+
 // Delete entire LOB mapping (Admin only)
 app.delete('/api/lob-systems/:lob', authMiddleware, async (req, res) => {
     try {
@@ -3188,6 +3284,81 @@ app.post('/api/team-members', authMiddleware, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to create team member' });
+    }
+});
+
+// Bulk import team members from Excel (Admin only)
+app.post('/api/team-members/import', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin access required' });
+        const { rows } = req.body; // [{ name, role, team, project, lineOfBusiness, email }]
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No data rows provided' });
+        }
+
+        // Validate LOBs against LineOfBusiness master (same rule as lob-systems import)
+        const masterLobs = await LineOfBusiness.find({}, { name: 1, _id: 0 });
+        const masterLobNames = new Set(masterLobs.map(l => l.name.trim()));
+
+        const validRows = [];
+        const invalidLobs = new Set();
+        const skippedRows = [];
+
+        for (const r of rows) {
+            const name = (r.name || '').trim();
+            const role = (r.role || '').trim();
+            const team = (r.team || '').trim();
+            if (!name || !role || !team) { skippedRows.push(`Missing required field (name/role/team): ${JSON.stringify(r)}`); continue; }
+            const lob = (r.lineOfBusiness || '').trim();
+            if (lob && !masterLobNames.has(lob)) {
+                invalidLobs.add(lob);
+                skippedRows.push(name);
+                continue;
+            }
+            validRows.push({ name, role, team, project: (r.project || '').trim(), lineOfBusiness: lob, email: (r.email || '').trim() });
+        }
+
+        if (invalidLobs.size > 0 && validRows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: `All rows skipped — unknown LOB(s) not in master: ${[...invalidLobs].join(', ')}`,
+                invalidLobs: [...invalidLobs]
+            });
+        }
+
+        // Upsert: match on name + team + project; update role/lob/email
+        const now = new Date();
+        let created = 0, updated = 0;
+        for (const r of validRows) {
+            const filter = { name: r.name, team: r.team, project: r.project || '' };
+            const existing = await TeamMember.findOne(filter);
+            if (existing) {
+                existing.role = r.role;
+                if (r.lineOfBusiness) existing.lineOfBusiness = r.lineOfBusiness;
+                if (r.email) existing.email = r.email;
+                existing.updatedBy = req.user.username;
+                existing.updatedAt = now;
+                await existing.save();
+                updated++;
+            } else {
+                await new TeamMember({
+                    name: r.name, role: r.role, team: r.team,
+                    project: r.project, lineOfBusiness: r.lineOfBusiness, email: r.email,
+                    createdBy: req.user.username, isActive: true
+                }).save();
+                created++;
+            }
+        }
+
+        const invalidArr = [...invalidLobs];
+        const msg = invalidArr.length > 0
+            ? `Import complete: ${created} created, ${updated} updated. Skipped ${invalidArr.length} unknown LOB(s): ${invalidArr.join(', ')}`
+            : `Import complete: ${created} created, ${updated} updated`;
+
+        res.json({ success: true, message: msg, created, updated, skipped: invalidArr });
+    } catch (error) {
+        console.error('Team members import error:', error);
+        res.status(500).json({ success: false, message: 'Failed to import team members' });
     }
 });
 
@@ -3765,9 +3936,10 @@ function makeAuthRequest(url, token) {
         };
         const https = require('https');
         const req = https.request(options, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
+            const chunks = [];
+            res.on('data', chunk => chunks.push(chunk));
             res.on('end', () => {
+                const data = Buffer.concat(chunks).toString('utf8');
                 try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
                 catch(e) { resolve({ status: res.statusCode, body: data }); }
             });
@@ -3985,41 +4157,15 @@ app.post('/api/story-mapping/analyze', authMiddleware, async (req, res) => {
 // POST /api/story-mapping/create-tickets â€” create approved tickets in JIRA
 app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) => {
     try {
-        const { items, projectKey, jiraBaseUrl, teamName, sprintName, featureName, featureKey } = req.body;
+        const { items, projectKey, jiraBaseUrl, teamName, sprintId: sprintIdRaw, featureName, featureKey } = req.body;
         if (!items || !projectKey) return res.status(400).json({ success: false, message: 'items and projectKey are required' });
 
         const { base, token } = getJiraCredentials(jiraBaseUrl || '');
         if (!base || !token) return res.status(503).json({ success: false, message: 'JIRA not configured' });
         const jiraBase = base.replace(/\/$/, '');
 
-        // Resolve sprint ID from sprint name if provided
-        let sprintId = null;
-        if (sprintName && teamName) {
-            try {
-                let boardStart = 0, boardTotal = 1, matchedBoard = null;
-                while (boardStart < boardTotal && !matchedBoard) {
-                    const { status: bs, body: bb } = await jiraRequest(`${jiraBase}/rest/agile/1.0/board?maxResults=50&startAt=${boardStart}`);
-                    if (bs !== 200 || !bb.values) break;
-                    matchedBoard = bb.values.find(b => b.name.toLowerCase() === teamName.toLowerCase());
-                    boardTotal = bb.total || 0; boardStart += 50;
-                    if (bb.values.length === 0) break;
-                }
-                if (matchedBoard) {
-                    for (const st of ['active,future', 'closed']) {
-                        let ss = 0, st2 = 1;
-                        while (ss < st2 && !sprintId) {
-                            const { status: xs, body: xb } = await jiraRequest(`${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${st}&maxResults=50&startAt=${ss}`);
-                            if (xs !== 200 || !xb.values) break;
-                            const found = xb.values.find(s => s.name.toLowerCase() === sprintName.toLowerCase());
-                            if (found) sprintId = found.id;
-                            st2 = xb.total || 0; ss += 50;
-                            if (xb.values.length === 0) break;
-                        }
-                        if (sprintId) break;
-                    }
-                }
-            } catch(e) { console.error('Sprint lookup error:', e.message); }
-        }
+        // Use sprint ID directly from frontend (already resolved via sprint-for-team endpoint)
+        const sprintId = sprintIdRaw ? parseInt(sprintIdRaw, 10) : null;
 
         const created = [];
         const failed = [];

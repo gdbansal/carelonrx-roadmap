@@ -474,7 +474,7 @@
                 body: JSON.stringify({
                     featureData: state.featureData,
                     confluenceData: state.confluenceData,
-                    attachmentContent: state.attachments.filter(a => ['txt','csv'].includes(a.ext)).map(a => `[${a.name}]\n${a.content}`).join('\n\n') || undefined
+                    attachmentContent: (state.attachments || []).filter(a => ['txt','csv'].includes(a.ext)).map(a => `[${a.name}]\n${a.content}`).join('\n\n') || undefined
                 })
             });
             const data = await res.json();
@@ -637,7 +637,7 @@
                 sprintEl.innerHTML = '<option value="">Select a sprint...</option>' +
                     list.map(s => {
                         const badge = s.state === 'active' ? ' [Active]' : s.state === 'future' ? ' [Future]' : '';
-                        return `<option value="${s.name}">${s.name}${badge}</option>`;
+                        return `<option value="${s.id}" data-name="${s.name}">${s.name}${badge}</option>`;
                     }).join('');
                 sprintEl.disabled = false;
                 if (hintEl) hintEl.textContent = futureCount === 0
@@ -662,7 +662,7 @@
 
         const instance = document.getElementById('createJiraInstance').value;
         const teamName = document.getElementById('createTeamName').value.trim();
-        const sprintName = document.getElementById('createSprintName').value.trim();
+        const sprintId = document.getElementById('createSprintName').value.trim();
 
         const btn = document.getElementById('createBtn');
         btn.disabled = true;
@@ -681,7 +681,7 @@
                     projectKey,
                     jiraBaseUrl: instance,
                     teamName: teamName || undefined,
-                    sprintName: sprintName || undefined,
+                    sprintId: sprintId || undefined,
                     featureName: state.featureData?.featureName || state.featureData?.summary || undefined,
                     featureKey: state.featureData?.issueKey || undefined
                 })
@@ -701,7 +701,7 @@
             <div class="text-sm font-semibold text-green-700 mb-2">${created.length} ticket(s) created:</div>
             ${created.map(c => `
                 <div class="flex items-center gap-2 text-sm p-2 bg-green-50 rounded border border-green-200">
-                    <span class="text-green-600">?</span>
+                    <svg class="w-4 h-4 text-green-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                     <a href="${c.url}" target="_blank" class="text-blue-600 hover:underline font-medium">${c.key}</a>
                     <span class="text-gray-400 text-xs">${c.url}</span>
                 </div>`).join('')}
@@ -710,8 +710,9 @@
         document.getElementById('failed-list').innerHTML = failed.length ? `
             <div class="text-sm font-semibold text-red-700 mb-2">${failed.length} ticket(s) failed:</div>
             ${failed.map(f => `
-                <div class="text-sm p-2 bg-red-50 rounded border border-red-200">
-                    <span class="text-red-600">?</span> ${escHtml(f.summary)}<br><span class="text-xs text-gray-500">${escHtml(f.error)}</span>
+                <div class="text-sm p-2 bg-red-50 rounded border border-red-200 flex items-start gap-2">
+                    <svg class="w-4 h-4 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <div>${escHtml(f.summary)}<br><span class="text-xs text-gray-500">${escHtml(f.error)}</span></div>
                 </div>`).join('')}
         ` : '';
 
@@ -724,11 +725,13 @@
     }
 
     function startOver() {
-        state = { featureData: null, confluenceData: null, items: [], showEpics: false };
+        state = { featureData: null, confluenceData: null, items: [], showEpics: false, attachments: [] };
         document.getElementById('jiraUrl').value = '';
         document.getElementById('confUrl').value = '';
         document.getElementById('jiraStatus').textContent = '';
         document.getElementById('confStatus').textContent = '';
+        const chips = document.getElementById('attachmentChips');
+        if (chips) chips.innerHTML = '';
         document.getElementById('step-preview').classList.add('hidden');
         document.getElementById('step-results').classList.add('hidden');
         document.getElementById('step-done').classList.add('hidden');
