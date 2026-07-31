@@ -237,10 +237,21 @@
                         <h2 class="text-2xl font-bold text-gray-800">Team Members Management</h2>
                         <p class="text-sm text-gray-600 mt-1">Manage team members for capacity planning</p>
                     </div>
-                    <button type="button" onclick="showAddTeamMemberModal()" class="btn-carelon-primary px-4 py-2 rounded-lg transition flex items-center space-x-2">
-                        <i data-lucide="user-plus" class="w-4 h-4"></i>
-                        <span>Add Team Member</span>
-                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="downloadTeamMembersSample()" class="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span>Download Sample</span>
+                        </button>
+                        <button type="button" onclick="document.getElementById('teamMembersFileInput').click()" class="btn-carelon-primary flex items-center space-x-2 px-4 py-2 rounded-lg transition text-sm">
+                            <i data-lucide="upload" class="w-4 h-4"></i>
+                            <span>Import Excel</span>
+                        </button>
+                        <input type="file" id="teamMembersFileInput" accept=".xlsx,.xls" class="hidden" onchange="importTeamMembersExcel(event)">
+                        <button type="button" onclick="showAddTeamMemberModal()" class="btn-carelon-primary px-4 py-2 rounded-lg transition flex items-center space-x-2 text-sm">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            <span>Add Team Member</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="mb-4" style="position:relative;">
                     <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#9CA3AF;pointer-events:none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1534,6 +1545,122 @@
         // ============================================
         // TEAM MEMBERS MANAGEMENT
         // ============================================
+
+        function downloadTeamMembersSample() {
+            const headerRow = ['Name', 'Role', 'Team', 'Project', 'Line of Business', 'Email'];
+            const sampleRows = [
+                ['Jane Smith', 'Dev Lead', 'Digital Divas', 'Intel Engine', 'CarelonRx', 'jane.smith@carelon.com'],
+                ['John Doe', 'Developer', 'Digital Divas', 'Intel Engine', 'CarelonRx', 'john.doe@carelon.com'],
+                ['Alice Johnson', 'QA Engineer', 'Phoenix Team', 'Claims Portal', 'Elevance Health', '']
+            ];
+
+            const allRows = [
+                ['Team Members - Import Template'],
+                ['Instructions: Fill Name (required), Role (required), Team (required), Project, Line of Business (must match LOB master exactly), Email. Each row = one team member. Existing members matched by Name + Team + Project will be updated.'],
+                [],
+                headerRow,
+                ...sampleRows
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(allRows);
+
+            const purpleStyle = {
+                fill: { patternType: 'solid', fgColor: { rgb: '5009B5' } },
+                font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 11 },
+                alignment: { horizontal: 'left', vertical: 'center', wrapText: true }
+            };
+            const infoStyle = {
+                fill: { patternType: 'solid', fgColor: { rgb: 'E6F7FD' } },
+                font: { sz: 10, color: { rgb: '1D4ED8' } },
+                alignment: { wrapText: true }
+            };
+
+            for (let c = 0; c < 6; c++) {
+                const a0 = XLSX.utils.encode_cell({ r: 0, c });
+                if (ws[a0]) ws[a0].s = purpleStyle;
+                const a1 = XLSX.utils.encode_cell({ r: 1, c });
+                if (ws[a1]) ws[a1].s = infoStyle;
+                const a3 = XLSX.utils.encode_cell({ r: 3, c });
+                if (ws[a3]) ws[a3].s = purpleStyle;
+            }
+
+            ws['!cols'] = [{ wch: 24 }, { wch: 18 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 30 }];
+            ws['!rows'] = [{ hpt: 22 }, { hpt: 44 }];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Team Members Template');
+            XLSX.writeFile(wb, `TeamMembers_Import_Template_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        async function importTeamMembersExcel(event) {
+            const file = event.target.files[0];
+            event.target.value = '';
+            if (!file) return;
+
+            try {
+                const buffer = await file.arrayBuffer();
+                const wb = XLSX.read(buffer, { type: 'array' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+                // Find header row: col A = "name" (case-insensitive)
+                let dataStartRow = -1;
+                let colMap = {};
+                for (let i = 0; i < raw.length; i++) {
+                    const cell = String(raw[i][0] || '').trim().toLowerCase();
+                    if (cell === 'name') {
+                        raw[i].forEach((h, idx) => { colMap[String(h).trim().toLowerCase()] = idx; });
+                        dataStartRow = i + 1;
+                        break;
+                    }
+                }
+                if (dataStartRow === -1) {
+                    showError('Invalid file format. Column A must have a "Name" header row.');
+                    return;
+                }
+
+                const rows = [];
+                for (let i = dataStartRow; i < raw.length; i++) {
+                    const r = raw[i];
+                    const name = String(r[colMap['name'] ?? 0] || '').trim();
+                    if (!name) continue;
+                    rows.push({
+                        name,
+                        role:            String(r[colMap['role']            ?? 1] || '').trim(),
+                        team:            String(r[colMap['team']            ?? 2] || '').trim(),
+                        project:         String(r[colMap['project']         ?? 3] || '').trim(),
+                        lineOfBusiness:  String(r[colMap['line of business']?? 4] || '').trim(),
+                        email:           String(r[colMap['email']           ?? 5] || '').trim()
+                    });
+                }
+
+                if (rows.length === 0) { showError('No valid data rows found in the file.'); return; }
+
+                const preview = rows.slice(0, 5).map(r => `• ${r.name} | ${r.role} | ${r.team}`).join('\n');
+                const more = rows.length > 5 ? `\n...and ${rows.length - 5} more rows` : '';
+                if (!confirm(`Import ${rows.length} team member(s)?\n\n${preview}${more}\n\nExisting members (matched by Name + Team + Project) will be updated. New members will be created.`)) return;
+
+                const res = await fetch(`${API_BASE}/api/team-members/import`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: JSON.stringify({ rows })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showSuccess(data.message);
+                    if (data.skipped && data.skipped.length > 0) {
+                        setTimeout(() => showError(`Skipped rows with unknown LOB(s): ${data.skipped.join(', ')}`), 3200);
+                    }
+                    await loadTeamMembers();
+                } else {
+                    showError(data.message || 'Import failed');
+                }
+            } catch (e) {
+                console.error('Team import error:', e);
+                showError('Failed to read Excel file. Please use the downloaded template.');
+            }
+        }
+
         async function loadTeamMembers() {
             try {
                 console.log('Loading team members from:', `${API_BASE}/api/team-members`);

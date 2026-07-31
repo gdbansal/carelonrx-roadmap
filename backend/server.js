@@ -3284,6 +3284,81 @@ app.post('/api/team-members', authMiddleware, async (req, res) => {
     }
 });
 
+// Bulk import team members from Excel (Admin only)
+app.post('/api/team-members/import', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: 'Admin access required' });
+        const { rows } = req.body; // [{ name, role, team, project, lineOfBusiness, email }]
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'No data rows provided' });
+        }
+
+        // Validate LOBs against LineOfBusiness master (same rule as lob-systems import)
+        const masterLobs = await LineOfBusiness.find({}, { name: 1, _id: 0 });
+        const masterLobNames = new Set(masterLobs.map(l => l.name.trim()));
+
+        const validRows = [];
+        const invalidLobs = new Set();
+        const skippedRows = [];
+
+        for (const r of rows) {
+            const name = (r.name || '').trim();
+            const role = (r.role || '').trim();
+            const team = (r.team || '').trim();
+            if (!name || !role || !team) { skippedRows.push(`Missing required field (name/role/team): ${JSON.stringify(r)}`); continue; }
+            const lob = (r.lineOfBusiness || '').trim();
+            if (lob && !masterLobNames.has(lob)) {
+                invalidLobs.add(lob);
+                skippedRows.push(name);
+                continue;
+            }
+            validRows.push({ name, role, team, project: (r.project || '').trim(), lineOfBusiness: lob, email: (r.email || '').trim() });
+        }
+
+        if (invalidLobs.size > 0 && validRows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: `All rows skipped — unknown LOB(s) not in master: ${[...invalidLobs].join(', ')}`,
+                invalidLobs: [...invalidLobs]
+            });
+        }
+
+        // Upsert: match on name + team + project; update role/lob/email
+        const now = new Date();
+        let created = 0, updated = 0;
+        for (const r of validRows) {
+            const filter = { name: r.name, team: r.team, project: r.project || '' };
+            const existing = await TeamMember.findOne(filter);
+            if (existing) {
+                existing.role = r.role;
+                if (r.lineOfBusiness) existing.lineOfBusiness = r.lineOfBusiness;
+                if (r.email) existing.email = r.email;
+                existing.updatedBy = req.user.username;
+                existing.updatedAt = now;
+                await existing.save();
+                updated++;
+            } else {
+                await new TeamMember({
+                    name: r.name, role: r.role, team: r.team,
+                    project: r.project, lineOfBusiness: r.lineOfBusiness, email: r.email,
+                    createdBy: req.user.username, isActive: true
+                }).save();
+                created++;
+            }
+        }
+
+        const invalidArr = [...invalidLobs];
+        const msg = invalidArr.length > 0
+            ? `Import complete: ${created} created, ${updated} updated. Skipped ${invalidArr.length} unknown LOB(s): ${invalidArr.join(', ')}`
+            : `Import complete: ${created} created, ${updated} updated`;
+
+        res.json({ success: true, message: msg, created, updated, skipped: invalidArr });
+    } catch (error) {
+        console.error('Team members import error:', error);
+        res.status(500).json({ success: false, message: 'Failed to import team members' });
+    }
+});
+
 // Update team member (Admin only)
 app.put('/api/team-members/:id', authMiddleware, async (req, res) => {
     try {
