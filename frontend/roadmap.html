@@ -534,10 +534,10 @@
             updateSystemFilter();
         }
 
-        // Initialize LOB filter — loads from master /api/line-of-business
+        // Initialize LOB filter — loads from master /api/line-of-business/active (returns name strings)
         async function initLobFilter() {
             try {
-                const res = await fetch((window.PRODUCT360_API_BASE||'') + '/api/line-of-business', {
+                const res = await fetch((window.PRODUCT360_API_BASE||'') + '/api/line-of-business/active', {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data = await res.json();
