@@ -186,6 +186,11 @@
             render();
         }
 
+        window.markCompleteSelected = function(storyId) {
+            const sp = state.selectedFibonacci[storyId];
+            markComplete(storyId, sp !== undefined ? sp : null);
+        };
+
         // ============================================
         // UTILITIES
         // ============================================
@@ -1797,7 +1802,7 @@
                                 </span>
                             `}
                             ${!complete ? `
-                                <button type="button" onclick="markComplete('${story.id}', ${state.selectedFibonacci[story.id] ?? 'null'})" class="px-3 py-1.5 btn-carelon-primary rounded-lg text-sm transition flex items-center space-x-1.5">
+                                <button type="button" onclick="markCompleteSelected('${story.id}')" class="px-3 py-1.5 btn-carelon-primary rounded-lg text-sm transition flex items-center space-x-1.5">
                                     <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                     <span>Mark Complete</span>
                                 </button>

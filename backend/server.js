@@ -4260,7 +4260,7 @@ app.post('/api/sessions/update-story-points', authMiddleware, async (req, res) =
         const https = require('https');
         const payload = JSON.stringify({ fields: { customfield_10016: Number(storyPoints) } });
         const parsedUrl = new URL(`${jiraBase}/rest/api/2/issue/${encodeURIComponent(issueKey)}`);
-        await new Promise((resolve, reject) => {
+        const jiraResult = await new Promise((resolve, reject) => {
             const options = {
                 hostname: parsedUrl.hostname,
                 path: parsedUrl.pathname,
@@ -4272,14 +4272,18 @@ app.post('/api/sessions/update-story-points', authMiddleware, async (req, res) =
                 }
             };
             const req2 = https.request(options, (r) => {
-                let d = '';
-                r.on('data', c => d += c);
-                r.on('end', () => resolve({ status: r.statusCode, body: d }));
+                const chunks = [];
+                r.on('data', c => chunks.push(c));
+                r.on('end', () => resolve({ status: r.statusCode, body: Buffer.concat(chunks).toString('utf8') }));
             });
             req2.on('error', reject);
             req2.write(payload);
             req2.end();
         });
+        if (jiraResult.status !== 204 && jiraResult.status !== 200) {
+            console.error('Jira update-story-points failed:', jiraResult.status, jiraResult.body);
+            return res.status(502).json({ success: false, message: `Jira returned ${jiraResult.status}: ${jiraResult.body}` });
+        }
         res.json({ success: true });
     } catch (error) {
         console.error('update-story-points error:', error);
