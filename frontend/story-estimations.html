@@ -1102,19 +1102,21 @@
                                     <div class="grid grid-cols-3 gap-3">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                                            <div id="projectNameContainer">
-                                                <select id="projectName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" disabled>
-                                                    <option value="">Loading projects...</option>
-                                                </select>
+                                            <div id="projectNameContainer" class="relative">
+                                                <input type="text" id="projectName" placeholder="Type to search project..." autocomplete="off"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                    oninput="filterProjectCombobox()" onfocus="showProjectDropdown()" onblur="hideProjectDropdown()">
+                                                <div id="projectComboDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto"></div>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-1" id="projectNameHint">Loading from JIRA...</p>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Team Name</label>
-                                            <div id="teamNameContainer">
-                                                <select id="teamName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" disabled>
-                                                    <option value="">Select a project first</option>
-                                                </select>
+                                            <div id="teamNameContainer" class="relative">
+                                                <input type="text" id="teamName" placeholder="Type to search team..." autocomplete="off"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                    oninput="filterTeamCombobox()" onfocus="showTeamDropdown()" onblur="hideTeamDropdown()">
+                                                <div id="teamComboDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto"></div>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-1" id="teamNameHint"></p>
                                         </div>
@@ -1866,129 +1868,184 @@
 
         const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent';
 
-        async function loadProjectsDropdown() {
-            const container = document.getElementById('projectNameContainer');
+        // ── Combobox state ──────────────────────────────────────────────
+        let _allProjects = [];   // { key, label, name }
+        let _selectedProjectKey = '';
+        let _allTeams = [];      // flat string array of team names
+        let _projectTeamsMap = {}; // projectKey -> [teamName]
+
+        // ── Project combobox ────────────────────────────────────────────
+        function filterProjectCombobox() {
+            const q = (document.getElementById('projectName')?.value || '').toLowerCase();
+            const list = q ? _allProjects.filter(p => p.label.toLowerCase().includes(q) || p.key.toLowerCase().includes(q)) : _allProjects;
+            renderProjectDropdown(list);
+        }
+
+        function renderProjectDropdown(list) {
+            const dd = document.getElementById('projectComboDropdown');
+            if (!dd) return;
+            if (!list.length) { dd.innerHTML = '<div class="px-3 py-2 text-xs text-gray-400">No projects found</div>'; dd.classList.remove('hidden'); return; }
+            dd.innerHTML = list.map(p => `
+                <div class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer rounded" 
+                    onmousedown="selectProject('${p.key}','${p.label.replace(/'/g,"\\'")}','${(p.name||p.label).replace(/'/g,"\\'")}')">
+                    <span class="font-medium">${p.key}</span> <span class="text-gray-500">${p.label}</span>
+                </div>`).join('');
+            dd.classList.remove('hidden');
+        }
+
+        function showProjectDropdown() {
+            filterProjectCombobox();
+        }
+
+        function hideProjectDropdown() {
+            setTimeout(() => { const dd = document.getElementById('projectComboDropdown'); if (dd) dd.classList.add('hidden'); }, 150);
+        }
+
+        function selectProject(key, label, name) {
+            const input = document.getElementById('projectName');
+            if (input) input.value = label;
+            _selectedProjectKey = key;
+            const dd = document.getElementById('projectComboDropdown');
+            if (dd) dd.classList.add('hidden');
             const hint = document.getElementById('projectNameHint');
-            if (!container) return;
-
-            if (USE_HARDCODE) {
-                // -- HARDCODED MODE --
-                const select = document.getElementById('projectName');
-                select.innerHTML = `<option value="">Select project...</option>` +
-                    PROJECT_DATA.map(p => `<option value="${p.key}" data-name="${p.name}">${p.name} (${p.key})</option>`).join('');
-                select.disabled = false;
-                select.onchange = () => {
-                    const key = select.value;
-                    const name = select.options[select.selectedIndex]?.dataset?.name || '';
-                    loadTeamsForProject(key, name);
-                };
-                if (hint) hint.textContent = `${PROJECT_DATA.length} projects`;
-                return;
-            }
-
-            // -- API MODE --
-            try {
-                const response = await fetch(`${API_BASE_URL}/jira/projects`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
-                const data = await response.json();
-                if (data.success && data.projects && data.projects.length > 0) {
-                    const select = document.getElementById('projectName');
-                    select.innerHTML = `<option value="">Select project...</option>` +
-                        data.projects.map(p => `<option value="${p.key}" data-name="${p.name}">${p.label}</option>`).join('');
-                    select.disabled = false;
-                    select.onchange = () => {
-                        const key = select.value;
-                        const name = select.options[select.selectedIndex]?.dataset?.name || '';
-                        loadTeamsForProject(key, name);
-                    };
-                    if (hint) hint.textContent = `${data.projects.length} projects loaded`;
-                } else {
-                    container.innerHTML = `<input type="text" id="projectName" placeholder="Enter project name" class="${INPUT_CLS}">`;
-                    if (hint) hint.textContent = 'JIRA not configured  - enter manually';
-                    enableFreeTextFallback();
-                }
-            } catch (error) {
-                console.error('Error loading projects:', error);
-                container.innerHTML = `<input type="text" id="projectName" placeholder="Enter project name" class="${INPUT_CLS}">`;
-                if (hint) hint.textContent = 'Could not load projects';
-                enableFreeTextFallback();
-            }
+            if (hint) hint.textContent = `Selected: ${key}`;
+            // Narrow teams to selected project
+            _loadTeamsForProjectKey(key);
         }
 
-        function enableFreeTextFallback() {
-            const teamContainer = document.getElementById('teamNameContainer');
-            const teamHint = document.getElementById('teamNameHint');
-            const sprintContainer = document.getElementById('sprintValueContainer');
-            const sprintHint = document.getElementById('sprintValueHint');
-            if (teamContainer) {
-                teamContainer.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name" class="${INPUT_CLS}">`;
-                if (teamHint) teamHint.textContent = '';
-            }
-            if (sprintContainer) {
-                sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Enter Sprint value" class="${INPUT_CLS}">`;
-                if (sprintHint) sprintHint.textContent = '';
-            }
+        // ── Team combobox ───────────────────────────────────────────────
+        function filterTeamCombobox() {
+            const q = (document.getElementById('teamName')?.value || '').toLowerCase();
+            const pool = _selectedProjectKey && _projectTeamsMap[_selectedProjectKey]
+                ? _projectTeamsMap[_selectedProjectKey]
+                : _allTeams;
+            const list = q ? pool.filter(t => t.toLowerCase().includes(q)) : pool;
+            renderTeamDropdown(list);
         }
 
-        async function loadTeamsForProject(projectKey, projectName) {
-            const container = document.getElementById('teamNameContainer');
+        function renderTeamDropdown(list) {
+            const dd = document.getElementById('teamComboDropdown');
+            if (!dd) return;
+            if (!list.length) { dd.innerHTML = '<div class="px-3 py-2 text-xs text-gray-400">No teams found</div>'; dd.classList.remove('hidden'); return; }
+            dd.innerHTML = list.map(t => `
+                <div class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer rounded"
+                    onmousedown="selectTeam('${t.replace(/'/g,"\\'")}')">
+                    ${t}
+                </div>`).join('');
+            dd.classList.remove('hidden');
+        }
+
+        function showTeamDropdown() {
+            filterTeamCombobox();
+        }
+
+        function hideTeamDropdown() {
+            setTimeout(() => { const dd = document.getElementById('teamComboDropdown'); if (dd) dd.classList.add('hidden'); }, 150);
+        }
+
+        function selectTeam(name) {
+            const input = document.getElementById('teamName');
+            if (input) input.value = name;
+            const dd = document.getElementById('teamComboDropdown');
+            if (dd) dd.classList.add('hidden');
+            loadSprintsForTeam(name);
+        }
+
+        // ── Load all teams (called on init, independent of project) ─────
+        async function _loadAllTeams() {
             const hint = document.getElementById('teamNameHint');
-            // Reset sprint when project changes
+            try {
+                // Hardcode mode — extract all unique teams from PROJECT_DATA
+                if (USE_HARDCODE) {
+                    _allTeams = [...new Set(PROJECT_DATA.flatMap(p => p.teams))].sort();
+                    PROJECT_DATA.forEach(p => { _projectTeamsMap[p.key] = p.teams; });
+                    if (hint) hint.textContent = `${_allTeams.length} teams available`;
+                    return;
+                }
+                const res = await fetch(`${API_BASE_URL}/jira/active-teams`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    data.data.forEach(p => {
+                        const names = (p.activeTeams || []).map(t => t.name || t);
+                        _projectTeamsMap[p.projectKey] = names;
+                    });
+                    _allTeams = [...new Set(Object.values(_projectTeamsMap).flat())].sort();
+                    if (hint) hint.textContent = `${_allTeams.length} teams available`;
+                }
+            } catch(e) {
+                if (hint) hint.textContent = 'Type team name manually';
+            }
+        }
+
+        // ── Narrow teams when project is selected ───────────────────────
+        function _loadTeamsForProjectKey(projectKey) {
+            const hint = document.getElementById('teamNameHint');
+            // Reset sprint
             const sprintContainer = document.getElementById('sprintValueContainer');
             const sprintHint = document.getElementById('sprintValueHint');
             if (sprintContainer) {
                 sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Select a team first" class="${INPUT_CLS}" disabled>`;
                 if (sprintHint) sprintHint.textContent = '';
             }
+            // Clear team input
+            const teamInput = document.getElementById('teamName');
+            if (teamInput) teamInput.value = '';
             if (!projectKey) {
-                container.innerHTML = `<select id="teamName" class="${INPUT_CLS}" disabled><option value="">Select a project first</option></select>`;
-                if (hint) hint.textContent = '';
+                if (hint) hint.textContent = `${_allTeams.length} teams available`;
                 return;
             }
-            // Use hardcoded teams if project is in the map
-            if (PROJECT_TEAM_MAP[projectKey]) {
-                const teams = PROJECT_TEAM_MAP[projectKey];
-                const select = document.createElement('select');
-                select.id = 'teamName';
-                select.className = INPUT_CLS;
-                select.innerHTML = `<option value="">Select team...</option>` +
-                    teams.map(t => `<option value="${t}">${t}</option>`).join('');
-                select.onchange = () => loadSprintsForTeam(select.value);
-                container.innerHTML = '';
-                container.appendChild(select);
-                if (hint) hint.textContent = `${teams.length} teams`;
-            } else {
-                // Fallback: fetch active teams from JIRA filtered loosely by project
-                container.innerHTML = `<select id="teamName" class="${INPUT_CLS}" disabled><option value="">Loading teams...</option></select>`;
-                if (hint) hint.textContent = 'Loading teams from JIRA...';
-                try {
-                    const res = await fetch(`${API_BASE_URL}/jira/active-teams`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
-                    const data = await res.json();
-                    if (data.success && data.data) {
-                        const proj = data.data.find(p => p.projectKey === projectKey);
-                        const teams = proj ? proj.activeTeams : [];
-                        const select = document.getElementById('teamName');
-                        if (teams.length > 0) {
-                            select.innerHTML = `<option value="">Select team...</option>` +
-                                teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
-                            select.disabled = false;
-                            select.onchange = () => loadSprintsForTeam(select.value);
-                            if (hint) hint.textContent = `${teams.length} teams`;
-                        } else {
-                            container.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name" class="${INPUT_CLS}">`;
-                            if (hint) hint.textContent = 'No teams found  - enter manually';
-                            if (sprintContainer) {
-                                sprintContainer.innerHTML = `<input type="text" id="sprintValue" placeholder="Enter Sprint value" class="${INPUT_CLS}">`;
-                            }
-                        }
-                    }
-                } catch(e) {
-                    container.innerHTML = `<input type="text" id="teamName" placeholder="Enter team name" class="${INPUT_CLS}">`;
-                    if (hint) hint.textContent = 'Could not load teams';
-                }
+            // If project has mapped teams, update hint
+            const teams = _projectTeamsMap[projectKey] || [];
+            if (hint) hint.textContent = teams.length ? `${teams.length} teams for this project` : 'No mapped teams — type to search all';
+        }
+
+        async function loadProjectsDropdown() {
+            const hint = document.getElementById('projectNameHint');
+
+            if (USE_HARDCODE) {
+                _allProjects = PROJECT_DATA.map(p => ({ key: p.key, label: `${p.name} (${p.key})`, name: p.name }));
+                PROJECT_DATA.forEach(p => { _projectTeamsMap[p.key] = p.teams; });
+                _allTeams = [...new Set(PROJECT_DATA.flatMap(p => p.teams))].sort();
+                if (hint) hint.textContent = `${_allProjects.length} projects`;
+                return;
             }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/jira/projects`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                const data = await response.json();
+                if (data.success && data.projects && data.projects.length > 0) {
+                    _allProjects = data.projects.map(p => ({ key: p.key, label: p.label || p.name, name: p.name }));
+                    if (hint) hint.textContent = `${_allProjects.length} projects loaded`;
+                } else {
+                    if (hint) hint.textContent = 'JIRA not configured — type project manually';
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                if (hint) hint.textContent = 'Could not load projects — type manually';
+            }
+
+            // Load all teams independently
+            await _loadAllTeams();
+        }
+
+        function enableFreeTextFallback() {
+            // No-op — inputs are already free-text comboboxes
+        }
+
+        async function loadTeamsForProject(projectKey, projectName) {
+            // Legacy shim — delegates to new combobox logic
+            _loadTeamsForProjectKey(projectKey);
         }
 
         window.loadJiraProjects = loadProjectsDropdown;
+        window.filterProjectCombobox = filterProjectCombobox;
+        window.showProjectDropdown = showProjectDropdown;
+        window.hideProjectDropdown = hideProjectDropdown;
+        window.selectProject = selectProject;
+        window.filterTeamCombobox = filterTeamCombobox;
+        window.showTeamDropdown = showTeamDropdown;
+        window.hideTeamDropdown = hideTeamDropdown;
+        window.selectTeam = selectTeam;
 
         async function loadSprintsForTeam(teamName) {
             const container = document.getElementById('sprintValueContainer');
