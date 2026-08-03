@@ -245,6 +245,8 @@
                                 <span class="text-sm font-semibold text-gray-700">Select Line of Business</span>
                                 <button type="button" onclick="clearLobFilter()" class="text-xs text-blue-600 hover:text-blue-800">Clear All</button>
                             </div>
+                            <input type="text" id="lobSearchInput" placeholder="Search LOB..." oninput="filterLobList()"
+                                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded mb-2 focus:ring-2 focus:ring-purple-400 focus:outline-none">
                             <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
                                 <input type="checkbox" id="selectAllLobs" onchange="toggleAllLobs()" class="w-4 h-4 text-blue-600 rounded">
                                 <span class="text-sm font-semibold text-gray-700">Select All</span>
@@ -273,6 +275,8 @@
                                 <span class="text-sm font-semibold text-gray-700">Select Systems</span>
                                 <button type="button" onclick="clearSystemFilter()" class="text-xs text-blue-600 hover:text-blue-800">Clear All</button>
                             </div>
+                            <input type="text" id="systemSearchInput" placeholder="Search system..." oninput="filterSystemList()"
+                                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded mb-2 focus:ring-2 focus:ring-purple-400 focus:outline-none">
                             <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
                                 <input type="checkbox" id="selectAllSystems" onchange="toggleAllSystems()" class="w-4 h-4 text-blue-600 rounded">
                                 <span class="text-sm font-semibold text-gray-700">Select All</span>
@@ -412,38 +416,50 @@
         let allLobs = [];
         let lobSystemsMap = {}; // lob -> [systems]
 
+        let allSystemsList = []; // full list of systems currently scoped to LOB selection
+
         // Render system checkboxes for the given systems list, checking all by default
         function renderSystemFilter(systems) {
+            allSystemsList = systems;
+            const searchVal = (document.getElementById('systemSearchInput')?.value || '').toLowerCase();
+            const filtered = searchVal ? systems.filter(s => s.toLowerCase().includes(searchVal)) : systems;
             const filterList = document.getElementById('systemFilterList');
             filterList.innerHTML = '';
-            if (!systems.length) {
-                filterList.innerHTML = '<p class="text-xs text-gray-400 p-2">No systems mapped for selected LOB(s)</p>';
-                selectedSystems = [];
-                updateSystemFilterLabel();
+            if (!filtered.length) {
+                filterList.innerHTML = '<p class="text-xs text-gray-400 p-2">No systems found</p>';
+                if (!searchVal) { selectedSystems = []; updateSystemFilterLabel(); }
                 return;
             }
-            systems.forEach(system => {
+            filtered.forEach(system => {
+                const isChecked = selectedSystems.length === 0 || selectedSystems.includes(system);
                 const label = document.createElement('label');
                 label.className = 'flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer';
                 label.innerHTML = `
                     <input type="checkbox" value="${system}" onchange="updateSystemFilter()" 
-                        class="system-checkbox w-4 h-4 text-blue-600 rounded" checked>
+                        class="system-checkbox w-4 h-4 text-blue-600 rounded" ${isChecked ? 'checked' : ''}>
                     <span class="text-sm text-gray-700">${system}</span>
                 `;
                 filterList.appendChild(label);
             });
-            document.getElementById('selectAllSystems').checked = true;
-            selectedSystems = [...systems];
+            const allChecked = filtered.every(s => selectedSystems.length === 0 || selectedSystems.includes(s));
+            document.getElementById('selectAllSystems').checked = allChecked && filtered.length > 0;
+            if (selectedSystems.length === 0) { selectedSystems = [...systems]; }
             updateSystemFilterLabel();
             lucide.createIcons();
+        }
+
+        // Filter visible system checkboxes by search input
+        function filterSystemList() {
+            renderSystemFilter(allSystemsList);
         }
 
         // Fetch systems for the currently selected LOBs and rebuild system filter
         async function refreshSystemsForSelectedLobs() {
             if (selectedLobs.length === 0) {
-                // No LOB selected — show all systems from all mapped LOBs
+                // No LOB selected — show all systems from all LOBs
                 const all = Object.values(lobSystemsMap).flat();
                 const unique = [...new Set(all)].sort();
+                selectedSystems = [];
                 renderSystemFilter(unique);
                 renderRoadmap();
                 return;
@@ -465,15 +481,38 @@
             renderRoadmap();
         }
 
-        // Initialize system filter (called once on load with no LOB pre-selected)
-        function initSystemFilter() {
-            renderSystemFilter([]);
+        // Initialize system filter — loads ALL systems from all LOBs on startup
+        async function initSystemFilter() {
+            try {
+                const res = await fetch((window.PRODUCT360_API_BASE||'') + '/api/line-of-business/active', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                const data = await res.json();
+                const lobs = (data.success && data.lobs) ? data.lobs : [];
+                await Promise.all(lobs.map(async lob => {
+                    if (lob in lobSystemsMap) return;
+                    try {
+                        const r = await fetch((window.PRODUCT360_API_BASE||'') + '/api/lob-systems/' + encodeURIComponent(lob), {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        const d = await r.json();
+                        lobSystemsMap[lob] = (d.success && d.systems) ? d.systems : [];
+                    } catch(e) { lobSystemsMap[lob] = []; }
+                }));
+            } catch(e) {}
+            const all = Object.values(lobSystemsMap).flat();
+            const unique = [...new Set(all)].sort();
+            selectedSystems = [];
+            renderSystemFilter(unique);
         }
 
         // Toggle system filter dropdown
         function toggleSystemFilter() {
             const dropdown = document.getElementById('systemFilterDropdown');
             dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+                setTimeout(() => document.getElementById('systemSearchInput')?.focus(), 50);
+            }
             lucide.createIcons();
         }
 
@@ -563,7 +602,20 @@
         function toggleLobFilter() {
             const dropdown = document.getElementById('lobFilterDropdown');
             dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+                setTimeout(() => document.getElementById('lobSearchInput')?.focus(), 50);
+            }
             lucide.createIcons();
+        }
+
+        // Filter visible LOB checkboxes by search input
+        function filterLobList() {
+            const searchVal = document.getElementById('lobSearchInput').value.toLowerCase();
+            const labels = document.querySelectorAll('#lobFilterList label');
+            labels.forEach(label => {
+                const text = label.querySelector('span')?.textContent.toLowerCase() || '';
+                label.style.display = text.includes(searchVal) ? '' : 'none';
+            });
         }
 
         // Close LOB dropdown when clicking outside
@@ -633,7 +685,7 @@
 
                 if (data.success) {
                     allInitiatives = data.initiatives;
-                    initSystemFilter();
+                    await initSystemFilter();
                     await initLobFilter();
                     renderRoadmap();
                 }
