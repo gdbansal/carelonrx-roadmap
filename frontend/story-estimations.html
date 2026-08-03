@@ -1099,28 +1099,34 @@
                                     Create New Session
                                 </h3>
                                 <div class="space-y-2">
-                                    <div class="grid grid-cols-3 gap-3">
-                                        <div>
+                                    <div class="grid grid-cols-5 gap-3">
+                                        <div class="col-span-2">
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Project</label>
                                             <div id="projectNameContainer" class="relative">
                                                 <input type="text" id="projectName" placeholder="Type to search project..." autocomplete="off"
-                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                    class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                                     oninput="filterProjectCombobox()" onfocus="showProjectDropdown()" onblur="hideProjectDropdown()">
+                                                <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer pointer-events-auto" onmousedown="event.preventDefault();showProjectDropdown()">
+                                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                                </span>
                                                 <div id="projectComboDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto"></div>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-1" id="projectNameHint">Loading from JIRA...</p>
                                         </div>
-                                        <div>
+                                        <div class="col-span-2">
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Team Name</label>
                                             <div id="teamNameContainer" class="relative">
                                                 <input type="text" id="teamName" placeholder="Type to search team..." autocomplete="off"
-                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                    class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                                     oninput="filterTeamCombobox()" onfocus="showTeamDropdown()" onblur="hideTeamDropdown()">
+                                                <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer pointer-events-auto" onmousedown="event.preventDefault();showTeamDropdown()">
+                                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                                </span>
                                                 <div id="teamComboDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto"></div>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-1" id="teamNameHint"></p>
                                         </div>
-                                        <div>
+                                        <div class="col-span-1">
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Sprint Value</label>
                                             <div id="sprintValueContainer">
                                                 <input type="text" id="sprintValue" placeholder="Select a team first" 
@@ -1886,7 +1892,7 @@
             if (!dd) return;
             if (!list.length) { dd.innerHTML = '<div class="px-3 py-2 text-xs text-gray-400">No projects found</div>'; dd.classList.remove('hidden'); return; }
             dd.innerHTML = list.map(p => `
-                <div class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer rounded" 
+                <div class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer rounded truncate" title="${p.label}"
                     onmousedown="selectProject('${p.key}','${p.label.replace(/'/g,"\\'")}','${(p.name||p.label).replace(/'/g,"\\'")}')">
                     <span class="font-medium">${p.key}</span> <span class="text-gray-500">${p.label}</span>
                 </div>`).join('');
@@ -1928,7 +1934,7 @@
             if (!dd) return;
             if (!list.length) { dd.innerHTML = '<div class="px-3 py-2 text-xs text-gray-400">No teams found</div>'; dd.classList.remove('hidden'); return; }
             dd.innerHTML = list.map(t => `
-                <div class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer rounded"
+                <div class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer rounded truncate" title="${t}"
                     onmousedown="selectTeam('${t.replace(/'/g,"\\'")}')">
                     ${t}
                 </div>`).join('');
