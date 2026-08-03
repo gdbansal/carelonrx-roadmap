@@ -246,7 +246,7 @@
                         <div class="p-3 border-b border-gray-200">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-semibold text-gray-700">Select Line of Business</span>
-                                <button type="button" onclick="clearLobFilter()" class="text-xs text-blue-600 hover:text-blue-800">Clear All</button>
+                                <button type="button" onmousedown="event.preventDefault()" onclick="clearLobFilter()" class="text-xs text-blue-600 hover:text-blue-800">Clear All</button>
                             </div>
                             <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
                                 <input type="checkbox" id="selectAllLobs" onchange="toggleAllLobs()" class="w-4 h-4 text-blue-600 rounded">
@@ -277,7 +277,7 @@
                         <div class="p-3 border-b border-gray-200">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-semibold text-gray-700">Select Systems</span>
-                                <button type="button" onclick="clearSystemFilter()" class="text-xs text-blue-600 hover:text-blue-800">Clear All</button>
+                                <button type="button" onmousedown="event.preventDefault()" onclick="clearSystemFilter()" class="text-xs text-blue-600 hover:text-blue-800">Clear All</button>
                             </div>
                             <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
                                 <input type="checkbox" id="selectAllSystems" onchange="toggleAllSystems()" class="w-4 h-4 text-blue-600 rounded">
@@ -513,7 +513,10 @@
             lucide.createIcons();
         }
         function closeSystemDropdown() {
-            setTimeout(() => document.getElementById('systemFilterDropdown').classList.add('hidden'), 150);
+            setTimeout(() => {
+                const dd = document.getElementById('systemFilterDropdown');
+                if (dd && !dd.matches(':hover')) dd.classList.add('hidden');
+            }, 300);
         }
         function toggleSystemFilter() { openSystemDropdown(); }
 
@@ -612,7 +615,10 @@
             lucide.createIcons();
         }
         function closeLobDropdown() {
-            setTimeout(() => document.getElementById('lobFilterDropdown').classList.add('hidden'), 150);
+            setTimeout(() => {
+                const dd = document.getElementById('lobFilterDropdown');
+                if (dd && !dd.matches(':hover')) dd.classList.add('hidden');
+            }, 300);
         }
         function toggleLobFilter() { openLobDropdown(); }
 

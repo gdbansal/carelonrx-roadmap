@@ -1954,6 +1954,18 @@
             if (input) input.value = name;
             const dd = document.getElementById('teamComboDropdown');
             if (dd) dd.classList.add('hidden');
+
+            // Auto-populate Project based on selected team
+            const projectKey = Object.keys(_projectTeamsMap).find(k => _projectTeamsMap[k].includes(name));
+            if (projectKey) {
+                _selectedProjectKey = projectKey;
+                const project = _allProjects.find(p => p.key === projectKey);
+                const projectInput = document.getElementById('projectName');
+                if (projectInput && project) projectInput.value = project.label;
+                const hint = document.getElementById('projectNameHint');
+                if (hint && project) hint.textContent = `Selected: ${projectKey}`;
+            }
+
             loadSprintsForTeam(name);
         }
 
