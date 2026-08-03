@@ -571,11 +571,14 @@
         // Clear system filter
         function clearSystemFilter() {
             const checkboxes = document.querySelectorAll('.system-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = false;
-            });
+            checkboxes.forEach(checkbox => { checkbox.checked = false; });
             document.getElementById('selectAllSystems').checked = false;
-            updateSystemFilter();
+            selectedSystems = [];
+            // Clear search text and re-render full list
+            const input = document.getElementById('systemFilterButton');
+            if (input) { input.value = ''; input.placeholder = 'Filter by System (All)'; }
+            renderSystemFilter(allSystemsList);
+            renderRoadmap();
         }
 
         // Initialize LOB filter — loads from master /api/line-of-business/active (returns name strings)
@@ -676,10 +679,12 @@
         // Clear LOB filter
         function clearLobFilter() {
             const checkboxes = document.querySelectorAll('.lob-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = false;
-            });
+            checkboxes.forEach(checkbox => { checkbox.checked = false; });
             document.getElementById('selectAllLobs').checked = false;
+            // Clear search text and show all LOB checkboxes
+            const input = document.getElementById('lobFilterButton');
+            if (input) { input.value = ''; input.placeholder = 'Filter by Line of Business (All)'; }
+            document.querySelectorAll('#lobFilterList label').forEach(l => l.style.display = '');
             updateLobFilter();
         }
 
