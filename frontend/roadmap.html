@@ -541,6 +541,8 @@
         function updateSystemFilterLabel() {
             const input = document.getElementById('systemFilterButton');
             if (!input) return;
+            // Don't overwrite value while user is actively typing
+            if (document.activeElement === input) return;
             if (selectedSystems.length === 0 || selectedSystems.length === allSystemsList.length) {
                 input.value = '';
                 input.placeholder = 'Filter by System (All)';
@@ -653,16 +655,18 @@
             const selectAll = document.getElementById('selectAllLobs');
             selectAll.checked = selectedLobs.length === allCheckboxes.length;
 
-            // Update input placeholder-style label
+            // Update input placeholder-style label (skip if user is actively typing)
             const input = document.getElementById('lobFilterButton');
-            if (input && selectedLobs.length === 0) {
-                input.value = '';
-                input.placeholder = 'Filter by Line of Business (All)';
-            } else if (input && selectedLobs.length === 1) {
-                input.value = selectedLobs[0];
-            } else if (input) {
-                input.value = '';
-                input.placeholder = `Filter by Line of Business (${selectedLobs.length} selected)`;
+            if (input && document.activeElement !== input) {
+                if (selectedLobs.length === 0) {
+                    input.value = '';
+                    input.placeholder = 'Filter by Line of Business (All)';
+                } else if (selectedLobs.length === 1) {
+                    input.value = selectedLobs[0];
+                } else {
+                    input.value = '';
+                    input.placeholder = `Filter by Line of Business (${selectedLobs.length} selected)`;
+                }
             }
 
             // Refresh system checkboxes based on new LOB selection
