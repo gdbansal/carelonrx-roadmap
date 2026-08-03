@@ -433,7 +433,7 @@
                 return;
             }
             filtered.forEach(system => {
-                const isChecked = selectedSystems.length === 0 || selectedSystems.includes(system);
+                const isChecked = selectedSystems.includes(system);
                 const label = document.createElement('label');
                 label.className = 'flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer';
                 label.innerHTML = `
@@ -443,9 +443,8 @@
                 `;
                 filterList.appendChild(label);
             });
-            const allChecked = filtered.every(s => selectedSystems.length === 0 || selectedSystems.includes(s));
-            document.getElementById('selectAllSystems').checked = allChecked && filtered.length > 0;
-            if (selectedSystems.length === 0) { selectedSystems = [...systems]; }
+            const allChecked = filtered.length > 0 && filtered.every(s => selectedSystems.includes(s));
+            document.getElementById('selectAllSystems').checked = allChecked;
             updateSystemFilterLabel();
             lucide.createIcons();
         }
