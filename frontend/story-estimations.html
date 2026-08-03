@@ -1109,7 +1109,12 @@
                                                 <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 cursor-pointer" onmousedown="event.preventDefault();showProjectDropdown()">
                                                     <i data-lucide="chevron-down" class="w-4 h-4"></i>
                                                 </span>
-                                                <div id="projectComboDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto"></div>
+                                                <div id="projectComboDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                                                    <div class="flex items-center justify-between px-3 py-1.5 border-b border-gray-100">
+                                                        <span class="text-xs text-gray-400">Select project</span>
+                                                        <button type="button" class="text-xs text-blue-600 hover:text-blue-800" onmousedown="event.preventDefault();clearProjectSelection()">Clear</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-1" id="projectNameHint">Loading from JIRA...</p>
                                         </div>
@@ -1122,7 +1127,12 @@
                                                 <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 cursor-pointer" onmousedown="event.preventDefault();showTeamDropdown()">
                                                     <i data-lucide="chevron-down" class="w-4 h-4"></i>
                                                 </span>
-                                                <div id="teamComboDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto"></div>
+                                                <div id="teamComboDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                                                    <div class="flex items-center justify-between px-3 py-1.5 border-b border-gray-100">
+                                                        <span class="text-xs text-gray-400">Select team</span>
+                                                        <button type="button" class="text-xs text-blue-600 hover:text-blue-800" onmousedown="event.preventDefault();clearTeamSelection()">Clear</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <p class="text-xs text-gray-500 mt-1" id="teamNameHint"></p>
                                         </div>
@@ -1890,12 +1900,25 @@
         function renderProjectDropdown(list) {
             const dd = document.getElementById('projectComboDropdown');
             if (!dd) return;
-            if (!list.length) { dd.innerHTML = '<div class="px-3 py-2 text-xs text-gray-400">No projects found</div>'; dd.classList.remove('hidden'); return; }
-            dd.innerHTML = list.map(p => `
-                <div class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer rounded truncate" title="${p.label}"
-                    onmousedown="selectProject('${p.key}','${p.label.replace(/'/g,"\\'")}','${(p.name||p.label).replace(/'/g,"\\'")}')">
-                    <span class="font-medium">${p.key}</span> <span class="text-gray-500">${p.label}</span>
-                </div>`).join('');
+            // Keep the header (first child), replace the rest
+            const header = dd.firstElementChild;
+            dd.innerHTML = '';
+            if (header) dd.appendChild(header);
+            if (!list.length) {
+                const empty = document.createElement('div');
+                empty.className = 'px-3 py-2 text-xs text-gray-400';
+                empty.textContent = 'No projects found';
+                dd.appendChild(empty);
+            } else {
+                list.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer rounded truncate';
+                    item.title = p.label;
+                    item.innerHTML = `<span class="font-medium">${p.key}</span> <span class="text-gray-500">${p.label}</span>`;
+                    item.onmousedown = (e) => { e.preventDefault(); selectProject(p.key, p.label, p.name||p.label); };
+                    dd.appendChild(item);
+                });
+            }
             dd.classList.remove('hidden');
         }
 
@@ -1922,27 +1945,49 @@
         // ── Team combobox ───────────────────────────────────────────────
         function filterTeamCombobox() {
             const q = (document.getElementById('teamName')?.value || '').toLowerCase();
-            const pool = _selectedProjectKey && _projectTeamsMap[_selectedProjectKey]
-                ? _projectTeamsMap[_selectedProjectKey]
-                : _allTeams;
-            const list = q ? pool.filter(t => t.toLowerCase().includes(q)) : pool;
+            // When user is typing manually, reset project key so all teams are searchable
+            _selectedProjectKey = '';
+            const projectInput = document.getElementById('projectName');
+            if (projectInput) { projectInput.value = ''; }
+            const projectHint = document.getElementById('projectNameHint');
+            if (projectHint) projectHint.textContent = `${_allProjects.length} projects`;
+            // Search across all teams
+            const list = q ? _allTeams.filter(t => t.toLowerCase().includes(q)) : _allTeams;
             renderTeamDropdown(list);
         }
 
         function renderTeamDropdown(list) {
             const dd = document.getElementById('teamComboDropdown');
             if (!dd) return;
-            if (!list.length) { dd.innerHTML = '<div class="px-3 py-2 text-xs text-gray-400">No teams found</div>'; dd.classList.remove('hidden'); return; }
-            dd.innerHTML = list.map(t => `
-                <div class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer rounded truncate" title="${t}"
-                    onmousedown="selectTeam('${t.replace(/'/g,"\\'")}')">
-                    ${t}
-                </div>`).join('');
+            // Keep the header (first child), replace the rest
+            const header = dd.firstElementChild;
+            dd.innerHTML = '';
+            if (header) dd.appendChild(header);
+            if (!list.length) {
+                const empty = document.createElement('div');
+                empty.className = 'px-3 py-2 text-xs text-gray-400';
+                empty.textContent = 'No teams found';
+                dd.appendChild(empty);
+            } else {
+                list.forEach(t => {
+                    const item = document.createElement('div');
+                    item.className = 'px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer rounded truncate';
+                    item.title = t;
+                    item.textContent = t;
+                    item.onmousedown = (e) => { e.preventDefault(); selectTeam(t); };
+                    dd.appendChild(item);
+                });
+            }
             dd.classList.remove('hidden');
         }
 
         function showTeamDropdown() {
-            filterTeamCombobox();
+            const q = (document.getElementById('teamName')?.value || '').toLowerCase();
+            const pool = _selectedProjectKey && _projectTeamsMap[_selectedProjectKey]
+                ? _projectTeamsMap[_selectedProjectKey]
+                : _allTeams;
+            const list = q ? pool.filter(t => t.toLowerCase().includes(q)) : pool;
+            renderTeamDropdown(list);
         }
 
         function hideTeamDropdown() {
@@ -2055,6 +2100,28 @@
             _loadTeamsForProjectKey(projectKey);
         }
 
+        function clearProjectSelection() {
+            _selectedProjectKey = '';
+            const pi = document.getElementById('projectName'); if (pi) pi.value = '';
+            const ph = document.getElementById('projectNameHint'); if (ph) ph.textContent = `${_allProjects.length} projects`;
+            const ti = document.getElementById('teamName'); if (ti) ti.value = '';
+            const th = document.getElementById('teamNameHint'); if (th) th.textContent = `${_allTeams.length} teams available`;
+            const sc = document.getElementById('sprintValueContainer');
+            if (sc) sc.innerHTML = `<input type="text" id="sprintValue" placeholder="Select a team first" class="${INPUT_CLS}" disabled>`;
+            showProjectDropdown();
+        }
+
+        function clearTeamSelection() {
+            _selectedProjectKey = '';
+            const ti = document.getElementById('teamName'); if (ti) ti.value = '';
+            const th = document.getElementById('teamNameHint'); if (th) th.textContent = `${_allTeams.length} teams available`;
+            const pi = document.getElementById('projectName'); if (pi) pi.value = '';
+            const ph = document.getElementById('projectNameHint'); if (ph) ph.textContent = `${_allProjects.length} projects`;
+            const sc = document.getElementById('sprintValueContainer');
+            if (sc) sc.innerHTML = `<input type="text" id="sprintValue" placeholder="Select a team first" class="${INPUT_CLS}" disabled>`;
+            showTeamDropdown();
+        }
+
         window.loadJiraProjects = loadProjectsDropdown;
         window.filterProjectCombobox = filterProjectCombobox;
         window.showProjectDropdown = showProjectDropdown;
@@ -2064,6 +2131,8 @@
         window.showTeamDropdown = showTeamDropdown;
         window.hideTeamDropdown = hideTeamDropdown;
         window.selectTeam = selectTeam;
+        window.clearProjectSelection = clearProjectSelection;
+        window.clearTeamSelection = clearTeamSelection;
 
         async function loadSprintsForTeam(teamName) {
             const container = document.getElementById('sprintValueContainer');
