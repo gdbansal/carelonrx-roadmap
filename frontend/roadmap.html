@@ -230,14 +230,17 @@
             <div class="mb-4 flex flex-col md:flex-row gap-4">
                 <!-- Line of Business Filter -->
                 <div class="relative flex-1">
-                    <button type="button" id="lobFilterButton" onclick="toggleLobFilter()" 
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white hover:bg-gray-50 flex items-center justify-between space-x-2">
-                        <div class="flex items-center space-x-2">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
                             <i data-lucide="briefcase" class="w-4 h-4"></i>
-                            <span id="lobFilterLabel">Filter by Line of Business (All)</span>
-                        </div>
-                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                    </button>
+                        </span>
+                        <input type="text" id="lobFilterButton" placeholder="Filter by Line of Business (All)" autocomplete="off"
+                            class="w-full border border-gray-300 rounded-lg pl-9 pr-8 py-2 bg-white text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                            oninput="filterLobList()" onfocus="openLobDropdown()" onblur="closeLobDropdown()">
+                        <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 cursor-pointer" onmousedown="event.preventDefault();openLobDropdown()">
+                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                        </span>
+                    </div>
                     
                     <div id="lobFilterDropdown" class="hidden absolute z-50 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-96 overflow-y-auto">
                         <div class="p-3 border-b border-gray-200">
@@ -245,8 +248,6 @@
                                 <span class="text-sm font-semibold text-gray-700">Select Line of Business</span>
                                 <button type="button" onclick="clearLobFilter()" class="text-xs text-blue-600 hover:text-blue-800">Clear All</button>
                             </div>
-                            <input type="text" id="lobSearchInput" placeholder="Search LOB..." oninput="filterLobList()"
-                                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded mb-2 focus:ring-2 focus:ring-purple-400 focus:outline-none">
                             <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
                                 <input type="checkbox" id="selectAllLobs" onchange="toggleAllLobs()" class="w-4 h-4 text-blue-600 rounded">
                                 <span class="text-sm font-semibold text-gray-700">Select All</span>
@@ -260,14 +261,17 @@
 
                 <!-- System Filter -->
                 <div class="relative flex-1">
-                    <button type="button" id="systemFilterButton" onclick="toggleSystemFilter()" 
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-white hover:bg-gray-50 flex items-center justify-between space-x-2">
-                        <div class="flex items-center space-x-2">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
                             <i data-lucide="filter" class="w-4 h-4"></i>
-                            <span id="systemFilterLabel">Filter by System (All)</span>
-                        </div>
-                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                    </button>
+                        </span>
+                        <input type="text" id="systemFilterButton" placeholder="Filter by System (All)" autocomplete="off"
+                            class="w-full border border-gray-300 rounded-lg pl-9 pr-8 py-2 bg-white text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                            oninput="filterSystemList()" onfocus="openSystemDropdown()" onblur="closeSystemDropdown()">
+                        <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 cursor-pointer" onmousedown="event.preventDefault();openSystemDropdown()">
+                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                        </span>
+                    </div>
                     
                     <div id="systemFilterDropdown" class="hidden absolute z-50 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-96 overflow-y-auto">
                         <div class="p-3 border-b border-gray-200">
@@ -275,8 +279,6 @@
                                 <span class="text-sm font-semibold text-gray-700">Select Systems</span>
                                 <button type="button" onclick="clearSystemFilter()" class="text-xs text-blue-600 hover:text-blue-800">Clear All</button>
                             </div>
-                            <input type="text" id="systemSearchInput" placeholder="Search system..." oninput="filterSystemList()"
-                                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded mb-2 focus:ring-2 focus:ring-purple-400 focus:outline-none">
                             <label class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
                                 <input type="checkbox" id="selectAllSystems" onchange="toggleAllSystems()" class="w-4 h-4 text-blue-600 rounded">
                                 <span class="text-sm font-semibold text-gray-700">Select All</span>
@@ -421,7 +423,7 @@
         // Render system checkboxes for the given systems list, checking all by default
         function renderSystemFilter(systems) {
             allSystemsList = systems;
-            const searchVal = (document.getElementById('systemSearchInput')?.value || '').toLowerCase();
+            const searchVal = (document.getElementById('systemFilterButton')?.value || '').toLowerCase();
             const filtered = searchVal ? systems.filter(s => s.toLowerCase().includes(searchVal)) : systems;
             const filterList = document.getElementById('systemFilterList');
             filterList.innerHTML = '';
@@ -506,22 +508,21 @@
             renderSystemFilter(unique);
         }
 
-        // Toggle system filter dropdown
-        function toggleSystemFilter() {
-            const dropdown = document.getElementById('systemFilterDropdown');
-            dropdown.classList.toggle('hidden');
-            if (!dropdown.classList.contains('hidden')) {
-                setTimeout(() => document.getElementById('systemSearchInput')?.focus(), 50);
-            }
+        // Open/close system dropdown (used by free-text input)
+        function openSystemDropdown() {
+            document.getElementById('systemFilterDropdown').classList.remove('hidden');
             lucide.createIcons();
         }
+        function closeSystemDropdown() {
+            setTimeout(() => document.getElementById('systemFilterDropdown').classList.add('hidden'), 150);
+        }
+        function toggleSystemFilter() { openSystemDropdown(); }
 
-        // Close dropdown when clicking outside
+        // Close system dropdown when clicking outside
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('systemFilterDropdown');
             const button = document.getElementById('systemFilterButton');
-            
-            if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+            if (button && dropdown && !button.contains(event.target) && !dropdown.contains(event.target)) {
                 dropdown.classList.add('hidden');
             }
         });
@@ -539,13 +540,16 @@
         }
 
         function updateSystemFilterLabel() {
-            const label = document.getElementById('systemFilterLabel');
-            if (selectedSystems.length === 0) {
-                label.textContent = 'Filter by System (All)';
+            const input = document.getElementById('systemFilterButton');
+            if (!input) return;
+            if (selectedSystems.length === 0 || selectedSystems.length === allSystemsList.length) {
+                input.value = '';
+                input.placeholder = 'Filter by System (All)';
             } else if (selectedSystems.length === 1) {
-                label.textContent = `System: ${selectedSystems[0]}`;
+                input.value = selectedSystems[0];
             } else {
-                label.textContent = `System: ${selectedSystems.length} selected`;
+                input.value = '';
+                input.placeholder = `Filter by System (${selectedSystems.length} selected)`;
             }
         }
 
@@ -598,32 +602,32 @@
             lucide.createIcons();
         }
 
-        // Toggle LOB filter dropdown
-        function toggleLobFilter() {
-            const dropdown = document.getElementById('lobFilterDropdown');
-            dropdown.classList.toggle('hidden');
-            if (!dropdown.classList.contains('hidden')) {
-                setTimeout(() => document.getElementById('lobSearchInput')?.focus(), 50);
-            }
+        // Open/close LOB dropdown (used by free-text input)
+        function openLobDropdown() {
+            document.getElementById('lobFilterDropdown').classList.remove('hidden');
             lucide.createIcons();
         }
+        function closeLobDropdown() {
+            setTimeout(() => document.getElementById('lobFilterDropdown').classList.add('hidden'), 150);
+        }
+        function toggleLobFilter() { openLobDropdown(); }
 
         // Filter visible LOB checkboxes by search input
         function filterLobList() {
-            const searchVal = document.getElementById('lobSearchInput').value.toLowerCase();
+            const searchVal = (document.getElementById('lobFilterButton')?.value || '').toLowerCase();
             const labels = document.querySelectorAll('#lobFilterList label');
             labels.forEach(label => {
                 const text = label.querySelector('span')?.textContent.toLowerCase() || '';
                 label.style.display = text.includes(searchVal) ? '' : 'none';
             });
+            document.getElementById('lobFilterDropdown').classList.remove('hidden');
         }
 
         // Close LOB dropdown when clicking outside
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('lobFilterDropdown');
             const button = document.getElementById('lobFilterButton');
-            
-            if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+            if (button && dropdown && !button.contains(event.target) && !dropdown.contains(event.target)) {
                 dropdown.classList.add('hidden');
             }
         });
@@ -650,14 +654,16 @@
             const selectAll = document.getElementById('selectAllLobs');
             selectAll.checked = selectedLobs.length === allCheckboxes.length;
 
-            // Update label
-            const label = document.getElementById('lobFilterLabel');
-            if (selectedLobs.length === 0) {
-                label.textContent = 'Filter by Line of Business (All)';
-            } else if (selectedLobs.length === 1) {
-                label.textContent = `LOB: ${selectedLobs[0]}`;
-            } else {
-                label.textContent = `LOB: ${selectedLobs.length} selected`;
+            // Update input placeholder-style label
+            const input = document.getElementById('lobFilterButton');
+            if (input && selectedLobs.length === 0) {
+                input.value = '';
+                input.placeholder = 'Filter by Line of Business (All)';
+            } else if (input && selectedLobs.length === 1) {
+                input.value = selectedLobs[0];
+            } else if (input) {
+                input.value = '';
+                input.placeholder = `Filter by Line of Business (${selectedLobs.length} selected)`;
             }
 
             // Refresh system checkboxes based on new LOB selection

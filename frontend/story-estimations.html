@@ -1071,7 +1071,7 @@
             ` : '';
             
             return `
-                <div class="max-w-xl mx-auto">
+                <div class="max-w-3xl mx-auto">
                     <div class="bg-white rounded-lg shadow-lg p-5">
                         ${autoLoginBanner}
                         <div class="flex items-center space-x-3 mb-5">
@@ -1106,7 +1106,7 @@
                                                 <input type="text" id="projectName" placeholder="Type to search project..." autocomplete="off"
                                                     class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                                     oninput="filterProjectCombobox()" onfocus="showProjectDropdown()" onblur="hideProjectDropdown()">
-                                                <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer pointer-events-auto" onmousedown="event.preventDefault();showProjectDropdown()">
+                                                <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 cursor-pointer" onmousedown="event.preventDefault();showProjectDropdown()">
                                                     <i data-lucide="chevron-down" class="w-4 h-4"></i>
                                                 </span>
                                                 <div id="projectComboDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto"></div>
@@ -1119,7 +1119,7 @@
                                                 <input type="text" id="teamName" placeholder="Type to search team..." autocomplete="off"
                                                     class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                                     oninput="filterTeamCombobox()" onfocus="showTeamDropdown()" onblur="hideTeamDropdown()">
-                                                <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer pointer-events-auto" onmousedown="event.preventDefault();showTeamDropdown()">
+                                                <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 cursor-pointer" onmousedown="event.preventDefault();showTeamDropdown()">
                                                     <i data-lucide="chevron-down" class="w-4 h-4"></i>
                                                 </span>
                                                 <div id="teamComboDropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto"></div>
