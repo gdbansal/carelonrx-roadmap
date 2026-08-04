@@ -2106,91 +2106,45 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
         if (!teamName) {
             return res.status(400).json({ success: false, message: 'teamName query param is required', sprints: [], preSelectedSprintId: null });
         }
-        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
-            return res.status(503).json({ success: false, message: 'JIRA integration not configured', sprints: [], preSelectedSprintId: null });
-        }
-        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
 
         const includeClosed = req.query.includeClosed === 'true';
-        const bustCache   = req.query.bust === 'true';
-        const cacheKey = `jira1:sprint-for-team:${teamName.toLowerCase()}:${includeClosed}`;
+        const bustCache = req.query.bust === 'true';
+        const cacheKey = `sprint-for-team:${teamName.toLowerCase()}:${includeClosed}`;
         if (bustCache) jiraCache.delete(cacheKey);
         const cached = jiraCacheGet(cacheKey);
         if (cached) return res.json(cached);
 
-        // Step 1: Find board matching teamName (case-insensitive)
-        let matchedBoard = null;
-        let boardStart = 0;
-        let boardTotal = 1;
-        while (boardStart < boardTotal && !matchedBoard) {
-            const { status: bs, body: boardsBody } = await jiraRequest(
-                `${jiraBase}/rest/agile/1.0/board?maxResults=50&startAt=${boardStart}`
-            );
-            if (bs !== 200 || !boardsBody.values) break;
-            matchedBoard = boardsBody.values.find(b =>
-                b.name.toLowerCase() === teamName.toLowerCase()
-            );
-            boardTotal = boardsBody.total || 0;
-            boardStart += 50;
-            if (boardsBody.values.length === 0) break;
+        // Try JIRA1 → JIRA2 → JIRA3 in order; use first instance where board is found
+        const instances = [
+            { base: process.env.JIRA_BASE_URL,  token: process.env.JIRA_API_TOKEN,  fn: jiraRequest,  label: 'JIRA1' },
+            { base: process.env.JIRA2_BASE_URL, token: process.env.JIRA2_API_TOKEN, fn: jiraRequest2, label: 'JIRA2' },
+            { base: process.env.JIRA3_BASE_URL, token: process.env.JIRA3_API_TOKEN, fn: jiraRequest3, label: 'JIRA3' }
+        ];
+
+        let result = null;
+        for (const inst of instances) {
+            if (!inst.base || !inst.token) continue;
+            const jiraBase = inst.base.replace(/\/$/, '');
+            console.log(`[sprint-for-team] Trying ${inst.label} (${jiraBase}) for team: ${teamName}`);
+            result = await findBoardAndSprints(jiraBase, inst.fn, teamName, includeClosed);
+            if (result) { result.label = inst.label; break; }
         }
 
-        if (!matchedBoard) {
-            return res.json({ success: false, message: `No board found for team: ${teamName}`, sprints: [], preSelectedSprintId: null });
+        if (!result) {
+            return res.json({ success: false, message: `No board found for team: ${teamName} on any configured JIRA instance`, sprints: [], preSelectedSprintId: null });
         }
 
-        // Step 2: Fetch sprints — try combined state param first (JIRA Agile API supports it);
-        // if it returns 0 results or errors, fall back to separate per-state queries.
-        const stateParam = includeClosed ? 'closed,active,future' : 'active,future';
-        const PAGE_SIZE = 50; // JIRA agile API hard-caps at 50 regardless of maxResults
-        let allSprints = [];
-        let sprintStart = 0;
-        let pageCount = 0;
-        while (pageCount < 80) {
-            const { status: ss, body: sprintsBody } = await jiraRequest(
-                `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${stateParam}&maxResults=${PAGE_SIZE}&startAt=${sprintStart}`
-            );
-            console.log(`[sprint-for-team] board=${matchedBoard.id} state=${stateParam} startAt=${sprintStart} status=${ss} count=${sprintsBody && sprintsBody.values ? sprintsBody.values.length : 'N/A'} total=${sprintsBody && sprintsBody.total != null ? sprintsBody.total : 'N/A'} isLast=${sprintsBody && sprintsBody.isLast}`);
-            if (ss !== 200 || !sprintsBody.values || sprintsBody.values.length === 0) break;
-            allSprints = allSprints.concat(sprintsBody.values);
-            // Stop when JIRA signals last page or we have all results
-            if (sprintsBody.isLast === true) break;
-            if (sprintsBody.total != null && allSprints.length >= sprintsBody.total) break;
-            if (sprintsBody.values.length < PAGE_SIZE) break;
-            sprintStart += sprintsBody.values.length;
-            pageCount++;
-        }
+        const { board: matchedBoard, sprints: allSprints, jiraBase, reqFn, label } = result;
+        console.log(`[sprint-for-team] Found on ${label}: board=${matchedBoard.id} sprints=${allSprints.length}`);
 
-        // If combined state param yielded nothing, JIRA instance may not support it — fall back per-state
-        if (allSprints.length === 0 && includeClosed) {
-            console.log(`[sprint-for-team] Combined state query returned 0 sprints — falling back to per-state queries`);
-            for (const state of ['closed', 'active', 'future']) {
-                let start = 0;
-                for (let p = 0; p < 80; p++) {
-                    const { status: ss, body: sb } = await jiraRequest(
-                        `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${state}&maxResults=${PAGE_SIZE}&startAt=${start}`
-                    );
-                    console.log(`[sprint-for-team fallback] state=${state} startAt=${start} status=${ss} count=${sb && sb.values ? sb.values.length : 'N/A'} isLast=${sb && sb.isLast}`);
-                    if (ss !== 200 || !sb.values || sb.values.length === 0) break;
-                    allSprints = allSprints.concat(sb.values);
-                    if (sb.isLast === true) break;
-                    if (sb.total != null && allSprints.length >= sb.total) break;
-                    if (sb.values.length < PAGE_SIZE) break;
-                    start += sb.values.length;
-                }
-            }
-        }
-
-        console.log(`[sprint-for-team] Total sprints fetched for board ${matchedBoard.id}: ${allSprints.length}`, allSprints.map(s => `${s.name}(${s.state})`).join(', '));
-
-        // Step 3: Sort by startDate ascending
+        // Sort by startDate ascending
         allSprints.sort((a, b) => {
             const da = a.startDate ? new Date(a.startDate) : new Date(0);
             const db = b.startDate ? new Date(b.startDate) : new Date(0);
             return da - db;
         });
 
-        // Step 4: Determine pre-selected sprint
+        // Determine pre-selected sprint
         const activeSprint = allSprints.find(s => s.state === 'active');
         const activeIndex = activeSprint ? allSprints.indexOf(activeSprint) : -1;
         const nextSprint = activeIndex >= 0
@@ -2210,6 +2164,7 @@ app.get('/api/jira/sprint-for-team', authMiddleware, async (req, res) => {
             success: true,
             boardId: matchedBoard.id,
             boardName: matchedBoard.name,
+            jiraInstance: label,
             sprints,
             preSelectedSprintId: preSelected ? preSelected.id : null,
             preSelectedSprintName: preSelected ? preSelected.name : null,
@@ -2230,30 +2185,13 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
         if (!teamName || !sprintName) {
             return res.status(400).json({ success: false, message: 'teamName and sprintName are required', issues: [] });
         }
-        if (!process.env.JIRA_BASE_URL || !process.env.JIRA_API_TOKEN) {
-            return res.status(503).json({ success: false, message: 'JIRA integration not configured', issues: [] });
-        }
-        const jiraBase = process.env.JIRA_BASE_URL.replace(/\/$/, '');
 
-        // Step 1: Find board matching teamName
-        let matchedBoard = null;
-        let boardStart = 0;
-        let boardTotal = 1;
-        while (boardStart < boardTotal && !matchedBoard) {
-            const { status: bs, body: boardsBody } = await jiraRequest(
-                `${jiraBase}/rest/agile/1.0/board?maxResults=50&startAt=${boardStart}`
-            );
-            if (bs !== 200 || !boardsBody.values) break;
-            matchedBoard = boardsBody.values.find(b =>
-                b.name.toLowerCase() === teamName.toLowerCase()
-            );
-            boardTotal = boardsBody.total || 0;
-            boardStart += 50;
-            if (boardsBody.values.length === 0) break;
+        // Step 1: Find board matching teamName — try JIRA1 → JIRA2 → JIRA3
+        const boardResult = await findBoardAcrossInstances(teamName);
+        if (!boardResult) {
+            return res.json({ success: false, message: `No board found for team: ${teamName} on any configured JIRA instance`, issues: [] });
         }
-        if (!matchedBoard) {
-            return res.json({ success: false, message: `No board found for team: ${teamName}`, issues: [] });
-        }
+        const { board: matchedBoard, jiraBase, reqFn } = boardResult;
 
         // Step 2: Find sprint by name — search active+future on board first, then fallback to all states
         let matchedSprint = null;
@@ -2262,7 +2200,7 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
             let sprintTotal = 1;
             const stateParam = stateFilter ? `&state=${stateFilter}` : '';
             while (sprintStart < sprintTotal && !matchedSprint) {
-                const { status: ss, body: sprintsBody } = await jiraRequest(
+                const { status: ss, body: sprintsBody } = await reqFn(
                     `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?maxResults=50&startAt=${sprintStart}${stateParam}`
                 );
                 if (ss !== 200 || !sprintsBody.values) break;
@@ -2279,7 +2217,7 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
         // Final fallback: search sprint by name across ALL boards via JQL
         if (!matchedSprint) {
             const sprintSearchJql = encodeURIComponent(`sprint = "${sprintName}" ORDER BY created DESC`);
-            const { status: sjs, body: sjBody } = await jiraRequest(
+            const { status: sjs, body: sjBody } = await reqFn(
                 `${jiraBase}/rest/api/2/search?jql=${sprintSearchJql}&maxResults=1&fields=sprint`
             );
             if (sjs === 200 && sjBody.issues && sjBody.issues.length > 0) {
@@ -2303,7 +2241,7 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
         const teamJql = encodeURIComponent(`sprint = ${matchedSprint.id} AND "Team Name" = "${teamName}" ORDER BY created DESC`);
 
         while (issueStart < issueTotal) {
-            const { status: is, body: issuesBody } = await jiraRequest(
+            const { status: is, body: issuesBody } = await reqFn(
                 `${jiraBase}/rest/api/2/search?jql=${teamJql}&maxResults=50&startAt=${issueStart}&fields=summary,status,issuetype,assignee`
             );
             if (is !== 200 || !issuesBody.issues) break;
@@ -2320,7 +2258,7 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
             let fbStart = 0;
             let fbTotal = 1;
             while (fbStart < fbTotal) {
-                const { status: fs, body: fbBody } = await jiraRequest(
+                const { status: fs, body: fbBody } = await reqFn(
                     `${jiraBase}/rest/api/2/search?jql=${fallbackJql}&maxResults=50&startAt=${fbStart}&fields=summary,status,issuetype,assignee,customfield_10317`
                 );
                 if (fs !== 200 || !fbBody.issues) break;
@@ -2390,6 +2328,109 @@ function jiraRequest2(url) {
         req.on('error', reject);
         req.end();
     });
+}
+
+// ========== JIRA3 INTEGRATION (carelon.com) ==========
+
+function jiraRequest3(url) {
+    return new Promise((resolve, reject) => {
+        const parsedUrl = new URL(url);
+        const options = {
+            hostname: parsedUrl.hostname,
+            path: parsedUrl.pathname + parsedUrl.search,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${process.env.JIRA3_API_TOKEN}`,
+                'Accept': 'application/json'
+            }
+        };
+        const req = https.request(options, (resp) => {
+            let data = '';
+            resp.on('data', chunk => data += chunk);
+            resp.on('end', () => {
+                try {
+                    resolve({ status: resp.statusCode, body: JSON.parse(data) });
+                } catch (e) {
+                    resolve({ status: resp.statusCode, body: { errorMessages: [`Non-JSON response: ${data.substring(0, 200)}`] } });
+                }
+            });
+        });
+        req.setTimeout(15000, () => { req.destroy(); reject(new Error('JIRA3 request timed out after 15s')); });
+        req.on('error', reject);
+        req.end();
+    });
+}
+
+// ========== SHARED HELPER: find board + sprints across any JIRA instance ==========
+
+async function findBoardAndSprints(jiraBase, reqFn, teamName, includeClosed) {
+    // Step 1: find matching board
+    let matchedBoard = null;
+    let boardStart = 0;
+    let boardTotal = 1;
+    while (boardStart < boardTotal && !matchedBoard) {
+        const { status: bs, body: boardsBody } = await reqFn(
+            `${jiraBase}/rest/agile/1.0/board?maxResults=50&startAt=${boardStart}`
+        );
+        if (bs !== 200 || !boardsBody.values) break;
+        matchedBoard = boardsBody.values.find(b => b.name.toLowerCase() === teamName.toLowerCase());
+        boardTotal = boardsBody.total || 0;
+        boardStart += 50;
+        if (boardsBody.values.length === 0) break;
+    }
+    if (!matchedBoard) return null;
+
+    // Step 2: fetch sprints
+    const stateParam = includeClosed ? 'closed,active,future' : 'active,future';
+    const PAGE_SIZE = 50;
+    let allSprints = [];
+    let sprintStart = 0;
+    let pageCount = 0;
+    while (pageCount < 80) {
+        const { status: ss, body: sprintsBody } = await reqFn(
+            `${jiraBase}/rest/agile/1.0/board/${matchedBoard.id}/sprint?state=${stateParam}&maxResults=${PAGE_SIZE}&startAt=${sprintStart}`
+        );
+        if (ss !== 200 || !sprintsBody.values || sprintsBody.values.length === 0) break;
+        allSprints = allSprints.concat(sprintsBody.values);
+        if (sprintsBody.isLast === true) break;
+        if (sprintsBody.total != null && allSprints.length >= sprintsBody.total) break;
+        if (sprintsBody.values.length < PAGE_SIZE) break;
+        sprintStart += sprintsBody.values.length;
+        pageCount++;
+    }
+    return { board: matchedBoard, sprints: allSprints, jiraBase, reqFn };
+}
+
+// ========== SHARED HELPER: find board across any JIRA instance (for sprint-issues) ==========
+
+async function findBoardAcrossInstances(teamName) {
+    const instances = [
+        { base: process.env.JIRA_BASE_URL,  token: process.env.JIRA_API_TOKEN,  fn: jiraRequest,  label: 'JIRA1' },
+        { base: process.env.JIRA2_BASE_URL, token: process.env.JIRA2_API_TOKEN, fn: jiraRequest2, label: 'JIRA2' },
+        { base: process.env.JIRA3_BASE_URL, token: process.env.JIRA3_API_TOKEN, fn: jiraRequest3, label: 'JIRA3' }
+    ];
+    for (const inst of instances) {
+        if (!inst.base || !inst.token) continue;
+        const jiraBase = inst.base.replace(/\/$/, '');
+        let matchedBoard = null;
+        let boardStart = 0;
+        let boardTotal = 1;
+        while (boardStart < boardTotal && !matchedBoard) {
+            const { status: bs, body: boardsBody } = await inst.fn(
+                `${jiraBase}/rest/agile/1.0/board?maxResults=50&startAt=${boardStart}`
+            );
+            if (bs !== 200 || !boardsBody.values) break;
+            matchedBoard = boardsBody.values.find(b => b.name.toLowerCase() === teamName.toLowerCase());
+            boardTotal = boardsBody.total || 0;
+            boardStart += 50;
+            if (boardsBody.values.length === 0) break;
+        }
+        if (matchedBoard) {
+            console.log(`[findBoard] Found board "${matchedBoard.name}" on ${inst.label}`);
+            return { board: matchedBoard, jiraBase, reqFn: inst.fn, label: inst.label };
+        }
+    }
+    return null;
 }
 
 app.get('/api/jira2/projects', authMiddleware, async (req, res) => {
