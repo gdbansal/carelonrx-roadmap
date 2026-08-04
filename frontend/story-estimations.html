@@ -2170,15 +2170,15 @@
                         ? `${sorted.length} sprint(s) loaded — no future sprints found in Jira for this team`
                         : `${sorted.length} sprint(s) loaded — pre-selected: ${data.preSelectedSprintName || 'none'}`;
                 } else {
-                    container.innerHTML = `<input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-                    if (hint) hint.textContent = data.message || 'No sprints found  - enter manually';
+                    container.innerHTML = `<input type="text" id="sprintValue" placeholder="e.g. Sprint 24 (type manually)"
+                        class="w-full px-3 py-2 text-sm border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent">`;
+                    if (hint) hint.innerHTML = `<span class="text-orange-600 font-medium">⚠️ ${escapeHtml(data.message || 'Sprint could not be loaded from JIRA')} — please type sprint name manually.</span>`;
                 }
             } catch (error) {
                 console.error('Error loading sprints:', error);
-                container.innerHTML = `<input type="text" id="sprintValue" placeholder="Sprint Value (e.g., Sprint 24)"
-                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">`;
-                if (hint) hint.textContent = 'Could not load sprints  - enter manually';
+                container.innerHTML = `<input type="text" id="sprintValue" placeholder="e.g. Sprint 24 (type manually)"
+                    class="w-full px-3 py-2 text-sm border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent">`;
+                if (hint) hint.innerHTML = `<span class="text-orange-600 font-medium">⚠️ Could not connect to JIRA — please type sprint name manually.</span>`;
             }
         }
 
@@ -2305,11 +2305,24 @@
                     if (countEl) countEl.textContent = `${data.issues.length} issues found`;
                     filterJiraIssues();
                 } else {
-                    content.innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">${escapeHtml(data.message || 'No issues found for this sprint')}</div>`;
+                    const reason = escapeHtml(data.message || 'No issues found for this sprint');
+                    content.innerHTML = `
+                        <div class="text-center py-8 px-4">
+                            <div class="text-4xl mb-3">⚠️</div>
+                            <p class="text-orange-600 font-semibold text-sm mb-1">Could not load issues from JIRA</p>
+                            <p class="text-gray-500 text-xs mb-3">${reason}</p>
+                            <p class="text-gray-400 text-xs">Possible reasons: Team board not found on any JIRA instance, sprint name mismatch, or JIRA credentials not configured.<br>Please add stories manually using the <strong>Manual Add</strong> option.</p>
+                        </div>`;
                     if (countEl) countEl.textContent = '';
                 }
             } catch (e) {
-                content.innerHTML = '<div class="text-center py-8 text-red-500 text-sm">Failed to load JIRA issues</div>';
+                content.innerHTML = `
+                    <div class="text-center py-8 px-4">
+                        <div class="text-4xl mb-3">❌</div>
+                        <p class="text-red-600 font-semibold text-sm mb-1">Failed to connect to JIRA</p>
+                        <p class="text-gray-500 text-xs mb-3">A network or server error occurred while fetching JIRA issues.</p>
+                        <p class="text-gray-400 text-xs">Please check your connection or use <strong>Manual Add</strong> to add stories.</p>
+                    </div>`;
             }
         };
 
