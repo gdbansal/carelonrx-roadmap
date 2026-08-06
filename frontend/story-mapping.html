@@ -172,7 +172,7 @@
                             class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                         <div id="epicStatus" class="mt-1 text-xs"></div>
                     </div>
-                    <div class="flex items-end">
+                    <div class="flex items-end pb-5">
                         <button type="button" onclick="loadEpic()" id="loadEpicBtn"
                             class="px-4 py-2 bg-purple-700 text-white text-sm font-medium rounded-lg hover:bg-purple-800 transition flex items-center gap-2 whitespace-nowrap">
                             <i data-lucide="search" class="w-4 h-4"></i> Load EPIC
@@ -192,6 +192,11 @@
                         <table class="w-full text-sm">
                             <thead class="bg-gray-50 border-b border-gray-200">
                                 <tr>
+                                    <th class="px-3 py-2 w-8">
+                                        <input type="checkbox" id="epicSelectAll" checked title="Select / deselect all"
+                                            onchange="toggleAllEpicChildren(this.checked)"
+                                            class="w-4 h-4 accent-purple-700 cursor-pointer">
+                                    </th>
                                     <th class="text-left px-3 py-2 text-xs font-semibold text-gray-600 w-28">JIRA Link</th>
                                     <th class="text-left px-3 py-2 text-xs font-semibold text-gray-600">Summary</th>
                                     <th class="text-left px-3 py-2 text-xs font-semibold text-gray-600 w-36">Team Name</th>
@@ -373,11 +378,27 @@
         items: [],
         showEpics: false,
         attachments: [],   // { name, content } objects for feature mode
-        inputMode: 'feature',  // 'feature' | 'epic'
+        inputMode: 'epic',  // 'feature' | 'epic'
         epicData: null,        // { epicKey, epicSummary, children[] }
         epicFetched: [],       // [ { key, featureData, confluenceData, attachments[] } ]
         epicItemsGrouped: []   // [ { featureKey, featureSummary, items[] } ]
     };
+
+    function toggleAllEpicChildren(checked) {
+        if (!state.epicData) return;
+        state.epicSelectedFeatures = new Set(checked ? state.epicData.children.map(c => c.key) : []);
+        document.querySelectorAll('#epicChildrenTable input[type=checkbox][data-key]').forEach(cb => { cb.checked = checked; });
+    }
+
+    function toggleEpicChildSelection(key, checked) {
+        if (!state.epicSelectedFeatures) state.epicSelectedFeatures = new Set();
+        if (checked) state.epicSelectedFeatures.add(key);
+        else state.epicSelectedFeatures.delete(key);
+        // Sync select-all checkbox
+        const total = state.epicData?.children?.length || 0;
+        const selectAll = document.getElementById('epicSelectAll');
+        if (selectAll) selectAll.checked = state.epicSelectedFeatures.size === total;
+    }
 
     function setInputMode(mode) {
         state.inputMode = mode;
@@ -465,8 +486,15 @@
         document.getElementById('epicHeaderSummary').textContent = data.epicSummary;
         document.getElementById('epicChildCount').textContent = `(${data.children.length})`;
         const tbody = document.getElementById('epicChildrenTable');
+        // Default: all selected
+        state.epicSelectedFeatures = new Set(data.children.map(c => c.key));
         tbody.innerHTML = data.children.map(child => `
-            <tr class="hover:bg-gray-50">
+            <tr class="hover:bg-gray-50" id="epicRow-${escHtml(child.key)}">
+                <td class="px-3 py-2 align-top">
+                    <input type="checkbox" checked data-key="${escHtml(child.key)}"
+                        onchange="toggleEpicChildSelection('${escHtml(child.key)}', this.checked)"
+                        class="w-4 h-4 accent-purple-700 cursor-pointer mt-0.5">
+                </td>
                 <td class="px-3 py-2 align-top">
                     <a href="${escHtml(child.jiraUrl)}" target="_blank"
                         class="text-purple-700 font-semibold text-xs hover:underline">${escHtml(child.key)}</a>
@@ -499,7 +527,12 @@
         setStep(2);
         state.epicFetched = [];
         const cards = [];
-        for (const child of state.epicData.children) {
+        const selectedKeys = state.epicSelectedFeatures && state.epicSelectedFeatures.size > 0
+            ? state.epicSelectedFeatures
+            : new Set(state.epicData.children.map(c => c.key));
+        const childrenToProcess = state.epicData.children.filter(c => selectedKeys.has(c.key));
+        if (!childrenToProcess.length) { showToast('Please select at least one feature to fetch.', 'error'); btn.disabled = false; btn.innerHTML = '<i data-lucide="download" class="w-4 h-4"></i> Fetch Content'; return; }
+        for (const child of childrenToProcess) {
             const confUrl = (document.getElementById(`conf-${child.key}`) || {}).value?.trim() || '';
             let featureData = null, confluenceData = null;
             // Fetch JIRA feature
@@ -1176,7 +1209,7 @@
     }
 
     function startOver() {
-        state = { featureData: null, confluenceData: null, items: [], showEpics: false, attachments: [], inputMode: 'feature', epicData: null, epicFetched: [], epicItemsGrouped: [] };
+        state = { featureData: null, confluenceData: null, items: [], showEpics: false, attachments: [], inputMode: 'feature', epicData: null, epicFetched: [], epicItemsGrouped: [], epicSelectedFeatures: new Set() };
         document.getElementById('jiraUrl').value = '';
         document.getElementById('confUrl').value = '';
         document.getElementById('jiraStatus').textContent = '';
@@ -1204,6 +1237,7 @@
     // Init
     lucide.createIcons();
     setStep(1);
+    setInputMode('epic');
 
     function toggleProfileDropdown() {
         const dropdown = document.getElementById('profileDropdown');

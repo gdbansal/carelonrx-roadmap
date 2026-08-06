@@ -4037,13 +4037,31 @@ app.post('/api/story-mapping/fetch-jira', authMiddleware, async (req, res) => {
             }
         }
 
+        // Strip Jira wiki markup (*, +, {color}, {+}, h1. etc) from text fields
+        function stripJiraMarkup(text) {
+            if (!text || typeof text !== 'string') return text;
+            return text
+                .replace(/\{[^}]+\}/g, '')          // {color}, {+}, {noformat}, etc
+                .replace(/^h[1-6]\.\s*/gm, '')       // h1. h2. headings
+                .replace(/\*([^*]+)\*/g, '$1')        // *bold*
+                .replace(/\+([^+]+)\+/g, '$1')        // +underline+
+                .replace(/_([^_]+)_/g, '$1')          // _italic_
+                .replace(/\?\?([^?]+)\?\?/g, '$1')    // ??citation??
+                .replace(/~~([^~]+)~~/g, '$1')        // ~~strikethrough~~
+                .replace(/\^\^([^^]+)\^\^/g, '$1')    // ^^superscript^^
+                .replace(/^\s*[-*#]+\s+/gm, '')       // bullet/numbered list markers
+                .replace(/\[([^\]|]+)\|?[^\]]*\]/g, '$1') // [link|url] or [url]
+                .replace(/\s{2,}/g, ' ')
+                .trim();
+        }
+
         res.json({
             success: true,
             issueKey,
             featureName: fields.summary || '',
             summary: fields.summary || '',
-            description: fields.description || '',
-            acceptanceCriteria,
+            description: stripJiraMarkup(fields.description || ''),
+            acceptanceCriteria: stripJiraMarkup(acceptanceCriteria),
             issueType: fields.issuetype?.name || 'Feature',
             project: { key: fields.project?.key, name: fields.project?.name },
             teamName: fields.customfield_10317?.value || null,
