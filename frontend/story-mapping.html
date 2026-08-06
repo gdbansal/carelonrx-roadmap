@@ -100,48 +100,115 @@
                 <i data-lucide="link" class="w-4 h-4 text-purple-600"></i>
                 Step 1 &mdash; Provide Source Links
             </h2>
-            <div class="grid grid-cols-1 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        JIRA Feature URL <span class="text-red-500">*</span>
-                        <span class="text-gray-400 font-normal ml-1">(e.g. https://jira.carelonrx.com/browse/VPIE-1234)</span>
-                    </label>
-                    <input id="jiraUrl" type="url" placeholder="https://jira.carelonrx.com/browse/PROJ-1234"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    <div id="jiraStatus" class="mt-1 text-xs"></div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Confluence Solutioning URL <span class="text-gray-400 font-normal text-xs">(optional)</span>
-                        <span style="display:none"><span class="text-gray-400 font-normal ml-1"></span>
-                    </label>
-                    <input id="confUrl" type="url" placeholder="https://confluence.carelonrx.com/pages/123456"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    <div id="confStatus" class="mt-1 text-xs"></div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Attachments <span class="text-gray-400 font-normal ml-1">(optional — PDF, DOCX, XLSX, TXT)</span>
-                    </label>
-                    <div id="dropZone"
-                        class="border-2 border-dashed border-gray-300 rounded-lg px-4 py-5 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition"
-                        onclick="document.getElementById('attachmentInput').click()"
-                        ondragover="event.preventDefault();this.classList.add('border-purple-500','bg-purple-50')"
-                        ondragleave="this.classList.remove('border-purple-500','bg-purple-50')"
-                        ondrop="handleFileDrop(event)">
-                        <i data-lucide="paperclip" class="w-5 h-5 text-gray-400 mx-auto mb-1"></i>
-                        <p class="text-sm text-gray-500">Drop files here or <span class="text-purple-600 underline">browse</span></p>
-                        <p class="text-xs text-gray-400 mt-0.5">PDF, DOCX, XLSX, TXT supported</p>
+
+            <!-- Mode Toggle -->
+            <div class="flex items-center gap-1 mb-5 bg-gray-100 rounded-lg p-1 w-fit">
+                <button type="button" id="toggleFeatureBtn" onclick="setInputMode('feature')"
+                    class="px-4 py-1.5 text-sm font-medium rounded-md bg-purple-700 text-white transition">
+                    Feature
+                </button>
+                <button type="button" id="toggleEpicBtn" onclick="setInputMode('epic')"
+                    class="px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:bg-white transition">
+                    EPIC
+                </button>
+            </div>
+
+            <!-- FEATURE MODE (existing) -->
+            <div id="featureModeSection">
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            JIRA Feature URL <span class="text-red-500">*</span>
+                            <span class="text-gray-400 font-normal ml-1">(e.g. https://jira.carelonrx.com/browse/VPIE-1234)</span>
+                        </label>
+                        <input id="jiraUrl" type="url" placeholder="https://jira.carelonrx.com/browse/PROJ-1234"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <div id="jiraStatus" class="mt-1 text-xs"></div>
                     </div>
-                    <input id="attachmentInput" type="file" multiple accept=".pdf,.docx,.xlsx,.xls,.txt,.csv" class="hidden" onchange="handleFileSelect(this.files)">
-                    <div id="attachmentChips" class="flex flex-wrap gap-2 mt-2"></div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Confluence Solutioning URL <span class="text-gray-400 font-normal text-xs">(optional)</span>
+                            <span style="display:none"><span class="text-gray-400 font-normal ml-1"></span>
+                        </label>
+                        <input id="confUrl" type="url" placeholder="https://confluence.carelonrx.com/pages/123456"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <div id="confStatus" class="mt-1 text-xs"></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Attachments <span class="text-gray-400 font-normal ml-1">(optional — PDF, DOCX, XLSX, TXT)</span>
+                        </label>
+                        <div id="dropZone"
+                            class="border-2 border-dashed border-gray-300 rounded-lg px-4 py-5 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition"
+                            onclick="document.getElementById('attachmentInput').click()"
+                            ondragover="event.preventDefault();this.classList.add('border-purple-500','bg-purple-50')"
+                            ondragleave="this.classList.remove('border-purple-500','bg-purple-50')"
+                            ondrop="handleFileDrop(event)">
+                            <i data-lucide="paperclip" class="w-5 h-5 text-gray-400 mx-auto mb-1"></i>
+                            <p class="text-sm text-gray-500">Drop files here or <span class="text-purple-600 underline">browse</span></p>
+                            <p class="text-xs text-gray-400 mt-0.5">PDF, DOCX, XLSX, TXT supported</p>
+                        </div>
+                        <input id="attachmentInput" type="file" multiple accept=".pdf,.docx,.xlsx,.xls,.txt,.csv" class="hidden" onchange="handleFileSelect(this.files)">
+                        <div id="attachmentChips" class="flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button type="button" onclick="fetchSources()" id="fetchBtn"
+                        class="px-5 py-2 bg-purple-700 text-white text-sm font-medium rounded-lg hover:bg-purple-800 transition flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Fetch Content
+                    </button>
                 </div>
             </div>
-            <div class="mt-4 flex justify-end">
-                <button type="button" onclick="fetchSources()" id="fetchBtn"
-                    class="px-5 py-2 bg-purple-700 text-white text-sm font-medium rounded-lg hover:bg-purple-800 transition flex items-center gap-2">
-                    <i data-lucide="download" class="w-4 h-4"></i> Fetch Content
-                </button>
+
+            <!-- EPIC MODE -->
+            <div id="epicModeSection" class="hidden">
+                <div class="flex gap-3 mb-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            JIRA EPIC URL <span class="text-red-500">*</span>
+                            <span class="text-gray-400 font-normal ml-1">(e.g. https://jira.carelonrx.com/browse/VPIE-38441)</span>
+                        </label>
+                        <input id="epicUrl" type="url" placeholder="https://jira.carelonrx.com/browse/VPIE-38441"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <div id="epicStatus" class="mt-1 text-xs"></div>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="button" onclick="loadEpic()" id="loadEpicBtn"
+                            class="px-4 py-2 bg-purple-700 text-white text-sm font-medium rounded-lg hover:bg-purple-800 transition flex items-center gap-2 whitespace-nowrap">
+                            <i data-lucide="search" class="w-4 h-4"></i> Load EPIC
+                        </button>
+                    </div>
+                </div>
+
+                <!-- EPIC children table -->
+                <div id="epicChildrenSection" class="hidden">
+                    <div id="epicHeaderInfo" class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                        <div class="text-xs font-semibold text-purple-700 mb-0.5">EPIC</div>
+                        <div id="epicHeaderKey" class="text-sm font-bold text-gray-900"></div>
+                        <div id="epicHeaderSummary" class="text-sm text-gray-700 mt-0.5"></div>
+                    </div>
+                    <div class="text-xs font-semibold text-gray-600 mb-2">Child Features <span id="epicChildCount" class="text-gray-400 font-normal"></span></div>
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="text-left px-3 py-2 text-xs font-semibold text-gray-600 w-28">JIRA Link</th>
+                                    <th class="text-left px-3 py-2 text-xs font-semibold text-gray-600">Summary</th>
+                                    <th class="text-left px-3 py-2 text-xs font-semibold text-gray-600 w-36">Team Name</th>
+                                    <th class="text-left px-3 py-2 text-xs font-semibold text-gray-600 w-52">Confluence URL</th>
+                                    <th class="text-left px-3 py-2 text-xs font-semibold text-gray-600 w-36">Attachments</th>
+                                </tr>
+                            </thead>
+                            <tbody id="epicChildrenTable" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button type="button" onclick="fetchEpicSources()" id="fetchEpicBtn"
+                            class="px-5 py-2 bg-purple-700 text-white text-sm font-medium rounded-lg hover:bg-purple-800 transition flex items-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i> Fetch Content
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -151,27 +218,34 @@
                 <i data-lucide="file-text" class="w-4 h-4 text-purple-600"></i>
                 Step 2 &mdash; Fetched Content Preview
             </h2>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <div class="text-xs font-semibold text-blue-700 mb-1">JIRA Feature</div>
-                    <div id="jiraPreviewKey" class="text-sm font-bold text-gray-900"></div>
-                    <div id="jiraPreviewSummary" class="text-sm text-gray-700 mt-1"></div>
-                    <div class="mt-2">
-                        <div class="text-xs font-medium text-gray-500 mb-1">Acceptance Criteria:</div>
-                        <div id="jiraPreviewAC" class="text-xs text-gray-700 max-h-32 overflow-y-auto whitespace-pre-wrap bg-white p-2 rounded border border-blue-100"></div>
+            <!-- Feature mode preview -->
+            <div id="featurePreviewSection">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="text-xs font-semibold text-blue-700 mb-1">JIRA Feature</div>
+                        <div id="jiraPreviewKey" class="text-sm font-bold text-gray-900"></div>
+                        <div id="jiraPreviewSummary" class="text-sm text-gray-700 mt-1"></div>
+                        <div class="mt-2">
+                            <div class="text-xs font-medium text-gray-500 mb-1">Acceptance Criteria:</div>
+                            <div id="jiraPreviewAC" class="text-xs text-gray-700 max-h-32 overflow-y-auto whitespace-pre-wrap bg-white p-2 rounded border border-blue-100"></div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+                        <div class="text-xs font-semibold text-green-700 mb-1">Confluence &mdash; Solutioning</div>
+                        <div id="confPreviewTitle" class="text-sm font-bold text-gray-900"></div>
+                        <div id="confPreviewContent" class="text-xs text-gray-700 max-h-40 overflow-y-auto mt-2 whitespace-pre-wrap bg-white p-2 rounded border border-green-100"></div>
                     </div>
                 </div>
-                <div class="p-3 bg-green-50 rounded-lg border border-green-200">
-                    <div class="text-xs font-semibold text-green-700 mb-1">Confluence � Solutioning</div>
-                    <div id="confPreviewTitle" class="text-sm font-bold text-gray-900"></div>
-                    <div id="confPreviewContent" class="text-xs text-gray-700 max-h-40 overflow-y-auto mt-2 whitespace-pre-wrap bg-white p-2 rounded border border-green-100"></div>
-                </div>
+            </div>
+            <!-- EPIC mode preview -->
+            <div id="epicPreviewSection" class="hidden">
+                <div id="epicPreviewCards" class="space-y-3"></div>
             </div>
             <div class="mt-4 flex justify-end gap-3">
                 <button type="button" onclick="goBack()" class="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition">Back</button>
                 <button type="button" onclick="analyzeContent()" id="analyzeBtn"
                     class="px-5 py-2 bg-purple-700 text-white text-sm font-medium rounded-lg hover:bg-purple-800 transition flex items-center gap-2">
-                    <i data-lucide="cpu" class="w-4 h-4"></i> Analyze & Break Down
+                    <i data-lucide="cpu" class="w-4 h-4"></i> Analyze &amp; Break Down
                 </button>
             </div>
         </div>
@@ -207,33 +281,55 @@
                     <i data-lucide="send" class="w-4 h-4 text-purple-600"></i>
                     Create Approved Tickets in JIRA
                 </h3>
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Project Key <span class="text-red-500">*</span></label>
-                        <input id="createProjectKey" type="text" placeholder="e.g. VPIE"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">JIRA Instance</label>
-                        <select id="createJiraInstance" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                            <option value="carelonrx">jira.carelonrx.com</option>
-                            <option value="elevancehealth">jira.elevancehealth.com</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Team Name</label>
-                        <input id="createTeamName" type="text" placeholder="e.g. Aero Avengers"
-                            oninput="loadSprintsForMapping(this.value)"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Sprint</label>
-                        <select id="createSprintName" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                            <option value="">Enter team name first</option>
-                        </select>
-                        <p id="createSprintHint" class="text-xs text-gray-400 mt-0.5"></p>
+
+                <!-- Feature mode fields -->
+                <div id="createFieldsFeature">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Project Key <span class="text-red-500">*</span></label>
+                            <input id="createProjectKey" type="text" placeholder="e.g. VPIE"
+                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">JIRA Instance</label>
+                            <select id="createJiraInstance" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="carelonrx">jira.carelonrx.com</option>
+                                <option value="elevancehealth">jira.elevancehealth.com</option>
+                                <option value="carelon">jira.carelon.com</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Team Name</label>
+                            <input id="createTeamName" type="text" placeholder="e.g. Aero Avengers"
+                                oninput="loadSprintsForMapping(this.value)"
+                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Sprint</label>
+                            <select id="createSprintName" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="">Enter team name first</option>
+                            </select>
+                            <p id="createSprintHint" class="text-xs text-gray-400 mt-0.5"></p>
+                        </div>
                     </div>
                 </div>
+
+                <!-- EPIC mode fields -->
+                <div id="createFieldsEpic" class="hidden mb-4">
+                    <div class="flex items-center gap-4 mb-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                        <div>
+                            <div class="text-xs font-medium text-gray-500 mb-0.5">Project Key</div>
+                            <div id="epicCreateProjectKey" class="text-sm font-bold text-gray-900"></div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-medium text-gray-500 mb-0.5">JIRA Instance</div>
+                            <div id="epicCreateInstance" class="text-sm text-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="text-xs font-semibold text-gray-600 mb-2">Sprint selection per Feature <span class="text-gray-400 font-normal">(leave blank to send to Backlog)</span></div>
+                    <div id="epicSprintSelectors" class="space-y-2"></div>
+                </div>
+
                 <div id="approvedCount" class="text-xs text-gray-500 mb-3"></div>
                 <button type="button" onclick="createTickets()" id="createBtn"
                     class="px-5 py-2 bg-green-700 text-white text-sm font-medium rounded-lg hover:bg-green-800 transition flex items-center gap-2">
@@ -276,8 +372,195 @@
         confluenceData: null,
         items: [],
         showEpics: false,
-        attachments: []   // { name, content } objects
+        attachments: [],   // { name, content } objects for feature mode
+        inputMode: 'feature',  // 'feature' | 'epic'
+        epicData: null,        // { epicKey, epicSummary, children[] }
+        epicFetched: [],       // [ { key, featureData, confluenceData, attachments[] } ]
+        epicItemsGrouped: []   // [ { featureKey, featureSummary, items[] } ]
     };
+
+    function setInputMode(mode) {
+        state.inputMode = mode;
+        const featBtn = document.getElementById('toggleFeatureBtn');
+        const epicBtn = document.getElementById('toggleEpicBtn');
+        const featSec = document.getElementById('featureModeSection');
+        const epicSec = document.getElementById('epicModeSection');
+        if (mode === 'epic') {
+            featBtn.className = 'px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:bg-white transition';
+            epicBtn.className = 'px-4 py-1.5 text-sm font-medium rounded-md bg-purple-700 text-white transition';
+            featSec.classList.add('hidden');
+            epicSec.classList.remove('hidden');
+        } else {
+            featBtn.className = 'px-4 py-1.5 text-sm font-medium rounded-md bg-purple-700 text-white transition';
+            epicBtn.className = 'px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:bg-white transition';
+            featSec.classList.remove('hidden');
+            epicSec.classList.add('hidden');
+        }
+    }
+
+    // Per-feature file attachments for EPIC mode
+    const epicChildAttachments = {}; // key -> [ { name, ext, content } ]
+
+    function handleEpicChildFileSelect(featureKey, files) {
+        if (!epicChildAttachments[featureKey]) epicChildAttachments[featureKey] = [];
+        Array.from(files).forEach(file => {
+            if (epicChildAttachments[featureKey].find(a => a.name === file.name)) return;
+            const ext = file.name.split('.').pop().toLowerCase();
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                epicChildAttachments[featureKey].push({ name: file.name, ext, content: ev.target.result });
+                renderEpicChildChips(featureKey);
+            };
+            if (['txt','csv'].includes(ext)) reader.readAsText(file);
+            else reader.readAsDataURL(file);
+        });
+    }
+
+    function removeEpicChildAttachment(featureKey, fileName) {
+        if (epicChildAttachments[featureKey]) {
+            epicChildAttachments[featureKey] = epicChildAttachments[featureKey].filter(a => a.name !== fileName);
+            renderEpicChildChips(featureKey);
+        }
+    }
+
+    function renderEpicChildChips(featureKey) {
+        const container = document.getElementById(`chips-${featureKey}`);
+        if (!container) return;
+        const files = epicChildAttachments[featureKey] || [];
+        container.innerHTML = files.map(a => `
+            <span class="flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">
+                ${escHtml(a.name)}
+                <button onclick="removeEpicChildAttachment('${escHtml(featureKey)}','${escHtml(a.name)}')" class="ml-1 text-purple-500 hover:text-red-500">&times;</button>
+            </span>`).join('');
+    }
+
+    async function loadEpic() {
+        const url = document.getElementById('epicUrl').value.trim();
+        const statusEl = document.getElementById('epicStatus');
+        const btn = document.getElementById('loadEpicBtn');
+        if (!url) { showStatus('epicStatus', 'EPIC URL is required', 'error'); return; }
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Loading...';
+        showStatus('epicStatus', 'Fetching EPIC from JIRA...', 'loading');
+        try {
+            const res = await fetch(`${API_BASE}/story-mapping/fetch-epic`, {
+                method: 'POST', headers: authHeaders(), body: JSON.stringify({ url })
+            });
+            const data = await res.json();
+            if (!data.success) { showStatus('epicStatus', data.message || 'Failed to load EPIC', 'error'); return; }
+            state.epicData = data;
+            showStatus('epicStatus', `Loaded: ${data.epicKey} — ${data.children.length} child feature(s) found`, 'ok');
+            renderEpicChildrenTable(data);
+        } catch(e) {
+            showStatus('epicStatus', 'Error: ' + e.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="search" class="w-4 h-4"></i> Load EPIC';
+            if (window.lucide) lucide.createIcons();
+        }
+    }
+
+    function renderEpicChildrenTable(data) {
+        document.getElementById('epicHeaderKey').textContent = data.epicKey;
+        document.getElementById('epicHeaderSummary').textContent = data.epicSummary;
+        document.getElementById('epicChildCount').textContent = `(${data.children.length})`;
+        const tbody = document.getElementById('epicChildrenTable');
+        tbody.innerHTML = data.children.map(child => `
+            <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2 align-top">
+                    <a href="${escHtml(child.jiraUrl)}" target="_blank"
+                        class="text-purple-700 font-semibold text-xs hover:underline">${escHtml(child.key)}</a>
+                </td>
+                <td class="px-3 py-2 align-top text-xs text-gray-800">${escHtml(child.summary)}</td>
+                <td class="px-3 py-2 align-top text-xs text-gray-600">${escHtml(child.teamName || '—')}</td>
+                <td class="px-3 py-2 align-top">
+                    <input type="url" id="conf-${escHtml(child.key)}"
+                        placeholder="https://confluence..."
+                        class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-purple-500">
+                </td>
+                <td class="px-3 py-2 align-top">
+                    <label class="cursor-pointer text-xs text-purple-600 hover:underline flex items-center gap-1">
+                        <input type="file" multiple accept=".pdf,.docx,.xlsx,.xls,.txt,.csv" class="hidden"
+                            onchange="handleEpicChildFileSelect('${escHtml(child.key)}', this.files)">
+                        + Attach
+                    </label>
+                    <div id="chips-${escHtml(child.key)}" class="flex flex-wrap gap-1 mt-1"></div>
+                </td>
+            </tr>`).join('');
+        document.getElementById('epicChildrenSection').classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+    }
+
+    async function fetchEpicSources() {
+        if (!state.epicData || !state.epicData.children.length) return;
+        const btn = document.getElementById('fetchEpicBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Fetching...';
+        setStep(2);
+        state.epicFetched = [];
+        const cards = [];
+        for (const child of state.epicData.children) {
+            const confUrl = (document.getElementById(`conf-${child.key}`) || {}).value?.trim() || '';
+            let featureData = null, confluenceData = null;
+            // Fetch JIRA feature
+            try {
+                const r = await fetch(`${API_BASE}/story-mapping/fetch-jira`, {
+                    method: 'POST', headers: authHeaders(), body: JSON.stringify({ url: child.jiraUrl })
+                });
+                const d = await r.json();
+                if (d.success) featureData = d;
+            } catch(e) {}
+            // Fetch Confluence if provided
+            if (confUrl) {
+                try {
+                    const r = await fetch(`${API_BASE}/story-mapping/fetch-confluence`, {
+                        method: 'POST', headers: authHeaders(), body: JSON.stringify({ url: confUrl })
+                    });
+                    const d = await r.json();
+                    if (d.success) confluenceData = d;
+                } catch(e) {}
+            }
+            const attachments = epicChildAttachments[child.key] || [];
+            state.epicFetched.push({ key: child.key, summary: child.summary, teamName: child.teamName, jiraUrl: child.jiraUrl, featureData, confluenceData, attachments });
+            // Build preview card
+            const acPreview = featureData?.acceptanceCriteria?.substring(0, 300) || featureData?.description?.substring(0, 300) || '(No content)';
+            const confTitle = confluenceData?.title || (confUrl ? 'Not loaded' : 'Not provided');
+            const confSnippet = confluenceData?.content?.substring(0, 200) || (confUrl ? '' : 'Not provided');
+            cards.push(`
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="flex items-center justify-between px-4 py-2 bg-purple-50 border-b border-purple-100 cursor-pointer"
+                        onclick="this.nextElementSibling.classList.toggle('hidden')">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-purple-700">${escHtml(child.key)}</span>
+                            <span class="text-xs text-gray-700">${escHtml(child.summary)}</span>
+                            ${child.teamName ? `<span class="text-xs text-gray-400">&bull; ${escHtml(child.teamName)}</span>` : ''}
+                        </div>
+                        <span class="text-xs text-gray-400">${featureData ? '✅ Loaded' : '⚠️ Not loaded'}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 p-3">
+                        <div class="p-2 bg-blue-50 rounded border border-blue-100">
+                            <div class="text-xs font-semibold text-blue-700 mb-1">JIRA Feature</div>
+                            <div class="text-xs text-gray-700 whitespace-pre-wrap max-h-28 overflow-y-auto">${escHtml(acPreview)}</div>
+                        </div>
+                        <div class="p-2 bg-green-50 rounded border border-green-100">
+                            <div class="text-xs font-semibold text-green-700 mb-1">Confluence: ${escHtml(confTitle)}</div>
+                            <div class="text-xs text-gray-700 max-h-28 overflow-y-auto">${escHtml(confSnippet)}</div>
+                        </div>
+                    </div>
+                </div>`);
+        }
+        // Show preview
+        document.getElementById('epicPreviewCards').innerHTML = cards.join('');
+        document.getElementById('featurePreviewSection').classList.add('hidden');
+        document.getElementById('epicPreviewSection').classList.remove('hidden');
+        document.getElementById('step-preview').classList.remove('hidden');
+        document.getElementById('step-preview').scrollIntoView({ behavior: 'smooth' });
+        // Pre-fill project key (feature mode fallback — EPIC mode uses epicData directly)
+        if (state.epicData?.projectKey) document.getElementById('createProjectKey').value = state.epicData.projectKey;
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="download" class="w-4 h-4"></i> Fetch Content';
+        if (window.lucide) lucide.createIcons();
+    }
 
     function handleFileDrop(e) {
         e.preventDefault();
@@ -468,21 +751,44 @@
         setStep(3);
 
         try {
-            const res = await fetch(`${API_BASE}/story-mapping/analyze`, {
-                method: 'POST',
-                headers: authHeaders(),
-                body: JSON.stringify({
-                    featureData: state.featureData,
-                    confluenceData: state.confluenceData,
-                    attachmentContent: (state.attachments || []).filter(a => ['txt','csv'].includes(a.ext)).map(a => `[${a.name}]\n${a.content}`).join('\n\n') || undefined
-                })
-            });
-            const data = await res.json();
-            if (!data.success) { showToast('Analysis failed: ' + data.message, 'error'); btn.disabled=false; btn.innerHTML='<i data-lucide="cpu" class="w-4 h-4"></i> Analyze & Break Down'; lucide.createIcons(); return; }
-
-            state.items = data.items;
-            setStep(4);
-            renderItems();
+            if (state.inputMode === 'epic') {
+                // EPIC mode: analyze each fetched feature sequentially
+                state.epicItemsGrouped = [];
+                for (const fetched of state.epicFetched) {
+                    if (!fetched.featureData) continue;
+                    const attachmentContent = (fetched.attachments || []).filter(a => ['txt','csv'].includes(a.ext)).map(a => `[${a.name}]\n${a.content}`).join('\n\n') || undefined;
+                    try {
+                        const res = await fetch(`${API_BASE}/story-mapping/analyze`, {
+                            method: 'POST', headers: authHeaders(),
+                            body: JSON.stringify({ featureData: fetched.featureData, confluenceData: fetched.confluenceData, attachmentContent })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            state.epicItemsGrouped.push({ featureKey: fetched.key, featureSummary: fetched.summary, teamName: fetched.teamName, jiraUrl: fetched.jiraUrl, items: data.items });
+                            // Also push all items to flat state.items for approve/edit lookups
+                            state.items = state.items.concat(data.items);
+                        }
+                    } catch(e) {}
+                }
+                setStep(4);
+                renderItemsEpicMode();
+                await renderEpicCreatePanel();
+            } else {
+                // Feature mode (existing)
+                const res = await fetch(`${API_BASE}/story-mapping/analyze`, {
+                    method: 'POST', headers: authHeaders(),
+                    body: JSON.stringify({
+                        featureData: state.featureData,
+                        confluenceData: state.confluenceData,
+                        attachmentContent: (state.attachments || []).filter(a => ['txt','csv'].includes(a.ext)).map(a => `[${a.name}]\n${a.content}`).join('\n\n') || undefined
+                    })
+                });
+                const data = await res.json();
+                if (!data.success) { showToast('Analysis failed: ' + data.message, 'error'); btn.disabled=false; btn.innerHTML='<i data-lucide="cpu" class="w-4 h-4"></i> Analyze &amp; Break Down'; lucide.createIcons(); return; }
+                state.items = data.items;
+                setStep(4);
+                renderItems();
+            }
             document.getElementById('step-results').classList.remove('hidden');
             document.getElementById('step-results').scrollIntoView({ behavior: 'smooth' });
         } catch(e) {
@@ -490,8 +796,46 @@
         }
 
         btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="cpu" class="w-4 h-4"></i> Analyze & Break Down';
+        btn.innerHTML = '<i data-lucide="cpu" class="w-4 h-4"></i> Analyze &amp; Break Down';
         lucide.createIcons();
+    }
+
+    function renderItemCard(item) {
+        return `
+            <div id="card-${item.id}" class="bg-white rounded-lg border-2 ${item.approved ? 'card-approved' : 'card-pending'} p-4 fade-in">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold badge-${item.type.toLowerCase()}">${item.type}</span>
+                            ${item.approved ? '<span class="text-xs text-green-600 font-medium flex items-center gap-1"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Approved</span>' : ''}
+                        </div>
+                        <div class="mb-2">
+                            <label class="block text-xs font-medium text-gray-500 mb-0.5">Summary</label>
+                            <div id="summary-view-${item.id}" class="text-sm font-medium text-gray-900">${escHtml(item.summary)}</div>
+                            <input id="summary-edit-${item.id}" type="text" value="${escHtml(item.summary)}"
+                                class="hidden w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-purple-500">
+                        </div>
+                        ${item.type !== 'Epic' ? `
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-0.5">${item.type === 'Story' ? 'Acceptance Criteria' : 'Expectation'}</label>
+                            <div id="ac-view-${item.id}" class="text-xs text-gray-600 whitespace-pre-wrap">${escHtml(item.acceptanceCriteria || item.expectation)}</div>
+                            <textarea id="ac-edit-${item.id}" rows="3"
+                                class="hidden w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-purple-500">${escHtml(item.acceptanceCriteria || item.expectation)}</textarea>
+                        </div>` : ''}
+                    </div>
+                    <div class="flex flex-col gap-1.5 min-w-max">
+                        <button type="button" onclick="toggleEdit('${item.id}')" id="editBtn-${item.id}"
+                            class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50 transition">Edit</button>
+                        <button type="button" onclick="saveEdit('${item.id}')" id="saveBtn-${item.id}"
+                            class="hidden px-3 py-1 text-xs btn-carelon-primary rounded transition">Save</button>
+                        ${item.type !== 'Epic' ? `
+                        <button type="button" onclick="toggleApprove('${item.id}')"
+                            class="px-3 py-1 text-xs ${item.approved ? 'bg-gray-200 text-gray-600 hover:bg-gray-300' : 'btn-carelon-primary'} rounded transition">
+                            ${item.approved ? 'Unapprove' : 'Approve'}
+                        </button>` : ''}
+                    </div>
+                </div>
+            </div>`;
     }
 
     function renderItems() {
@@ -509,46 +853,40 @@
         const approvedCount = state.items.filter(i => i.approved && i.type !== 'Epic').length;
         document.getElementById('approvedCount').textContent = `${approvedCount} ticket(s) approved and ready to create`;
 
-        container.innerHTML = visible.map(item => `
-            <div id="card-${item.id}" class="bg-white rounded-lg border-2 ${item.approved ? 'card-approved' : 'card-pending'} p-4 fade-in">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold badge-${item.type.toLowerCase()}">${item.type}</span>
-                            ${item.approved ? '<span class="text-xs text-green-600 font-medium flex items-center gap-1"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Approved</span>' : ''}
-                        </div>
-                        <!-- Summary -->
-                        <div class="mb-2">
-                            <label class="block text-xs font-medium text-gray-500 mb-0.5">Summary</label>
-                            <div id="summary-view-${item.id}" class="text-sm font-medium text-gray-900">${escHtml(item.summary)}</div>
-                            <input id="summary-edit-${item.id}" type="text" value="${escHtml(item.summary)}"
-                                class="hidden w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-purple-500">
-                        </div>
-                        <!-- Acceptance Criteria / Expectation -->
-                        ${item.type !== 'Epic' ? `
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-0.5">${item.type === 'Story' ? 'Acceptance Criteria' : 'Expectation'}</label>
-                            <div id="ac-view-${item.id}" class="text-xs text-gray-600 whitespace-pre-wrap">${escHtml(item.acceptanceCriteria || item.expectation)}</div>
-                            <textarea id="ac-edit-${item.id}" rows="3"
-                                class="hidden w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-purple-500">${escHtml(item.acceptanceCriteria || item.expectation)}</textarea>
-                        </div>
-                        ` : ''}
+        container.innerHTML = visible.map(item => renderItemCard(item)).join('');
+    }
+
+    function renderItemsEpicMode() {
+        const container = document.getElementById('items-list');
+        let totalStories = 0, totalTasks = 0, totalEpics = 0;
+        state.epicItemsGrouped.forEach(g => {
+            totalStories += g.items.filter(i => i.type === 'Story').length;
+            totalTasks   += g.items.filter(i => i.type === 'Task').length;
+            totalEpics   += g.items.filter(i => i.type === 'Epic').length;
+        });
+        document.getElementById('count-stories').textContent = `${totalStories} Stories`;
+        document.getElementById('count-tasks').textContent   = `${totalTasks} Tasks`;
+        document.getElementById('count-epics').textContent   = `${totalEpics} Epics`;
+        document.getElementById('epicToggleBtn').textContent = state.showEpics ? 'Hide Epics' : 'Show Epics';
+
+        const approvedCount = state.items.filter(i => i.approved && i.type !== 'Epic').length;
+        document.getElementById('approvedCount').textContent = `${approvedCount} ticket(s) approved and ready to create`;
+
+        container.innerHTML = state.epicItemsGrouped.map(group => {
+            const visible = group.items.filter(i => state.showEpics ? true : i.type !== 'Epic');
+            return `
+                <div class="mb-5">
+                    <div class="flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-t-lg">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold badge-epic">Feature</span>
+                        <a href="${escHtml(group.jiraUrl)}" target="_blank" class="text-xs font-bold text-purple-700 hover:underline">${escHtml(group.featureKey)}</a>
+                        <span class="text-xs text-gray-700">${escHtml(group.featureSummary)}</span>
+                        ${group.teamName ? `<span class="text-xs text-gray-400 ml-auto">${escHtml(group.teamName)}</span>` : ''}
                     </div>
-                    <!-- Actions -->
-                    <div class="flex flex-col gap-1.5 min-w-max">
-                        <button type="button" onclick="toggleEdit('${item.id}')" id="editBtn-${item.id}"
-                            class="px-3 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50 transition">Edit</button>
-                        <button type="button" onclick="saveEdit('${item.id}')" id="saveBtn-${item.id}"
-                            class="hidden px-3 py-1 text-xs btn-carelon-primary rounded transition">Save</button>
-                        ${item.type !== 'Epic' ? `
-                        <button type="button" onclick="toggleApprove('${item.id}')"
-                            class="px-3 py-1 text-xs ${item.approved ? 'bg-gray-200 text-gray-600 hover:bg-gray-300' : 'btn-carelon-primary '} rounded transition">
-                            ${item.approved ? 'Unapprove' : 'Approve'}
-                        </button>` : ''}
+                    <div class="space-y-2 border-l-2 border-purple-100 pl-3 pt-2">
+                        ${visible.length ? visible.map(item => renderItemCard(item)).join('') : '<div class="text-xs text-gray-400 py-2">No items generated for this feature</div>'}
                     </div>
-                </div>
-            </div>
-        `).join('');
+                </div>`;
+        }).join('');
     }
 
     function escHtml(str) {
@@ -590,24 +928,24 @@
             if (item.type === 'Story') item.acceptanceCriteria = acVal;
             else item.expectation = acVal;
         }
-        renderItems();
+        if (state.inputMode === 'epic') renderItemsEpicMode(); else renderItems();
     }
 
     function toggleApprove(id) {
         const item = state.items.find(i => i.id === id);
-        if (item) { item.approved = !item.approved; renderItems(); }
+        if (item) { item.approved = !item.approved; if (state.inputMode === 'epic') renderItemsEpicMode(); else renderItems(); }
     }
 
     function approveAll() {
         state.items.forEach(i => { if (i.type !== 'Epic') i.approved = true; });
-        renderItems();
+        if (state.inputMode === 'epic') renderItemsEpicMode(); else renderItems();
     }
 
     function toggleEpics() {
         state.showEpics = !state.showEpics;
         const epicBadge = document.getElementById('count-epics');
         state.showEpics ? epicBadge.classList.remove('hidden') : epicBadge.classList.add('hidden');
-        renderItems();
+        if (state.inputMode === 'epic') renderItemsEpicMode(); else renderItems();
     }
 
     function goBack() {
@@ -654,15 +992,97 @@
         sprintEl.disabled = false;
     }
 
+    function detectInstanceFromUrl(url) {
+        if (!url) return { value: 'carelonrx', label: 'jira.carelonrx.com' };
+        if (url.includes('elevancehealth.com')) return { value: 'elevancehealth', label: 'jira.elevancehealth.com' };
+        if (url.includes('jira.carelon.com')) return { value: 'carelon', label: 'jira.carelon.com' };
+        return { value: 'carelonrx', label: 'jira.carelonrx.com' };
+    }
+
+    async function renderEpicCreatePanel() {
+        const epicUrl = document.getElementById('epicUrl').value.trim();
+        const inst = detectInstanceFromUrl(epicUrl);
+
+        // Show EPIC mode fields, hide feature mode fields
+        document.getElementById('createFieldsFeature').classList.add('hidden');
+        document.getElementById('createFieldsEpic').classList.remove('hidden');
+
+        // Fill project key + instance display
+        document.getElementById('epicCreateProjectKey').textContent = state.epicData?.projectKey || '';
+        document.getElementById('epicCreateInstance').textContent = inst.label;
+
+        // Build per-feature sprint selectors
+        const container = document.getElementById('epicSprintSelectors');
+        container.innerHTML = state.epicItemsGrouped.map(group => `
+            <div class="flex items-center gap-3 p-2 border border-gray-200 rounded-lg bg-gray-50">
+                <div class="flex-shrink-0 w-44">
+                    <a href="${escHtml(group.jiraUrl)}" target="_blank"
+                        class="text-xs font-bold text-purple-700 hover:underline">${escHtml(group.featureKey)}</a>
+                    <div class="text-xs text-gray-500 truncate max-w-xs">${escHtml(group.teamName || 'No team')}</div>
+                </div>
+                <div class="flex-1">
+                    <select id="epicSprint-${escHtml(group.featureKey)}"
+                        class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-purple-500">
+                        <option value="">No Sprint (Backlog)</option>
+                        <option value="_loading_" disabled>Loading sprints...</option>
+                    </select>
+                    <p id="epicSprintHint-${escHtml(group.featureKey)}" class="text-xs text-gray-400 mt-0.5"></p>
+                </div>
+            </div>`).join('');
+
+        // Load sprints per feature in parallel
+        await Promise.all(state.epicItemsGrouped.map(group => loadSprintsForEpicFeature(group.featureKey, group.teamName)));
+    }
+
+    async function loadSprintsForEpicFeature(featureKey, teamName) {
+        const sprintEl = document.getElementById(`epicSprint-${featureKey}`);
+        const hintEl = document.getElementById(`epicSprintHint-${featureKey}`);
+        if (!sprintEl) return;
+        if (!teamName) {
+            sprintEl.innerHTML = '<option value="">No Sprint (Backlog)</option><option value="" disabled>No team name available</option>';
+            if (hintEl) hintEl.textContent = 'No team name — tickets will go to Backlog';
+            return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/jira/sprint-for-team?teamName=${encodeURIComponent(teamName)}`, { headers: authHeaders() });
+            const data = await res.json();
+            if (data.success && data.sprints && data.sprints.length > 0) {
+                const list = data.sprints.filter(s => s.state === 'active' || s.state === 'future');
+                sprintEl.innerHTML = '<option value="">No Sprint (Backlog)</option>' +
+                    list.map(s => {
+                        const badge = s.state === 'active' ? ' [Active]' : ' [Future]';
+                        return `<option value="${s.id}" data-name="${escHtml(s.name)}">${escHtml(s.name)}${badge}</option>`;
+                    }).join('');
+                if (hintEl) hintEl.textContent = `${list.length} sprint(s) loaded`;
+            } else {
+                sprintEl.innerHTML = '<option value="">No Sprint (Backlog)</option>';
+                if (hintEl) hintEl.textContent = 'No sprints found — tickets will go to Backlog';
+            }
+        } catch(e) {
+            sprintEl.innerHTML = '<option value="">No Sprint (Backlog)</option>';
+            if (hintEl) hintEl.textContent = 'Could not load sprints';
+        }
+    }
+
     async function createTickets() {
-        const projectKey = document.getElementById('createProjectKey').value.trim();
-        if (!projectKey) { showToast('Please enter a Project Key', 'error'); return; }
         const approvedItems = state.items.filter(i => i.approved && i.type !== 'Epic');
         if (approvedItems.length === 0) { showToast('No approved tickets to create. Please approve at least one item.', 'error'); return; }
 
-        const instance = document.getElementById('createJiraInstance').value;
-        const teamName = document.getElementById('createTeamName').value.trim();
-        const sprintId = document.getElementById('createSprintName').value.trim();
+        let projectKey, instance, teamName, sprintId;
+
+        if (state.inputMode === 'epic') {
+            projectKey = state.epicData?.projectKey || '';
+            if (!projectKey) { showToast('Project Key not available from EPIC data', 'error'); return; }
+            instance = detectInstanceFromUrl(document.getElementById('epicUrl').value.trim()).value;
+            teamName = '';   // per-feature
+            sprintId = '';   // per-feature
+        } else {
+            projectKey = document.getElementById('createProjectKey').value.trim();
+            if (!projectKey) { showToast('Please enter a Project Key', 'error'); return; }
+            instance = document.getElementById('createJiraInstance').value;
+            teamName = document.getElementById('createTeamName').value.trim();
+            sprintId = document.getElementById('createSprintName').value.trim();
+        }
 
         const btn = document.getElementById('createBtn');
         btn.disabled = true;
@@ -673,25 +1093,56 @@
         const failed  = [];
 
         try {
-            const res = await fetch(`${API_BASE}/story-mapping/create-tickets`, {
-                method: 'POST',
-                headers: authHeaders(),
-                body: JSON.stringify({
-                    items: approvedItems,
-                    projectKey,
-                    jiraBaseUrl: instance,
-                    teamName: teamName || undefined,
-                    sprintId: sprintId || undefined,
-                    featureName: state.featureData?.featureName || state.featureData?.summary || undefined,
-                    featureKey: state.featureData?.issueKey || undefined
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                created.push(...(data.created || []));
-                failed.push(...(data.failed || []));
+            if (state.inputMode === 'epic') {
+                // EPIC mode: create tickets per feature group, each linked to its own feature key
+                for (const group of state.epicItemsGrouped) {
+                    const groupItems = group.items.filter(i => i.approved && i.type !== 'Epic');
+                    if (!groupItems.length) continue;
+                    // Read per-feature sprint from its own selector
+                    const featureSprintId = (document.getElementById(`epicSprint-${group.featureKey}`)?.value || '').trim() || undefined;
+                    const res = await fetch(`${API_BASE}/story-mapping/create-tickets`, {
+                        method: 'POST',
+                        headers: authHeaders(),
+                        body: JSON.stringify({
+                            items: groupItems,
+                            projectKey,
+                            jiraBaseUrl: instance,
+                            teamName: group.teamName || undefined,
+                            sprintId: featureSprintId,
+                            featureName: group.featureSummary || undefined,
+                            featureKey: group.featureKey || undefined
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        created.push(...(data.created || []));
+                        failed.push(...(data.failed || []));
+                    } else {
+                        showToast(`Failed for feature ${group.featureKey}: ` + (data.message || ''), 'error');
+                    }
+                }
             } else {
-                showToast(data.message || 'Failed to create tickets', 'error');
+                // Feature mode (existing)
+                const res = await fetch(`${API_BASE}/story-mapping/create-tickets`, {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({
+                        items: approvedItems,
+                        projectKey,
+                        jiraBaseUrl: instance,
+                        teamName: teamName || undefined,
+                        sprintId: sprintId || undefined,
+                        featureName: state.featureData?.featureName || state.featureData?.summary || undefined,
+                        featureKey: state.featureData?.issueKey || undefined
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    created.push(...(data.created || []));
+                    failed.push(...(data.failed || []));
+                } else {
+                    showToast(data.message || 'Failed to create tickets', 'error');
+                }
             }
         } catch(e) {
             showToast('Failed to connect to server: ' + e.message, 'error');
@@ -725,13 +1176,24 @@
     }
 
     function startOver() {
-        state = { featureData: null, confluenceData: null, items: [], showEpics: false, attachments: [] };
+        state = { featureData: null, confluenceData: null, items: [], showEpics: false, attachments: [], inputMode: 'feature', epicData: null, epicFetched: [], epicItemsGrouped: [] };
         document.getElementById('jiraUrl').value = '';
         document.getElementById('confUrl').value = '';
         document.getElementById('jiraStatus').textContent = '';
         document.getElementById('confStatus').textContent = '';
         const chips = document.getElementById('attachmentChips');
         if (chips) chips.innerHTML = '';
+        document.getElementById('epicUrl') && (document.getElementById('epicUrl').value = '');
+        document.getElementById('epicStatus') && (document.getElementById('epicStatus').textContent = '');
+        document.getElementById('epicChildrenSection')?.classList.add('hidden');
+        document.getElementById('featureModeSection')?.classList.remove('hidden');
+        document.getElementById('epicModeSection')?.classList.add('hidden');
+        document.getElementById('toggleFeatureBtn').className = 'px-4 py-1.5 text-sm font-medium rounded-md bg-purple-700 text-white transition';
+        document.getElementById('toggleEpicBtn').className = 'px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:bg-white transition';
+        document.getElementById('featurePreviewSection')?.classList.remove('hidden');
+        document.getElementById('epicPreviewSection')?.classList.add('hidden');
+        document.getElementById('createFieldsFeature')?.classList.remove('hidden');
+        document.getElementById('createFieldsEpic')?.classList.add('hidden');
         document.getElementById('step-preview').classList.add('hidden');
         document.getElementById('step-results').classList.add('hidden');
         document.getElementById('step-done').classList.add('hidden');

@@ -3963,6 +3963,9 @@ function getJiraCredentials(url) {
     if (url.includes('elevancehealth.com')) {
         return { base: process.env.JIRA2_BASE_URL, token: process.env.JIRA2_API_TOKEN };
     }
+    if (url.includes('jira.carelon.com')) {
+        return { base: process.env.JIRA3_BASE_URL, token: process.env.JIRA3_API_TOKEN };
+    }
     return { base: process.env.JIRA_BASE_URL, token: process.env.JIRA_API_TOKEN };
 }
 
@@ -4052,7 +4055,92 @@ app.post('/api/story-mapping/fetch-jira', authMiddleware, async (req, res) => {
     }
 });
 
-// POST /api/story-mapping/fetch-confluence â€” fetch Confluence page content (uses same token as JIRA)
+// POST /api/story-mapping/fetch-epic — fetch EPIC + all child features via Epic Link field (cf[10202])
+app.post('/api/story-mapping/fetch-epic', authMiddleware, async (req, res) => {
+    try {
+        const { url } = req.body;
+        if (!url) return res.status(400).json({ success: false, message: 'EPIC URL is required' });
+
+        // Extract issue key from URL
+        const match = url.match(/\/browse\/([A-Z]+-\d+)/) || url.match(/([A-Z]+-\d+)/);
+        if (!match) return res.status(400).json({ success: false, message: 'Could not extract EPIC key from URL' });
+        const epicKey = match[1];
+
+        // Try JIRA1 → JIRA2 → JIRA3
+        const instances = [
+            { base: process.env.JIRA_BASE_URL,  token: process.env.JIRA_API_TOKEN,  fn: jiraRequest,  label: 'JIRA1' },
+            { base: process.env.JIRA2_BASE_URL, token: process.env.JIRA2_API_TOKEN, fn: jiraRequest2, label: 'JIRA2' },
+            { base: process.env.JIRA3_BASE_URL, token: process.env.JIRA3_API_TOKEN, fn: jiraRequest3, label: 'JIRA3' }
+        ];
+
+        let epicBody = null;
+        let jiraBase = null;
+        let reqFn = null;
+
+        for (const inst of instances) {
+            if (!inst.base || !inst.token) continue;
+            const base = inst.base.replace(/\/$/, '');
+            const { status, body } = await inst.fn(
+                `${base}/rest/api/2/issue/${epicKey}?fields=summary,description,issuetype,project,status,assignee,customfield_10317`
+            );
+            if (status === 200 && body.fields) {
+                epicBody = body;
+                jiraBase = base;
+                reqFn = inst.fn;
+                console.log(`[fetch-epic] Found EPIC ${epicKey} on ${inst.label}`);
+                break;
+            }
+        }
+
+        if (!epicBody) {
+            return res.status(404).json({ success: false, message: `EPIC ${epicKey} not found on any configured JIRA instance` });
+        }
+
+        const epicFields = epicBody.fields || {};
+
+        // Fetch child features via Epic Link custom field (cf[10202] = epicKey)
+        const jql = encodeURIComponent(`cf[10202] = ${epicKey} ORDER BY created ASC`);
+        let allChildren = [];
+        let startAt = 0;
+        let total = 1;
+        while (startAt < total) {
+            const { status: cs, body: cb } = await reqFn(
+                `${jiraBase}/rest/api/2/search?jql=${jql}&maxResults=50&startAt=${startAt}&fields=summary,status,issuetype,assignee,customfield_10317,project`
+            );
+            if (cs !== 200 || !cb.issues) break;
+            allChildren = allChildren.concat(cb.issues);
+            total = cb.total || 0;
+            startAt += cb.issues.length;
+            if (cb.issues.length === 0) break;
+        }
+
+        const children = allChildren.map(issue => ({
+            key: issue.key,
+            summary: issue.fields.summary || '',
+            issueType: issue.fields.issuetype?.name || 'Feature',
+            assignee: issue.fields.assignee?.displayName || 'Unassigned',
+            teamName: issue.fields.customfield_10317?.value || '',
+            projectKey: issue.fields.project?.key || '',
+            jiraUrl: `${jiraBase}/browse/${issue.key}`
+        }));
+
+        res.json({
+            success: true,
+            epicKey,
+            epicSummary: epicFields.summary || '',
+            epicDescription: epicFields.description || '',
+            epicType: epicFields.issuetype?.name || 'Epic',
+            projectKey: epicFields.project?.key || '',
+            jiraBase,
+            children
+        });
+    } catch (error) {
+        console.error('Story mapping fetch-epic error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch EPIC: ' + error.message });
+    }
+});
+
+// POST /api/story-mapping/fetch-confluence — fetch Confluence page content (uses same token as JIRA)
 app.post('/api/story-mapping/fetch-confluence', authMiddleware, async (req, res) => {
     try {
         const { url } = req.body;
