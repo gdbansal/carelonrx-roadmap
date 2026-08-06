@@ -102,14 +102,14 @@
             </h2>
 
             <!-- Mode Toggle -->
-            <div class="flex items-center gap-1 mb-5 bg-gray-100 rounded-lg p-1 w-fit">
-                <button type="button" id="toggleFeatureBtn" onclick="setInputMode('feature')"
-                    class="px-4 py-1.5 text-sm font-medium rounded-md bg-purple-700 text-white transition">
-                    Feature
-                </button>
+            <div class="flex items-center gap-0 mb-5 border border-purple-300 rounded-lg overflow-hidden w-64">
                 <button type="button" id="toggleEpicBtn" onclick="setInputMode('epic')"
-                    class="px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:bg-white transition">
+                    class="flex-1 px-4 py-2 text-sm font-semibold transition border-r border-purple-300 text-purple-700 bg-white hover:bg-purple-50">
                     EPIC
+                </button>
+                <button type="button" id="toggleFeatureBtn" onclick="setInputMode('feature')"
+                    class="flex-1 px-4 py-2 text-sm font-semibold transition bg-purple-700 text-white">
+                    Feature
                 </button>
             </div>
 
@@ -386,13 +386,13 @@
         const featSec = document.getElementById('featureModeSection');
         const epicSec = document.getElementById('epicModeSection');
         if (mode === 'epic') {
-            featBtn.className = 'px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:bg-white transition';
-            epicBtn.className = 'px-4 py-1.5 text-sm font-medium rounded-md bg-purple-700 text-white transition';
+            epicBtn.className = 'flex-1 px-4 py-2 text-sm font-semibold transition border-r border-purple-300 bg-purple-700 text-white';
+            featBtn.className = 'flex-1 px-4 py-2 text-sm font-semibold transition text-purple-700 bg-white hover:bg-purple-50';
             featSec.classList.add('hidden');
             epicSec.classList.remove('hidden');
         } else {
-            featBtn.className = 'px-4 py-1.5 text-sm font-medium rounded-md bg-purple-700 text-white transition';
-            epicBtn.className = 'px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:bg-white transition';
+            featBtn.className = 'flex-1 px-4 py-2 text-sm font-semibold transition bg-purple-700 text-white';
+            epicBtn.className = 'flex-1 px-4 py-2 text-sm font-semibold transition border-r border-purple-300 text-purple-700 bg-white hover:bg-purple-50';
             featSec.classList.remove('hidden');
             epicSec.classList.add('hidden');
         }
@@ -1188,8 +1188,8 @@
         document.getElementById('epicChildrenSection')?.classList.add('hidden');
         document.getElementById('featureModeSection')?.classList.remove('hidden');
         document.getElementById('epicModeSection')?.classList.add('hidden');
-        document.getElementById('toggleFeatureBtn').className = 'px-4 py-1.5 text-sm font-medium rounded-md bg-purple-700 text-white transition';
-        document.getElementById('toggleEpicBtn').className = 'px-4 py-1.5 text-sm font-medium rounded-md text-gray-600 hover:bg-white transition';
+        document.getElementById('toggleFeatureBtn').className = 'flex-1 px-4 py-2 text-sm font-semibold transition bg-purple-700 text-white';
+        document.getElementById('toggleEpicBtn').className = 'flex-1 px-4 py-2 text-sm font-semibold transition border-r border-purple-300 text-purple-700 bg-white hover:bg-purple-50';
         document.getElementById('featurePreviewSection')?.classList.remove('hidden');
         document.getElementById('epicPreviewSection')?.classList.add('hidden');
         document.getElementById('createFieldsFeature')?.classList.remove('hidden');
