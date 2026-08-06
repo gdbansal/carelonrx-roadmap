@@ -4384,11 +4384,12 @@ app.post('/api/story-mapping/create-tickets', authMiddleware, async (req, res) =
 // POST /api/sessions/update-story-points — update Jira story points field after estimation
 app.post('/api/sessions/update-story-points', authMiddleware, async (req, res) => {
     try {
-        const { issueKey, storyPoints } = req.body;
+        const { issueKey, jiraUrl, storyPoints } = req.body;
         if (!issueKey || storyPoints === undefined || storyPoints === null) {
             return res.status(400).json({ success: false, message: 'issueKey and storyPoints are required' });
         }
-        const { base, token } = getJiraCredentials(issueKey);
+        // Use jiraUrl (ticket URL) for instance detection if available, fallback to issueKey
+        const { base, token } = getJiraCredentials(jiraUrl || issueKey);
         if (!base || !token) return res.status(503).json({ success: false, message: 'JIRA not configured' });
         const jiraBase = base.replace(/\/$/, '');
         const https = require('https');

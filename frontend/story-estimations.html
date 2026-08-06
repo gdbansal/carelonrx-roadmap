@@ -279,7 +279,7 @@
             if (product360User && p360Name) {
                 const normalizedRole = (product360User.role || '').toLowerCase().replace(/\s+/g, '_');
                 let role = 'Dev';
-                if (normalizedRole === 'admin') role = 'Admin';
+                if (normalizedRole === 'admin') role = 'Dev'; // Admin manages P360 only — default to Dev in estimations
                 else if (normalizedRole === 'product_owner' || normalizedRole === 'product_manager') role = 'PO';
                 else if (normalizedRole === 'scrum_master' || normalizedRole === 'rte') role = 'SM';
                 else if (normalizedRole === 'qa' || normalizedRole === 'tester') role = 'QA';
@@ -380,8 +380,9 @@
         }
 
         async function endSession() {
-            if (!hasPoPrivileges()) {
-                showToast('Only Product Owners and Admins can end sessions.', 'error');
+            if (isAdminRole()) { showAdminBlockedPrompt(); return; }
+            if (!isSessionCreator()) {
+                showToast('Only the session creator can end the session.', 'error');
                 return;
             }
 
@@ -416,7 +417,15 @@
         }
 
         function hasPoPrivileges() {
-            return state.user && (state.user.role === 'PO' || state.user.role === 'SM' || state.user.role === 'Admin');
+            return state.user && (state.user.role === 'PO' || state.user.role === 'SM');
+        }
+
+        function isAdminRole() {
+            return state.user && state.user.role === 'Admin';
+        }
+
+        function showAdminBlockedPrompt() {
+            showToast('Admin role is for Product360 management only. Please log in as a PO or SM to perform this action.', 'error');
         }
 
         function isSessionCreator() {
@@ -680,7 +689,8 @@
         }
 
         async function addEstimationReason(role, reason) {
-            if (!hasPoPrivileges()) return;
+            if (isAdminRole()) { showAdminBlockedPrompt(); return; }
+            if (!isSessionCreator()) return;
             if (!reason.trim()) return;
             
             if (role === 'Dev') {
@@ -702,7 +712,8 @@
         }
 
         async function removeEstimationReason(role, index) {
-            if (!hasPoPrivileges()) return;
+            if (isAdminRole()) { showAdminBlockedPrompt(); return; }
+            if (!isSessionCreator()) return;
             
             if (role === 'Dev' && state.currentSession.devEstimationReasons) {
                 state.currentSession.devEstimationReasons.splice(index, 1);
@@ -715,7 +726,8 @@
         }
 
         async function revealStory(storyId) {
-            if (!hasPoPrivileges()) return;
+            if (isAdminRole()) { showAdminBlockedPrompt(); return; }
+            if (!isSessionCreator()) { showToast('Only the session creator can reveal estimates.', 'error'); return; }
             
             if (!state.currentSession.revealedStories) {
                 state.currentSession.revealedStories = {};
@@ -731,7 +743,8 @@
         }
 
         async function markComplete(storyId, storyPoints) {
-            if (!hasPoPrivileges()) return;
+            if (isAdminRole()) { showAdminBlockedPrompt(); return; }
+            if (!isSessionCreator()) { showToast('Only the session creator can mark stories complete.', 'error'); return; }
             
             if (!state.currentSession.completedStories) {
                 state.currentSession.completedStories = {};
@@ -750,12 +763,15 @@
                 const story = state.stories.find(s => s.id === storyId);
                 if (story && story.number && /^[A-Z]+-\d+$/.test(story.number)) {
                     try {
-                        await fetch(`${API_BASE_URL}/sessions/update-story-points`, {
+                        const res = await fetch(`${API_BASE_URL}/sessions/update-story-points`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-                            body: JSON.stringify({ issueKey: story.number, storyPoints })
+                            body: JSON.stringify({ issueKey: story.number, jiraUrl: story.numberUrl || null, storyPoints })
                         });
-                    } catch(e) { console.warn('Could not update Jira story points:', e.message); }
+                        const result = await res.json();
+                        if (!result.success) showToast('Story points saved locally but failed to update in JIRA: ' + (result.message || ''), 'error');
+                        else showToast('Story points updated in JIRA successfully.', 'success');
+                    } catch(e) { showToast('Could not reach server to update JIRA story points.', 'error'); }
                 }
             }
 
@@ -763,7 +779,8 @@
         }
 
         async function markIncomplete(storyId) {
-            if (!hasPoPrivileges()) return;
+            if (isAdminRole()) { showAdminBlockedPrompt(); return; }
+            if (!isSessionCreator()) { showToast('Only the session creator can mark stories incomplete.', 'error'); return; }
             
             if (state.currentSession.completedStories && state.currentSession.completedStories[storyId]) {
                 delete state.currentSession.completedStories[storyId];
@@ -1000,7 +1017,7 @@
                     if (userData.role) {
                         const normalizedRole = userData.role.toLowerCase().replace(/\s+/g, '_');
                         // If joining via URL, don't default to PO or Admin
-                        if (!state.joiningViaUrl && normalizedRole === 'admin') defaultRole = 'Admin';
+                        if (!state.joiningViaUrl && normalizedRole === 'admin') defaultRole = 'Dev'; // Admin manages P360 only
                         else if (!state.joiningViaUrl && (normalizedRole === 'product_owner' || normalizedRole === 'product_manager')) defaultRole = 'PO';
                         else if (normalizedRole === 'scrum_master' || normalizedRole === 'rte') defaultRole = 'SM';
                         else if (normalizedRole === 'developer' || normalizedRole === 'dev') defaultRole = 'Dev';
@@ -1215,6 +1232,8 @@
                                     <button type="button" onclick="toggleDashboard()" class="btn-carelon-${state.showDashboard ? 'primary' : 'secondary'} px-3 py-1.5 text-white text-sm rounded-md transition">
                                         ${state.showDashboard ? 'Hide' : 'Show'} Dashboard
                                     </button>
+                                ` : ''}
+                                ${isSessionCreator() ? `
                                     <button type="button" onclick="toggleManageReasons()" class="btn-carelon-${state.showManageReasons ? 'primary' : 'secondary'} px-3 py-1.5 text-white text-sm rounded-md transition">
                                         ${state.showManageReasons ? 'Hide' : 'Manage'} Reasons
                                     </button>
@@ -1222,7 +1241,7 @@
                                 <button type="button" onclick="leaveSession()" class="btn-carelon-secondary px-3 py-1.5 text-white text-sm rounded-md hover:bg-gray-700 transition">
                                     Leave
                                 </button>
-                                ${hasPoPrivileges() ? `
+                                ${isSessionCreator() ? `
                                     <button type="button" onclick="endSession()" class="bg-red-600 px-3 py-1.5 text-white text-sm rounded-md hover:bg-red-700 transition">
                                         End Session
                                     </button>
@@ -1411,8 +1430,8 @@
                         </div>
                     ` : ''}
 
-                    <!-- Manage Estimation Reasons - PO/Admin Only -->
-                    ${hasPoPrivileges() && state.showManageReasons ? `
+                    <!-- Manage Estimation Reasons - Session Creator only -->
+                    ${isSessionCreator() && state.showManageReasons ? `
                         <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
                             <div class="flex items-center justify-between mb-5">
                                 <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
@@ -1484,8 +1503,8 @@
                         </div>
                     ` : ''}
 
-                    <!-- Add New Story  - PO/Admin/Session Creator only -->
-                    ${hasPoPrivileges() || isSessionCreator() ? `
+                    <!-- Add New Story  - Session Creator only -->
+                    ${isSessionCreator() ? `
                     <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
                         <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
                             <i data-lucide="plus-circle" class="w-4 h-4 text-carelon-purple"></i>
