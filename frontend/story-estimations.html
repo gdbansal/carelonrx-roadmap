@@ -346,9 +346,13 @@
             stopPolling();
             localStorage.removeItem('storyEstimatorUser');
             localStorage.removeItem('storyPointEstimatorSessionId');
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            window.location.href = 'login.html';
+            state.user = null;
+            state.autoLoggedIn = false;
+            state.adminBlocked = false;
+            state.currentSession = null;
+            state.sessionId = '';
+            state.stories = [];
+            render();
         }
 
 
