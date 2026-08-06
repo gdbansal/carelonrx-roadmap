@@ -278,9 +278,16 @@
             // Auto-populate from Product360 logged-in user and skip login screen
             if (product360User && p360Name) {
                 const normalizedRole = (product360User.role || '').toLowerCase().replace(/\s+/g, '_');
+
+                // Admin role is for Product360 management only — block auto-login
+                if (normalizedRole === 'admin') {
+                    // Don't auto-login; let render() show the login form with a warning
+                    state.adminBlocked = true;
+                    return false;
+                }
+
                 let role = 'Dev';
-                if (normalizedRole === 'admin') role = 'Dev'; // Admin manages P360 only — default to Dev in estimations
-                else if (normalizedRole === 'product_owner' || normalizedRole === 'product_manager') role = 'PO';
+                if (normalizedRole === 'product_owner' || normalizedRole === 'product_manager') role = 'PO';
                 else if (normalizedRole === 'scrum_master' || normalizedRole === 'rte') role = 'SM';
                 else if (normalizedRole === 'qa' || normalizedRole === 'tester') role = 'QA';
 
@@ -1046,6 +1053,14 @@
                             <p class="text-sm text-gray-600 mt-1">${state.joiningViaUrl ? 'Join the estimation session' : 'Enter your details to begin'}</p>
                         </div>
                         ${joiningMessage}
+                        ${state.adminBlocked ? `
+                        <div class="mb-3 p-3 bg-red-50 border border-red-300 rounded-lg">
+                            <p class="text-sm text-red-700 font-medium flex items-start gap-2">
+                                <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+                                <span><strong>Admin access not permitted here.</strong><br>
+                                The Admin role is reserved for Product360 management. Please select one of the available roles below to use Story Estimations.</span>
+                            </p>
+                        </div>` : ''}
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
@@ -1060,7 +1075,7 @@
                                     <option value="QA" ${defaultRole === 'QA' ? 'selected' : ''}>QA</option>
                                     ${!state.joiningViaUrl ? `<option value="PO" ${defaultRole === 'PO' ? 'selected' : ''}>Product Owner</option>` : ''}
                                     <option value="SM" ${defaultRole === 'SM' ? 'selected' : ''}>Scrum Master</option>
-                                    ${!state.joiningViaUrl ? `<option value="Admin" ${defaultRole === 'Admin' ? 'selected' : ''}>Admin</option>` : ''}
+                                    <!-- Admin role is for Product360 management only — not available in Story Estimations -->
                                 </select>
                             </div>
                             <button type="button" onclick="handleLoginSubmit()" class="w-full px-4 py-3 btn-primary rounded-md font-medium transition">
@@ -1865,6 +1880,11 @@
             
             if (!name || !role) {
                 showToast('Please enter both name and role', 'error');
+                return;
+            }
+
+            if (role === 'Admin') {
+                showToast('Admin role is for Product360 management only. Please select Developer, QA, Product Owner, or Scrum Master to use Story Estimations.', 'error');
                 return;
             }
             

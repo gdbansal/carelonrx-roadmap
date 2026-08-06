@@ -2238,7 +2238,7 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
         let issueStart = 0;
         let issueTotal = 1;
         let usedFallback = false;
-        const teamJql = encodeURIComponent(`sprint = ${matchedSprint.id} AND "Team Name" = "${teamName}" ORDER BY created DESC`);
+        const teamJql = encodeURIComponent(`sprint = ${matchedSprint.id} AND "Team Name" = "${teamName}" AND issuetype in (Story, Task) ORDER BY created DESC`);
 
         while (issueStart < issueTotal) {
             const { status: is, body: issuesBody } = await reqFn(
@@ -2254,7 +2254,7 @@ app.get('/api/jira/sprint-issues', authMiddleware, async (req, res) => {
         // Fallback: "Team Name" field not configured — retry with sprint only, include teamName field per issue
         if (allIssues.length === 0) {
             usedFallback = true;
-            const fallbackJql = encodeURIComponent(`sprint = ${matchedSprint.id} ORDER BY created DESC`);
+            const fallbackJql = encodeURIComponent(`sprint = ${matchedSprint.id} AND issuetype in (Story, Task) ORDER BY created DESC`);
             let fbStart = 0;
             let fbTotal = 1;
             while (fbStart < fbTotal) {
@@ -4411,7 +4411,25 @@ app.post('/api/sessions/update-story-points', authMiddleware, async (req, res) =
         if (!base || !token) return res.status(503).json({ success: false, message: 'JIRA not configured' });
         const jiraBase = base.replace(/\/$/, '');
         const https = require('https');
-        const payload = JSON.stringify({ fields: { customfield_10016: Number(storyPoints) } });
+
+        // Discover the correct Story Points field ID via editmeta
+        let storyPointsFieldId = 'customfield_10016'; // default
+        try {
+            const { status: emStatus, body: emBody } = await jiraRequest(
+                `${jiraBase}/rest/api/2/issue/${encodeURIComponent(issueKey)}/editmeta`
+            );
+            if (emStatus === 200 && emBody.fields) {
+                for (const [fId, fMeta] of Object.entries(emBody.fields)) {
+                    const name = (fMeta.name || '').toLowerCase();
+                    if (name === 'story points' || name === 'story_points') {
+                        storyPointsFieldId = fId;
+                        break;
+                    }
+                }
+            }
+        } catch(e) { /* use default */ }
+
+        const payload = JSON.stringify({ fields: { [storyPointsFieldId]: Number(storyPoints) } });
         const parsedUrl = new URL(`${jiraBase}/rest/api/2/issue/${encodeURIComponent(issueKey)}`);
         const jiraResult = await new Promise((resolve, reject) => {
             const options = {
